@@ -780,7 +780,7 @@
             "mixers": 255,
             "sync": 0,
             "flags": 0,
-            "volume": 0.6938379406929016,
+            "volume": 0.6221749186515808,
             "balance": 0.5,
             "enabled": true,
             "muted": false,
@@ -797,7 +797,7 @@
             },
             "deinterlace_mode": 0,
             "deinterlace_field_order": 0,
-            "monitoring_type": 1,
+            "monitoring_type": 2,
             "private_settings": {},
             "filters": [
                 {
@@ -2217,7 +2217,7 @@
             "mixers": 253,
             "sync": 0,
             "flags": 0,
-            "volume": 0.5287268161773682,
+            "volume": 0.4586696922779083,
             "balance": 0.5,
             "enabled": true,
             "muted": false,
@@ -2421,7 +2421,7 @@
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
-                "id_counter": 15,
+                "id_counter": 16,
                 "custom_size": false,
                 "items": [
                     {
@@ -2776,19 +2776,19 @@
                         "group_item_backup": false,
                         "pos": {
                             "x": 0.0,
-                            "y": 644.0
+                            "y": 590.0
                         },
                         "pos_rel": {
                             "x": -1.7777777910232544,
-                            "y": 0.7888889312744141
+                            "y": 0.6388888359069824
                         },
                         "scale": {
-                            "x": 1.1886792182922363,
-                            "y": 1.1875
+                            "x": 2.0319149494171143,
+                            "y": 2.03125
                         },
                         "scale_rel": {
-                            "x": 1.1886792182922363,
-                            "y": 1.1875
+                            "x": 2.0319149494171143,
+                            "y": 2.03125
                         },
                         "bounds": {
                             "x": 0.0,
@@ -2863,6 +2863,61 @@
                             "duration": 0
                         },
                         "private_settings": {}
+                    },
+                    {
+                        "name": "osu",
+                        "source_uuid": "d904188f-23d3-4a59-ba60-6966ca73bf31",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1280.0,
+                            "y": 720.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 16,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 0
+                        },
+                        "hide_transition": {
+                            "duration": 0
+                        },
+                        "private_settings": {}
                     }
                 ]
             },
@@ -2894,7 +2949,9 @@
                 "libobs.show_scene_item.10": [],
                 "libobs.hide_scene_item.10": [],
                 "libobs.show_scene_item.12": [],
-                "libobs.hide_scene_item.12": []
+                "libobs.hide_scene_item.12": [],
+                "libobs.show_scene_item.16": [],
+                "libobs.hide_scene_item.16": []
             },
             "deinterlace_mode": 0,
             "deinterlace_field_order": 0,
@@ -3145,7 +3202,7 @@
             "versioned_id": "text_gdiplus_v3",
             "settings": {
                 "outline": true,
-                "text": "＊修士課程です。",
+                "text": "めしいった",
                 "font": {
                     "face": "Arial",
                     "style": "Regular",
@@ -3911,6 +3968,37 @@
             "push-to-talk": false,
             "push-to-talk-delay": 0,
             "hotkeys": {},
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 536870913,
+            "name": "osu",
+            "uuid": "d904188f-23d3-4a59-ba60-6966ca73bf31",
+            "id": "wasapi_process_output_capture",
+            "versioned_id": "wasapi_process_output_capture",
+            "settings": {
+                "window": "osu!:SDL_app:osu!.exe"
+            },
+            "mixers": 255,
+            "sync": 0,
+            "flags": 0,
+            "volume": 0.7070245146751404,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {
+                "libobs.mute": [],
+                "libobs.unmute": [],
+                "libobs.push-to-mute": [],
+                "libobs.push-to-talk": []
+            },
             "deinterlace_mode": 0,
             "deinterlace_field_order": 0,
             "monitoring_type": 0,
