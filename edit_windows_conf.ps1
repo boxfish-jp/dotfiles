@@ -1,143 +1,143 @@
 # ----------------------------------------------------
-# 実行前にPowerShellを「管理者として実行」してください。
+# Please run PowerShell "As Administrator" before execution.
 # ----------------------------------------------------
 
-# 実行ポリシーの確認と変更 (スクリプト実行に必要)
-Write-Host "PowerShellの実行ポリシーを一時的にBypassに設定します..." -ForegroundColor Blue
+# Check and change execution policy (required for script execution)
+Write-Host "Temporarily setting PowerShell execution policy to Bypass..." -ForegroundColor Blue
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
 Write-Host ""
 
 # ----------------------------------------------------
-# 1. 高速スタートアップ無効
+# 1. Disable Fast Startup
 # ----------------------------------------------------
-Write-Host "1. 高速スタートアップを無効にします (powercfg /h off)..." -ForegroundColor Yellow
+Write-Host "1. Disabling Fast Startup (powercfg /h off)..." -ForegroundColor Yellow
 powercfg /h off
-Write-Host "   -> 高速スタートアップ無効化が完了しました。" -ForegroundColor Green
+Write-Host "   -> Fast Startup disabled successfully." -ForegroundColor Green
 Write-Host ""
 
 # ----------------------------------------------------
-# 2. マウスの加速を切る (ポインターの精度向上を無効化)
+# 2. Disable Mouse Acceleration (Disable Enhance pointer precision)
 # ----------------------------------------------------
-Write-Host "2. マウスの加速 (ポインターの精度向上) を無効にします..." -ForegroundColor Yellow
+Write-Host "2. Disabling Mouse Acceleration (Enhance pointer precision)..." -ForegroundColor Yellow
 Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseSpeed" -Value 0 -Type String
 Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseThreshold1" -Value 0 -Type String
 Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseThreshold2" -Value 0 -Type String
-Write-Host "   -> マウスの加速無効化が完了しました。" -ForegroundColor Green
+Write-Host "   -> Mouse acceleration disabled successfully." -ForegroundColor Green
 Write-Host ""
 
 # ----------------------------------------------------
-# 3. Win11の右クリックメニューをクラシック形式に変更
+# 3. Change Win11 right-click menu to Classic style
 # ----------------------------------------------------
-Write-Host "3. Windows 11 の右クリックメニューをクラシック形式に変更します..." -ForegroundColor Yellow
+Write-Host "3. Changing Windows 11 right-click menu to Classic style..." -ForegroundColor Yellow
 $CLSID = "{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}"
 $Path = "HKCU:\Software\Classes\CLSID\$CLSID\InprocServer32"
-# キーを作成し、(既定)の値を空に設定することでクラシックメニューを有効化
+# Create key and set (Default) value to empty to enable Classic menu
 If (-not (Test-Path $Path)) {
-    New-Item -Path $Path -Force | Out-Null
-    Set-ItemProperty -Path $Path -Name "(Default)" -Value "" -Force
+    New-Item -Path $Path -Force | Out-Null
+    Set-ItemProperty -Path $Path -Name "(Default)" -Value "" -Force
 }
-Write-Host "   -> 右クリックメニューのクラシック化設定が完了しました。" -ForegroundColor Green
+Write-Host "   -> Classic right-click menu setting completed." -ForegroundColor Green
 Write-Host ""
 
 # ----------------------------------------------------
-# 4. タスクバーのカスタマイズとボタンの非表示
+# 4. Taskbar Customization and Button Hiding
 # ----------------------------------------------------
-Write-Host "4. タスクバーを左寄せにし、ボタン (検索, タスクビュー, ウィジェット, チャット) を非表示にします..." -ForegroundColor Yellow
+Write-Host "4. Aligning Taskbar Left and hiding buttons (Search, Task View, Widgets, Chat)..." -ForegroundColor Yellow
 $TaskbarPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
 
-# 4-1. タスクバーの配置を左に変更 (0: 左寄せ)
+# 4-1. Change Taskbar alignment to Left (0: Left-aligned)
 Set-ItemProperty -Path $TaskbarPath -Name "TaskbarAl" -Type DWord -Value 0
 
-# 4-2. タスクビューを無効化 (0: 非表示)
+# 4-2. Disable Task View (0: Hidden)
 Set-ItemProperty -Path $TaskbarPath -Name "ShowTaskViewButton" -Type DWord -Value 0
 
-# 4-3. ウィジェットを無効化 (0: 非表示)
+# 4-3. Disable Widgets (0: Hidden)
 Set-ItemProperty -Path $TaskbarPath -Name "TaskbarDa" -Type DWord -Value 0
 
-# 4-4. チャット (Teams) を非表示 (0: 非表示)
+# 4-4. Hide Chat (Teams) (0: Hidden)
 Set-ItemProperty -Path $TaskbarPath -Name "TaskbarMn" -Type DWord -Value 0
 
-# 4-5. 検索アイコンを非表示 (0: 非表示)
+# 4-5. Hide Search Icon (0: Hidden)
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "SearchboxTaskbarMode" -Type DWord -Value 0
 
-Write-Host "   -> タスクバーのカスタマイズ設定が完了しました。" -ForegroundColor Green
+Write-Host "   -> Taskbar customization settings completed." -ForegroundColor Green
 Write-Host ""
 
 # ----------------------------------------------------
-# 5. ダークモードに設定
+# 5. Set to Dark Mode
 # ----------------------------------------------------
-Write-Host "5. ダークモードに設定します..." -ForegroundColor Yellow
+Write-Host "5. Setting system to Dark Mode..." -ForegroundColor Yellow
 $ThemePath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
-# アプリのテーマをダークモード (0) に設定
+# Set App theme to Dark Mode (0)
 Set-ItemProperty -Path $ThemePath -Name "AppsUseLightTheme" -Value 0 -Type DWord
-# システムのテーマをダークモード (0) に設定
+# Set System theme to Dark Mode (0)
 Set-ItemProperty -Path $ThemePath -Name "SystemUsesLightTheme" -Value 0 -Type DWord
-Write-Host "   -> ダークモードの設定が完了しました。" -ForegroundColor Green
+Write-Host "   -> Dark Mode setting completed." -ForegroundColor Green
 Write-Host ""
 
 # ----------------------------------------------------
-# 6. 隠しファイルの表示
+# 6. Show Hidden Files
 # ----------------------------------------------------
-Write-Host "6. 隠しファイルの表示を有効にします..." -ForegroundColor Yellow
+Write-Host "6. Enabling display of hidden files..." -ForegroundColor Yellow
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Hidden" -Type DWord -Value 1
-Write-Host "   -> 隠しファイルの表示設定が完了しました。" -ForegroundColor Green
+Write-Host "   -> Hidden files display setting completed." -ForegroundColor Green
 Write-Host ""
 
 # ----------------------------------------------------
-# 7. ファイルの拡張子の表示
+# 7. Show File Extensions
 # ----------------------------------------------------
-Write-Host "7. ファイルの拡張子の表示を有効にします..." -ForegroundColor Yellow
+Write-Host "7. Enabling display of file extensions..." -ForegroundColor Yellow
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideExt" -Type DWord -Value 0
-Write-Host "   -> ファイルの拡張子の表示設定が完了しました。" -ForegroundColor Green
+Write-Host "   -> File extension display setting completed." -ForegroundColor Green
 Write-Host ""
 
 # ----------------------------------------------------
-# 8. エクスプローラーにフルパスを表示
+# 8. Display Full Path in File Explorer Title Bar
 # ----------------------------------------------------
-Write-Host "8. エクスプローラーのタイトルバーにフルパスを表示します..." -ForegroundColor Yellow
-# FullPath を 1 に設定 (1: 表示)
+Write-Host "8. Displaying full path in File Explorer title bar..." -ForegroundColor Yellow
+# Set FullPath to 1 (1: Show)
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\CabinetState" -Name "FullPath" -Type DWord -Value 1
-Write-Host "   -> エクスプローラーのフルパス表示設定が完了しました。" -ForegroundColor Green
+Write-Host "   -> File Explorer full path display setting completed." -ForegroundColor Green
 Write-Host ""
 
 # ----------------------------------------------------
-# 9. Thumbs.dbの作成を無効化 (ネットワークフォルダのみ)
+# 9. Disable Thumbs.db creation (Network folders only)
 # ----------------------------------------------------
-Write-Host "9. ネットワークフォルダでの Thumbs.db 作成を無効化します..." -ForegroundColor Yellow
-# DisableThumbnailsOnNetworkFolders を 1 に設定 (1: 無効化)
+Write-Host "9. Disabling Thumbs.db creation on network folders..." -ForegroundColor Yellow
+# Set DisableThumbnailsOnNetworkFolders to 1 (1: Disable)
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "DisableThumbnailsOnNetworkFolders" -Type DWord -Value 1
-Write-Host "   -> Thumbs.db 作成の無効化設定が完了しました。" -ForegroundColor Green
+Write-Host "   -> Thumbs.db creation disabled successfully." -ForegroundColor Green
 Write-Host ""
 
 # ----------------------------------------------------
-# 10. ウインドウのスナップ関連機能の無効化
+# 10. Disable Window Snap-related features
 # ----------------------------------------------------
-Write-Host "10. ウインドウのスナップ関連機能を無効化します..." -ForegroundColor Yellow
+Write-Host "10. Disabling Window Snap-related features..." -ForegroundColor Yellow
 $SnapPath = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
 
-# スナップアシスト無効化 (0: 無効)
+# Disable Snap Assist (0: Disabled)
 Set-ItemProperty -Path $SnapPath -Name "SnapAssist" -Type DWord -Value 0
 
-# スナップアシストのフライアウト (提案機能) 無効化 (0: 無効)
+# Disable Snap Assist Flyout (Suggested layout feature) (0: Disabled)
 Set-ItemProperty -Path $SnapPath -Name "EnableSnapAssistFlyout" -Type DWord -Value 0
 
-# DITest 無効化 (0: 無効)
+# Disable DITest (0: Disabled)
 Set-ItemProperty -Path $SnapPath -Name "DITest" -Type DWord -Value 0
 
-Write-Host "   -> ウインドウのスナップ関連機能の無効化が完了しました。" -ForegroundColor Green
+Write-Host "   -> Window Snap-related features disabled successfully." -ForegroundColor Green
 Write-Host ""
 
 # ----------------------------------------------------
-# 設定の反映
+# Apply Settings
 # ----------------------------------------------------
-Write-Host "設定を反映するためにエクスプローラーを再起動します (推奨)..." -ForegroundColor Blue
-# エクスプローラーのプロセスを強制終了し、再起動させる
+Write-Host "Restarting Explorer to apply settings (Recommended)..." -ForegroundColor Blue
+# Forcefully terminate and restart the Explorer process
 Stop-Process -Name "explorer" -Force -ErrorAction SilentlyContinue
 Start-Sleep -Seconds 2
 Start-Process "explorer"
-Write-Host "エクスプローラーの再起動が完了しました。設定の多くは反映されています。" -ForegroundColor Blue
+Write-Host "Explorer restart completed. Most settings have been applied." -ForegroundColor Blue
 
 # ----------------------------------------------------
-# 完了
+# Complete
 # ----------------------------------------------------
-Write-Host "`nすべての設定が完了しました。一部の設定はシステムの再起動後に完全に反映されます。" -ForegroundColor Cyan
+Write-Host "`nAll settings have been configured. Some settings will fully apply after a system reboot." -ForegroundColor Cyan
