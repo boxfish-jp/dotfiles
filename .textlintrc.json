@@ -1,0 +1,7 @@
+{
+  "rules": {
+    "preset-ja-technical-writing": {
+      "no-mix-dearu-desumasu": false
+    }
+  }
+}
