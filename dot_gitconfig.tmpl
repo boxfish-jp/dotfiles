@@ -1,8 +1,15 @@
-[user]
 {{ if eq .chezmoi.username "4900YEN\\showe"}}
+[user]
 	name = labfish
 	email = 168062620+labFish00@users.noreply.github.com
 {{ else }}
+[credential "https://github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
+[user]
 	name = boxfish_jp
 	email = 79849824+boxfish-jp@users.noreply.github.com
 {{ end }}
