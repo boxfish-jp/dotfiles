@@ -1,0 +1,41 @@
+{
+  "settingsVersion": "2.3.1",
+  "exclusionRules": [
+    {
+      "passKeys": "",
+      "pattern": "https?://mail.google.com/*"
+    },
+    {
+      "passKeys": "",
+      "pattern": "https://remotedesktop.google.com/*"
+    },
+    {
+      "passKeys": "",
+      "pattern": "https?://sushida.net/*"
+    },
+    {
+      "passKeys": "",
+      "pattern": "https?://www.typingbolt.com/*"
+    },
+    {
+      "passKeys": "",
+      "pattern": "https?://figma.com/*"
+    },
+    {
+      "passKeys": "",
+      "pattern": "https?://colab.research.google.com/*"
+    },
+    {
+      "passKeys": "",
+      "pattern": "https?://boxfish-linux.taildb6ca.ts.net:6080/*"
+    },
+    {
+      "passKeys": "",
+      "pattern": "https?://100.64.43.78:6080/*"
+    },
+    {
+      "passKeys": "",
+      "pattern": "https?://localhost:6080/*"
+    }
+  ]
+}
