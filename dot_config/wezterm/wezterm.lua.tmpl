@@ -14,7 +14,7 @@ end
 config.keys = require("keybinds").keys
 config.key_tables = require("keybinds").key_tables
 
-{{ if eq .osId "windows" }}
+{{ if eq .chezmoi.os "windows" }}
 config.default_prog = { "C:\\Program Files\\Git\\bin\\bash.exe" }
 {{ end }}
 {{ if eq .chezmoi.os "linux" }}
