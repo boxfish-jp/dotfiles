@@ -1,0 +1,26 @@
+[env]
+TERM = "xterm-256color"
+
+[general]
+import = [
+  "~/.config/alacritty/themes/cyberdream.toml"
+]
+
+[terminal]
+shell.program = "zellij"
+
+[window]
+padding.x = 14
+padding.y = 14
+dimensions.columns = 121
+dimensions.lines = 40
+decorations = "none"
+opacity = 0.85
+blur = true
+
+[font]
+size = 18
+normal = {family = "HackGen Console NF", style = "Regular" }
+bold = {family = "HackGen Console NF", style = "Bold" }
+italic = {family = "HackGen Console NF", style = "Italic" }
+
