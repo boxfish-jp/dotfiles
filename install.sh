@@ -17,7 +17,6 @@ sudo apt install conky-all
 
 LANG=C LC_ALL=C xdg-user-dirs-gtk-update
 curl -fsSL https://tailscale.com/install.sh | sh
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 wget -qO- https://get.pnpm.io/install.sh | sh -
 curl -LsSf https://astral.sh/uv/install.sh | sh
 sudo apt install lazygit
