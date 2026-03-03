@@ -5,5 +5,6 @@ return {
   require("plugins.format"),
   require("plugins.color-schema"),
   require("plugins.cmp"),
+  require("plugins.org"),
   require("plugins.snacks")
 }
