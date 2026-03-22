@@ -4,7 +4,6 @@ local severities = {
   [2] = vim.diagnostic.severity.ERROR,
 }
 
-local binary_name = "textlint"
 
 return {
   {
@@ -25,8 +24,14 @@ return {
       linters = {
         textlint = {
           cmd = function()
+            local binary_name = "textlint"
+            local uv = vim.uv or vim.loop
             local local_binary = vim.fn.fnamemodify('./node_modules/.bin/' .. binary_name, ':p')
-            return vim.loop.fs_stat(local_binary) and local_binary or binary_name
+            if uv.fs_stat(local_binary) then
+              return vim.loop.fs_stat(local_binary) and local_binary or binary_name
+            else
+              return "true" -- 何もしない
+            end
           end,
           stdin = true,
           args = {
