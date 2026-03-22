@@ -9,3 +9,7 @@ end, {})
 vim.api.nvim_create_user_command('Explorer', function()
   vim.system({ "explorer", "." })
 end, {})
+
+vim.opt.foldlevel = 99
+vim.opt.foldlevelstart = 99
+vim.opt.foldenable = false
