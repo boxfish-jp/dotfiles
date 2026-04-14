@@ -12,6 +12,13 @@ let
   vicinae-wrapped = pkgs.writeShellScriptBin "vicinae" ''
     exec ${nixGL}/bin/nixGL ${pkgs.vicinae}/bin/vicinae "$@"
   '';
+
+  ffmpeg-wrapped = pkgs.writeShellScriptBin "ffmpeg" ''
+    exec ${nixGL}/bin/nixGL ${pkgs.ffmpeg.override {
+      withVaapi = true;
+      withVpl = true;
+    }}/bin/ffmpeg "$@"
+  '';
 in
 {
   home.username = "laptop";
@@ -23,12 +30,14 @@ in
     gnumake pkg-config clang hackgen-nf-font
     starship zellij
     alacritty-wrapped
-    tailscale
     pnpm
     uv
     podman
     qpwgraph
     gh
+    ffmpeg-wrapped
+    gdb
+    cmake
   ];
 
   programs.vicinae = {
@@ -56,6 +65,8 @@ in
 
   xdg.dataFile = {
       "vicinae/scripts".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/vicinae/scripts";
+      " applications/alacritty.desktop".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/vicinae/scripts";
+
   };
 
   home.sessionVariables = {
