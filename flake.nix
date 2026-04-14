@@ -11,6 +11,7 @@
     };
     vicinae = {
       url = "github:vicinaehq/vicinae";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     
   };
