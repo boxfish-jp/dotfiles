@@ -1,18 +1,13 @@
 { config, pkgs, nixgl, system, ... }:
-
 let
-  # nixGLDefault: Intel/AMD/Nouveau 用、または NVIDIA 検出時にフォールバック
   nixGL = nixgl.packages.${system}.nixGLDefault;
 
-  # GPU ドライバを透過的に参照するラッパーを作成
   alacritty-wrapped = pkgs.writeShellScriptBin "alacritty" ''
     exec ${nixGL}/bin/nixGL ${pkgs.alacritty}/bin/alacritty "$@"
   '';
-
   vicinae-wrapped = pkgs.writeShellScriptBin "vicinae" ''
     exec ${nixGL}/bin/nixGL ${pkgs.vicinae}/bin/vicinae "$@"
   '';
-
   ffmpeg-wrapped = pkgs.writeShellScriptBin "ffmpeg" ''
     exec ${nixGL}/bin/nixGL ${pkgs.ffmpeg.override {
       withVaapi = true;
@@ -38,19 +33,22 @@ in
     ffmpeg-wrapped
     gdb
     cmake
+    yt-dlp
   ];
+
+  home.sessionVariables = {
+    NIXOS_OZONE_WL = "1";
+  };
+
+  home.sessionPath = [ "$ANDROID_HOME/platform-tools" ];
 
   programs.vicinae = {
     enable = true;
-    
     systemd = {
       enable = true;
       autoStart = true;
       target = "graphical-session.target";
     };
-    
-    #useLayerShell = true;
-    
     package = vicinae-wrapped;
   };
 
@@ -64,19 +62,10 @@ in
   };
 
   xdg.dataFile = {
-      "vicinae/scripts".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/vicinae/scripts";
-      "applications/alacritty.desktop".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/applications/alacritty.desktop";
-      "icons/alacritty.png".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/icons/alacritty.png";
-
-  };
-
-  home.sessionVariables = {
-    NIXOS_OZONE_WL = "1";
-    # NVIDIA 利用時のみ有効化
-    # __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-    # NVD_BACKEND = "direct";
+    "vicinae/scripts".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/vicinae/scripts";
+    "applications/alacritty.desktop".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/applications/alacritty.desktop";
+    "icons/alacritty.png".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/icons/alacritty.png";
   };
 
   programs.home-manager.enable = true;
 }
-
