@@ -34,6 +34,7 @@ in
     gdb
     cmake
     yt-dlp
+    kanata
   ];
 
   home.sessionVariables = {
@@ -59,12 +60,41 @@ in
     "nvim".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/nvim";
     "alacritty".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/alacritty";
     "zellij".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/zellij";
+    "kanata/kanata.kbd".text = ''
+        (defcfg
+          process-unmapped-keys yes
+        )
+
+        (defsrc
+          caps muhenkan
+        )
+
+        (deflayer base
+          esc lmet
+        )
+      '';
   };
 
   xdg.dataFile = {
     "vicinae/scripts".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/vicinae/scripts";
     "applications/alacritty.desktop".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/applications/alacritty.desktop";
     "icons/alacritty.png".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/icons/alacritty.png";
+  };
+
+  systemd.user.services.kanata = {
+    Unit = {
+      Description = "Kanata keyboard remapper";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = "${pkgs.kanata}/bin/kanata";
+      Restart = "on-failure";
+      RestartSec = "2s";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
   };
 
   programs.home-manager.enable = true;
