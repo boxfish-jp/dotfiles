@@ -1,4 +1,4 @@
-{ config, pkgs, nixgl, system, ... }:
+{ config, pkgs, nixgl, system, username, hostname, ... }:
 let
   nixGL = nixgl.packages.${system}.nixGLDefault;
 
@@ -17,8 +17,8 @@ let
   kanata-with-cmd = pkgs.kanata.override { withCmd = true; };
 in
 {
-  home.username = "laptop";
-  home.homeDirectory = "/home/laptop";
+  home.username = username;
+  home.homeDirectory = "/home/${username}";
   home.stateVersion = "25.11";
 
   home.packages = with pkgs; [
@@ -58,14 +58,10 @@ in
     enable = true;
 
     kwin = {
-      # 仮想デスクトップ数・配置
       virtualDesktops = {
         number = 4;
         rows = 1;
       };
-
-      # 提供されたショートカットを全て変換・登録
-      # plasma-manager はこのセクションのみを kglobalshortcutsrc に書き込みます
     };
 
     shortcuts = {
@@ -136,7 +132,6 @@ in
         "Window Quick Tile Right" = [ "Meta+Right" ];
         "Window Quick Tile Top" = [ "Meta+Up" ];
         
-        # ウィンドウをデスクトップへ移動（日本語配列の記号）
         "Window to Desktop 1" = [ "Meta+!" ];
         "Window to Desktop 2" = [ "Meta+\"" ];
         "Window to Desktop 3" = [ "Meta+#" ];

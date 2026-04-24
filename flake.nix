@@ -27,15 +27,26 @@
         inherit system;
         config.allowUnfree = true;
       };
-    in {
-      homeConfigurations.laptop = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        extraSpecialArgs = { inherit nixgl system; };
-        modules = [ 
-          ./home.nix
-          vicinae.homeManagerModules.default
-          plasma-manager.homeManagerModules.plasma-manager 
-        ];
+      hosts = {
+        "laptop"  = { username = "laptop"; };
+        "boxfish" = { username = "boxfish"; };
       };
+      commonModules = [
+        ./home.nix
+        vicinae.homeManagerModules.default
+        plasma-manager.homeManagerModules.plasma-manager 
+      ];
+    in {
+      homeConfigurations = builtins.mapAttrs (hostname: hostConfig: 
+        home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          extraSpecialArgs = { 
+            inherit nixgl system;
+            username = hostConfig.username;
+            hostname = hostname;
+          };
+          modules = commonModules;
+        }
+      ) hosts;
     };
 }
