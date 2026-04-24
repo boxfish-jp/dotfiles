@@ -91,7 +91,7 @@ in
         editor = nvim 
       [credential "https://github.com"]
         helper = 
-        helper = !/usr/bin/gh auth git-credential
+        helper = !${config.home.homeDirectory}/.nix-profile/bin/gh auth git-credential
     '';
 
   };
