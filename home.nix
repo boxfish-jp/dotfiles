@@ -15,6 +15,19 @@ let
     }}/bin/ffmpeg "$@"
   '';
   kanata-with-cmd = pkgs.kanata.override { withCmd = true; };
+
+  gitIdentities = {
+    "laptop" = {
+      name = "labfish";
+      email = "168062620+labFish00@users.noreply.github.com";
+    };
+    "boxfish" = {
+      name = "boxfish_jp";
+      email = "79849824+boxfish-jp@users.noreply.github.com";
+    };
+  };
+
+  currentGit = gitIdentities.${hostname} or gitIdentities."boxfish";
 in
 {
   home.username = username;
@@ -43,6 +56,65 @@ in
   };
 
   home.sessionPath = [ "$ANDROID_HOME/platform-tools" ];
+
+  systemd.user.services.kanata = {
+    Unit = {
+      Description = "Kanata keyboard remapper (with cmd)";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = "${kanata-with-cmd}/bin/kanata --cfg %h/.config/kanata/kanata.kbd";
+      Restart = "on-failure";
+      RestartSec = "2s";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
+
+  home.file.".bashrc".source = config.lib.file.mkOutOfStoreSymlink
+    "${config.home.homeDirectory}/.config/home-manager/dotfiles/bashrc";
+
+  xdg.configFile = {
+    "nvim".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/nvim";
+    "alacritty".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/alacritty";
+    "zellij".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/zellij";
+    "kanata/kanata.kbd".text = ''
+        (defcfg
+          process-unmapped-keys yes
+          danger-enable-cmd yes
+        )
+
+        (defsrc
+          caps muhenkan henkan
+        )
+
+        (deflayer base
+          esc lmet (cmd "vicinae" "toggle")
+        )
+      '';
+    "git/config".text = ''
+      [user]
+        name = ${currentGit.name}
+        email = ${currentGit.email}
+      [init]
+        defaultBranch = main
+      [core]
+        editor = nvim 
+      [credential "https://github.com"]
+        helper = 
+        helper = !/usr/bin/gh auth git-credential
+    '';
+
+  };
+
+  xdg.dataFile = {
+    "vicinae/scripts".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/vicinae/scripts";
+    "applications/alacritty.desktop".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/applications/alacritty.desktop";
+    "icons/alacritty.png".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/icons/alacritty.png";
+    "kwin/scripts/krohnkite".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/kde_plasma/kwin/scripts/krohnkite";
+  };
 
   programs.vicinae = {
     enable = true;
@@ -148,53 +220,6 @@ in
       custom = {
         "net.local.vicinae.desktop" = [ "Henkan" ];
       };
-    };
-  };
-
-  home.file.".bashrc".source = config.lib.file.mkOutOfStoreSymlink
-    "${config.home.homeDirectory}/.config/home-manager/dotfiles/bashrc";
-
-  xdg.configFile = {
-    "nvim".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/nvim";
-    "alacritty".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/alacritty";
-    "zellij".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/zellij";
-    "kanata/kanata.kbd".text = ''
-        (defcfg
-          process-unmapped-keys yes
-          danger-enable-cmd yes
-        )
-
-        (defsrc
-          caps muhenkan henkan
-        )
-
-        (deflayer base
-          esc lmet (cmd "vicinae" "toggle")
-        )
-      '';
-  };
-
-  xdg.dataFile = {
-    "vicinae/scripts".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/vicinae/scripts";
-    "applications/alacritty.desktop".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/applications/alacritty.desktop";
-    "icons/alacritty.png".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/icons/alacritty.png";
-    "kwin/scripts/krohnkite".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/kde_plasma/kwin/scripts/krohnkite";
-  };
-
-
-  systemd.user.services.kanata = {
-    Unit = {
-      Description = "Kanata keyboard remapper (with cmd)";
-      After = [ "graphical-session.target" ];
-      PartOf = [ "graphical-session.target" ];
-    };
-    Service = {
-      ExecStart = "${kanata-with-cmd}/bin/kanata --cfg %h/.config/kanata/kanata.kbd";
-      Restart = "on-failure";
-      RestartSec = "2s";
-    };
-    Install = {
-      WantedBy = [ "graphical-session.target" ];
     };
   };
 
