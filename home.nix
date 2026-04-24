@@ -80,20 +80,7 @@ in
     "nvim".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/nvim";
     "alacritty".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/alacritty";
     "zellij".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/zellij";
-    "kanata/kanata.kbd".text = ''
-        (defcfg
-          process-unmapped-keys yes
-          danger-enable-cmd yes
-        )
-
-        (defsrc
-          caps muhenkan henkan
-        )
-
-        (deflayer base
-          esc lmet (cmd "vicinae" "toggle")
-        )
-      '';
+    "kanata".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/kanata";
     "git/config".text = ''
       [user]
         name = ${currentGit.name}

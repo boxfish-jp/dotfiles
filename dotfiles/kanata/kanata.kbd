@@ -1,0 +1,12 @@
+(defcfg
+  process-unmapped-keys yes
+  danger-enable-cmd yes
+)
+
+(defsrc
+  caps muhenkan henkan
+)
+
+(deflayer base
+  esc lmet (cmd "vicinae" "toggle")
+)
