@@ -34,6 +34,13 @@ in
   home.homeDirectory = "/home/${username}";
   home.stateVersion = "25.11";
 
+  nix = {
+   package = pkgs.nix;
+   extraOptions = ''
+    experimental-features = nix-command flakes
+   '';
+  };
+
   home.packages = with pkgs; [
     neovim git curl lazygit fzf ripgrep fd wl-clipboard
     gnumake pkg-config clang hackgen-nf-font
@@ -49,10 +56,8 @@ in
     cmake
     yt-dlp
     kanata-with-cmd
-    google-chrome
     discord
     spotify
-    vscode
     ncdu
     vlc
   ];
@@ -63,19 +68,40 @@ in
 
   home.sessionPath = [ "$ANDROID_HOME/platform-tools" ];
 
-  systemd.user.services.kanata = {
-    Unit = {
-      Description = "Kanata keyboard remapper (with cmd)";
-      After = [ "graphical-session.target" ];
-      PartOf = [ "graphical-session.target" ];
+  systemd.user.services= {
+    kanata = {
+      Unit = {
+        Description = "Kanata keyboard remapper (with cmd)";
+        After = [ "graphical-session.target" ];
+        PartOf = [ "graphical-session.target" ];
+      };
+      Service = {
+        ExecStart = "${kanata-with-cmd}/bin/kanata --cfg %h/.config/kanata/kanata.kbd";
+        Restart = "on-failure";
+        RestartSec = "2s";
+      };
+      Install = {
+        WantedBy = [ "graphical-session.target" ];
+      };
     };
-    Service = {
-      ExecStart = "${kanata-with-cmd}/bin/kanata --cfg %h/.config/kanata/kanata.kbd";
-      Restart = "on-failure";
-      RestartSec = "2s";
-    };
-    Install = {
-      WantedBy = [ "graphical-session.target" ];
+
+    qpwgraph = {
+      Unit = {
+        Description = "PipeWire Graph Qt GUI (qpwgraph)";
+        After = [ "graphical-session.target" "pipewire.service" ];
+        PartOf = [ "graphical-session.target" ];
+      };
+      Service = {
+        Type = "simple";
+        ExecStart = "${pkgs.qpwgraph}/bin/qpwgraph -m";
+        Environment = [
+          "WAYLAND_DISPLAY=wayland-0"
+          "XDG_RUNTIME_DIR=%t"
+        ];
+      };
+      Install = {
+        WantedBy = [ "graphical-session.target" ];
+      };
     };
   };
 

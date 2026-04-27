@@ -15,7 +15,7 @@ padding.y = 14
 dimensions.columns = 121
 dimensions.lines = 40
 decorations = "none"
-opacity = 0.85
+opacity = 0.8
 blur = true
 
 [font]
