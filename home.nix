@@ -54,6 +54,7 @@ in
     spotify
     vscode
     ncdu
+    vlc
   ];
 
   home.sessionVariables = {
