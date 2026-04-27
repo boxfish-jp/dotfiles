@@ -49,6 +49,10 @@ in
     cmake
     yt-dlp
     kanata-with-cmd
+    google-chrome
+    discord
+    spotify
+    vscode
   ];
 
   home.sessionVariables = {
