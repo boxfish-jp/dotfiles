@@ -53,6 +53,7 @@ in
     discord
     spotify
     vscode
+    ncdu
   ];
 
   home.sessionVariables = {
