@@ -69,7 +69,6 @@ in
       alacritty-wrapped
       pnpm
       uv
-      podman
       qpwgraph
       gh
       ffmpeg-wrapped
@@ -85,12 +84,10 @@ in
       rustc
     ];
 
-    home = {
-      sessionVariables = {
-        NIXOS_OZONE_WL = "1";
-      };
-      sessionPath = [ "$ANDROID_HOME/platform-tools" ];
+    sessionVariables = {
+      NIXOS_OZONE_WL = "1";
     };
+    sessionPath = [ "$ANDROID_HOME/platform-tools" ];
 
     file.".bashrc".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/bashrc";
