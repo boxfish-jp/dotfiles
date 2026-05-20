@@ -182,6 +182,16 @@ in
       package = vicinae-wrapped;
     };
 
+    streaming-kit-cli = {
+      enable = true;
+
+      workDir = "~/dev/";
+      serverUrl = "http://192.168.68.11:8888";
+
+      systemd.enable = true;
+      systemd.serviceName = "streaming-kit";
+    };
+
     plasma = {
       enable = true;
       kwin = {

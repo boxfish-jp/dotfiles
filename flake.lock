@@ -18,6 +18,24 @@
         "type": "github"
       }
     },
+    "flake-utils_2": {
+      "inputs": {
+        "systems": "systems_2"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -104,7 +122,47 @@
         "nixgl": "nixgl",
         "nixpkgs": "nixpkgs",
         "plasma-manager": "plasma-manager",
+        "streaming-kit-cli": "streaming-kit-cli",
         "vicinae": "vicinae"
+      }
+    },
+    "streaming-kit-cli": {
+      "inputs": {
+        "flake-utils": "flake-utils_2",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "streaming-kit-cli-src": "streaming-kit-cli-src"
+      },
+      "locked": {
+        "lastModified": 1779289175,
+        "narHash": "sha256-va8DCR+U8a4vyFF5r8rXl1oJeEVDZDFEnOMXfYFgZZ8=",
+        "owner": "boxfish-jp",
+        "repo": "streamingkit",
+        "rev": "34f0bd7d0c91dcf78cbb05627d44e145b2bfddc2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "boxfish-jp",
+        "repo": "streamingkit",
+        "type": "github"
+      }
+    },
+    "streaming-kit-cli-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1777385341,
+        "narHash": "sha256-fpNKfAn9sTNWQL8tYDaWj9E68+OeFVSnFdhv+Vyyems=",
+        "owner": "boxfish-jp",
+        "repo": "streamingkit",
+        "rev": "9798d1a995fe1e87cb90181a2a7e3b8661db9dba",
+        "type": "github"
+      },
+      "original": {
+        "owner": "boxfish-jp",
+        "ref": "v1.0.1",
+        "repo": "streamingkit",
+        "type": "github"
       }
     },
     "systems": {
@@ -137,12 +195,27 @@
         "type": "github"
       }
     },
+    "systems_3": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
     "vicinae": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
         ],
-        "systems": "systems_2"
+        "systems": "systems_3"
       },
       "locked": {
         "lastModified": 1777243295,
