@@ -82,6 +82,7 @@ in
       vlc
       cargo
       rustc
+      krita
     ];
 
     sessionVariables = {
