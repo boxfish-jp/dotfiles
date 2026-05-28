@@ -1,12 +1,12 @@
 {
+  description = "NixOS configuration with stable and unstable packages";
+
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    # Main channel (latest packages, unstable)
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
     home-manager = {
       url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    nixgl = {
-      url = "github:nix-community/nixGL";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     vicinae = {
@@ -24,49 +24,39 @@
     };
   };
 
-  outputs =
-    {
-      self,
-      nixpkgs,
+  outputs = inputs@{ self, nixpkgs, 
       home-manager,
-      nixgl,
       vicinae,
       plasma-manager,
       streaming-kit-cli,
-    }:
+ ... }:
     let
       system = "x86_64-linux";
-      pkgs = import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-      };
-      hosts = {
-        "laptop" = {
-          username = "laptop";
-        };
-        "boxfish" = {
-          username = "boxfish";
-        };
-      };
-      commonModules = [
-        ./home.nix
-        vicinae.homeManagerModules.default
-        plasma-manager.homeManagerModules.plasma-manager
-        streaming-kit-cli.homeManagerModules.default
-      ];
     in
     {
-      homeConfigurations = builtins.mapAttrs (
-        hostname: hostConfig:
-        home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-          extraSpecialArgs = {
-            inherit nixgl system;
-            username = hostConfig.username;
-            hostname = hostname;
-          };
-          modules = commonModules;
+      nixosConfigurations = {
+        boxfish = nixpkgs.lib.nixosSystem {
+	inherit system;
+          modules = [
+        ./configuration.nix
+ 	home-manager.nixosModules.home-manager
+        {
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+          home-manager.extraSpecialArgs = {
+	    inherit inputs;
+	    username = "boxfish";
+            hostname = "boxfish";
+	  };
+          home-manager.users.boxfish = ./home.nix;
+	  home-manager.sharedModules = [
+            vicinae.homeManagerModules.default
+            plasma-manager.homeManagerModules.plasma-manager
+            streaming-kit-cli.homeManagerModules.default
+	  ];
         }
-      ) hosts;
+      ];
+      };
     };
+  };
 }

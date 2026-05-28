@@ -1,29 +1,12 @@
 {
   config,
   pkgs,
-  nixgl,
-  system,
   username,
   hostname,
   ...
 }:
 let
-  nixGL = nixgl.packages.${system}.nixGLDefault;
 
-  alacritty-wrapped = pkgs.writeShellScriptBin "alacritty" ''
-    exec ${nixGL}/bin/nixGL ${pkgs.alacritty}/bin/alacritty "$@"
-  '';
-  vicinae-wrapped = pkgs.writeShellScriptBin "vicinae" ''
-    exec ${nixGL}/bin/nixGL ${pkgs.vicinae}/bin/vicinae "$@"
-  '';
-  ffmpeg-wrapped = pkgs.writeShellScriptBin "ffmpeg" ''
-    exec ${nixGL}/bin/nixGL ${
-      pkgs.ffmpeg.override {
-        withVaapi = true;
-        withVpl = true;
-      }
-    }/bin/ffmpeg "$@"
-  '';
   kanata-with-cmd = pkgs.kanata.override { withCmd = true; };
 
   gitIdentities = {
@@ -40,18 +23,12 @@ let
   currentGit = gitIdentities.${hostname} or gitIdentities."boxfish";
 in
 {
-  nix = {
-    package = pkgs.nix;
-    extraOptions = ''
-      experimental-features = nix-command flakes
-    '';
-  };
-
   home = {
     inherit username;
     homeDirectory = "/home/${username}";
     stateVersion = "25.11";
     packages = with pkgs; [
+      firefox
       neovim
       git
       curl
@@ -66,12 +43,12 @@ in
       hackgen-nf-font
       starship
       zellij
-      alacritty-wrapped
+      alacritty
       pnpm
       uv
       qpwgraph
       gh
-      ffmpeg-wrapped
+      ffmpeg
       gdb
       cmake
       yt-dlp
@@ -83,15 +60,13 @@ in
       cargo
       rustc
       krita
+      vscode
+      google-chrome
+      osu-lazer
     ];
 
-    sessionVariables = {
-      NIXOS_OZONE_WL = "1";
-    };
-    sessionPath = [ "$ANDROID_HOME/platform-tools" ];
-
     file.".bashrc".source =
-      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/bashrc";
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/dotfiles/bashrc";
   };
 
   systemd.user.services = {
@@ -136,14 +111,16 @@ in
 
   xdg = {
     configFile = {
+      "fcitx5".source =
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/dotfiles/fcitx5";
       "nvim".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/nvim";
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/dotfiles/nvim";
       "alacritty".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/alacritty";
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/dotfiles/alacritty";
       "zellij".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/zellij";
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/dotfiles/zellij";
       "kanata".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/kanata";
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/dotfiles/kanata";
       "git/config".text = ''
         [user]
           name = ${currentGit.name}
@@ -161,13 +138,13 @@ in
 
     dataFile = {
       "vicinae/scripts".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/vicinae/scripts";
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/dotfiles/vicinae/scripts";
       "applications/alacritty.desktop".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/applications/alacritty.desktop";
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/dotfiles/applications/alacritty.desktop";
       "icons/alacritty.png".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/icons/alacritty.png";
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/dotfiles/icons/alacritty.png";
       "kwin/scripts/krohnkite".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/dotfiles/kde_plasma/kwin/scripts/krohnkite";
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/dotfiles/kde_plasma/kwin/scripts/krohnkite";
     };
   };
 
@@ -177,9 +154,7 @@ in
       systemd = {
         enable = true;
         autoStart = true;
-        target = "graphical-session.target";
       };
-      package = vicinae-wrapped;
     };
 
     streaming-kit-cli = {
