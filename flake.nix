@@ -18,45 +18,50 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
-    streaming-kit-cli = {
+    streaming-kit = {
       url = "github:boxfish-jp/streamingkit";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, 
+  outputs =
+    inputs@{
+      self,
+      nixpkgs,
       home-manager,
       vicinae,
       plasma-manager,
-      streaming-kit-cli,
- ... }:
+      streaming-kit,
+      ...
+    }:
     let
       system = "x86_64-linux";
     in
     {
       nixosConfigurations = {
         boxfish = nixpkgs.lib.nixosSystem {
-	inherit system;
+          inherit system;
           modules = [
-        ./configuration.nix
- 	home-manager.nixosModules.home-manager
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = {
-	    inherit inputs;
-	    username = "boxfish";
-            hostname = "boxfish";
-	  };
-          home-manager.users.boxfish = ./home.nix;
-	  home-manager.sharedModules = [
-            vicinae.homeManagerModules.default
-            plasma-manager.homeManagerModules.plasma-manager
-            streaming-kit-cli.homeManagerModules.default
-	  ];
-        }
-      ];
+            ./configuration.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = {
+                inherit inputs;
+                username = "boxfish";
+                hostname = "boxfish";
+              };
+              home-manager.users.boxfish = ./home.nix;
+              home-manager.sharedModules = [
+                vicinae.homeManagerModules.default
+                plasma-manager.homeManagerModules.plasma-manager
+                streaming-kit.homeManagerModules.streaming-kit-cli
+                streaming-kit.homeManagerModules.streaming-kit-desktop
+              ];
+            }
+          ];
+        };
       };
     };
-  };
 }

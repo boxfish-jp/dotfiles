@@ -25,11 +25,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1779726696,
-        "narHash": "sha256-/p37CB5n6Wpw250b0Lq0CYwNq2D8uGKzDoBulyLcQqA=",
+        "lastModified": 1779969295,
+        "narHash": "sha256-HwIJ3tOcwSMiV75L7KqJXciXR9UfT+d7rwOZMX7cTnA=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "1a95e2efb477959b70b4a14c51035975c0481df6",
+        "rev": "61e2c9659324181e0f0ed911958c536333b1d4f6",
         "type": "github"
       },
       "original": {
@@ -82,45 +82,27 @@
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
         "plasma-manager": "plasma-manager",
-        "streaming-kit-cli": "streaming-kit-cli",
+        "streaming-kit": "streaming-kit",
         "vicinae": "vicinae"
       }
     },
-    "streaming-kit-cli": {
+    "streaming-kit": {
       "inputs": {
         "flake-utils": "flake-utils",
         "nixpkgs": [
           "nixpkgs"
-        ],
-        "streaming-kit-cli-src": "streaming-kit-cli-src"
+        ]
       },
       "locked": {
-        "lastModified": 1779294641,
-        "narHash": "sha256-jq6IpdJbUvYw2/KpbXsomeqvrfYF87+yd8CCJdXQrhA=",
+        "lastModified": 1780067725,
+        "narHash": "sha256-2flX1TAMjJ+0QCFlPehCU6xnNVDZ5kYYGpCYNi0rNPk=",
         "owner": "boxfish-jp",
         "repo": "streamingkit",
-        "rev": "c43cff6d03443356200694a3ab230eda1c1fe3a8",
+        "rev": "eaacc8b140b472b90ad3ad01a61204f7ce3dd9a2",
         "type": "github"
       },
       "original": {
         "owner": "boxfish-jp",
-        "repo": "streamingkit",
-        "type": "github"
-      }
-    },
-    "streaming-kit-cli-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1777385341,
-        "narHash": "sha256-fpNKfAn9sTNWQL8tYDaWj9E68+OeFVSnFdhv+Vyyems=",
-        "owner": "boxfish-jp",
-        "repo": "streamingkit",
-        "rev": "9798d1a995fe1e87cb90181a2a7e3b8661db9dba",
-        "type": "github"
-      },
-      "original": {
-        "owner": "boxfish-jp",
-        "ref": "v1.0.1",
         "repo": "streamingkit",
         "type": "github"
       }
@@ -163,11 +145,11 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1779832601,
-        "narHash": "sha256-/dtn1sOTEcb/rNInzkdnK8PNIIDfQi7fEJfQEq+Is4g=",
+        "lastModified": 1780056607,
+        "narHash": "sha256-sWKY9+u6WATiWuDz9bvKkC6VxQ3QtKdfvmdZwVOEVQY=",
         "owner": "vicinaehq",
         "repo": "vicinae",
-        "rev": "dc1f7d47725c68debdb31be26781a96c14bac059",
+        "rev": "172a29ab9be05961dc355121e85d65a778cbda4c",
         "type": "github"
       },
       "original": {

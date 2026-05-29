@@ -185,7 +185,14 @@ in
       serverUrl = "http://192.168.68.11:8888";
 
       systemd.enable = true;
-      systemd.serviceName = "streaming-kit";
+      systemd.serviceName = "streaming-kit-cli";
+    };
+
+    streaming-kit-desktop = {
+      enable = true;
+
+      systemd.enable = true;
+      systemd.serviceName = "streaming-kit-desktop";
     };
 
     plasma = {
