@@ -63,6 +63,7 @@ in
       vscode
       google-chrome
       osu-lazer
+      davinci-resolve
     ];
 
     file.".bashrc".source =
