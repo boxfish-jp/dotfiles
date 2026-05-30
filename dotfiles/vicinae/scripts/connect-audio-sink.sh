@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash 
 # @vicinae.schemaVersion 1
 # @vicinae.title connect-audio
 # @vicinae.mode silent
