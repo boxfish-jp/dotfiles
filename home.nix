@@ -1,6 +1,7 @@
 {
   config,
   pkgs,
+  lib,
   username,
   hostname,
   ...
@@ -152,7 +153,7 @@ in
           editor = nvim 
         [credential "https://github.com"]
           helper = 
-          helper = !${config.home.homeDirectory}/.nix-profile/bin/gh auth git-credential
+          helper = !${lib.getExe pkgs.gh} auth git-credential
       '';
 
     };
