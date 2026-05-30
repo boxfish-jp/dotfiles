@@ -97,6 +97,7 @@
     fcitx5.addons = with pkgs; [
       fcitx5-mozc
     ];
+    fcitx5.waylandFrontend = true;
   };
   i18n.extraLocaleSettings = {
     LC_ADDRESS = "ja_JP.UTF-8";
