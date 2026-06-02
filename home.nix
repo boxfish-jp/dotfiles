@@ -66,6 +66,7 @@ in
       osu-lazer
       davinci-resolve
       podman-compose
+      nodejs_24
     ];
 
     file.".bashrc".source =
