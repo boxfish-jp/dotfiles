@@ -14,52 +14,55 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  /*
-    fileSystems."/mnt/ext4-ssd" = {
-      device = "/dev/disk/by-uuid/a5409329-4ec1-46a7-8966-b61994048e9a";
-      fsType = "ext4";
-      options = [
-        "users"
-        "nofail"
-      ];
-    };
+  fileSystems."/mnt/ext4-ssd" = {
+    device = "/dev/disk/by-uuid/a5409329-4ec1-46a7-8966-b61994048e9a";
+    fsType = "ext4";
+    options = [
+      "users"
+      "nofail"
+      "exec"
+    ];
+  };
 
-    fileSystems."/mnt/windows" = {
-      device = "/dev/disk/by-uuid/C49E52179E5201FA";
-      fsType = "ntfs";
-      options = [
-        "users"
-        "nofail"
-      ];
-    };
+  fileSystems."/mnt/windows" = {
+    device = "/dev/disk/by-uuid/C49E52179E5201FA";
+    fsType = "ntfs3";
+    options = [
+      "users"
+      "nofail"
+      "exec"
+      "uid=1000"
+      "gid=100"
+      "umask=022"
+    ];
+  };
 
-    fileSystems."/home/boxfish/.local/share/Steam/steamapps" = {
-      depends = [
-        # The mounts above have to be mounted in this given order
-        "/"
-        "/mnt/ext4-ssd"
-      ];
-      device = "/mnt/ext4-ssd/steamapps";
-      fsType = "none";
-      options = [
-        "bind"
-      ];
-    };
+  fileSystems."/home/boxfish/.local/share/Steam/steamapps" = {
+    depends = [
+      # The mounts above have to be mounted in this given order
+      "/"
+      "/mnt/ext4-ssd"
+    ];
+    device = "/mnt/ext4-ssd/steamapps";
+    fsType = "none";
+    options = [
+      "bind"
+    ];
+  };
 
-    fileSystems."/mnt/windows/steam/steamapps/compatdata" = {
-      depends = [
-        # The mounts above have to be mounted in this given order
-        "/"
-        "/mnt/ext4-ssd"
-        "/mnt/windows"
-      ];
-      device = "/mnt/ext4-ssd/steamapps/compatdata";
-      fsType = "none";
-      options = [
-        "bind"
-      ];
-    };
-  */
+  fileSystems."/mnt/windows/steam/steamapps/compatdata" = {
+    depends = [
+      # The mounts above have to be mounted in this given order
+      "/"
+      "/mnt/ext4-ssd"
+      "/mnt/windows"
+    ];
+    device = "/mnt/ext4-ssd/steamapps/compatdata";
+    fsType = "none";
+    options = [
+      "bind"
+    ];
+  };
 
   networking.hostName = "boxfish"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.

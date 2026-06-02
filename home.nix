@@ -65,6 +65,7 @@ in
       google-chrome
       osu-lazer
       davinci-resolve
+      podman-compose
     ];
 
     file.".bashrc".source =
