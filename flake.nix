@@ -4,6 +4,7 @@
   inputs = {
     # Main channel (latest packages, unstable)
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=latest";
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -28,6 +29,7 @@
     inputs@{
       self,
       nixpkgs,
+      nix-flatpak,
       home-manager,
       vicinae,
       plasma-manager,
@@ -56,6 +58,7 @@
               home-manager.sharedModules = [
                 vicinae.homeManagerModules.default
                 plasma-manager.homeManagerModules.plasma-manager
+		nix-flatpak.homeManagerModules.nix-flatpak
                 streaming-kit.homeManagerModules.streaming-kit-cli
                 streaming-kit.homeManagerModules.streaming-kit-desktop
               ];

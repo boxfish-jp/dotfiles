@@ -63,7 +63,6 @@ in
       krita
       vscode
       google-chrome
-      osu-lazer
       davinci-resolve
       podman-compose
       nodejs_24
@@ -171,6 +170,23 @@ in
         config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/dotfiles/kde_plasma/kwin/scripts/krohnkite";
     };
   };
+
+    services.flatpak.remotes = lib.mkOptionDefault [{
+      name = "flathub-beta";
+      location = "https://flathub.org/beta-repo/flathub-beta.flatpakrepo";
+    }];
+
+    services.flatpak.update.auto.enable = true;
+    services.flatpak.uninstallUnmanaged = true;
+
+    # Add here the flatpaks you want to install
+    services.flatpak.packages = [
+      #{ appId = "com.brave.Browser"; origin = "flathub"; }
+      #"com.obsproject.Studio"
+      #"im.riot.Riot"
+      "sh.ppy.osu"
+    ];
+
 
   programs = {
     vicinae = {
