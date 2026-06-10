@@ -145,6 +145,4 @@
       };
     };
   };
-
-  xdg.dataFile."kwin/scripts/krohnkite".source = ./kwin/scripts/krohnkite;
 }

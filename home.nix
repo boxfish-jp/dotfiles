@@ -61,6 +61,7 @@
       podman-compose
       nodejs_24
       voicevox
+      kdePackages.krohnkite
     ];
 
     file.".bashrc".source = ./bashrc;
