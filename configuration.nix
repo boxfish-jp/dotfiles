@@ -185,6 +185,7 @@
     #  wget
     # neovim
     qemu
+    quickemu
   ];
 
   fonts = {
