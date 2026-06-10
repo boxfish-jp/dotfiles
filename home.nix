@@ -22,14 +22,14 @@ let
 in
 {
   imports = [
-    ./kanata/kanata.nix
-    ./flatpak/flatpak.nix
-    ./qpwgraph/qpwgraph.nix
-    ./obs/obs.nix
-    ./streaming/streaming.nix
-    ./vicinae/vicinae.nix
-    ./nvim/nvim.nix
-    ./kde_plasma/plasma.nix
+    ./kanata
+    ./flatpak
+    ./qpwgraph
+    ./obs
+    ./streaming
+    ./vicinae
+    ./nvim
+    ./kde_plasma
   ];
   home = {
     inherit username;
