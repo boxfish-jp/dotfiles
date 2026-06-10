@@ -19,6 +19,7 @@
     ./fcitx5
     ./alacritty
     ./pipewire
+    ./zellij
     ./git
   ];
   home = {
