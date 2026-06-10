@@ -27,7 +27,6 @@
     homeDirectory = "/home/${username}";
     stateVersion = "25.11";
     packages = with pkgs; [
-      firefox
       git
       curl
       lazygit
