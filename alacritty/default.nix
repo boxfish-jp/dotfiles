@@ -5,7 +5,8 @@
   username,
   hostname,
   ...
-}:{
+}:
+{
   home.packages = [
     pkgs.alacritty
   ];

@@ -1,4 +1,5 @@
-{config, pkgs, ... }: {
+{ config, pkgs, ... }:
+{
   programs.vicinae = {
     enable = true;
     systemd = {
@@ -7,7 +8,6 @@
     };
   };
   xdg.dataFile = {
-    "vicinae/scripts".source =
-      ./scripts;
+    "vicinae/scripts".source = ./scripts;
   };
 }

@@ -40,6 +40,7 @@
       system = "x86_64-linux";
     in
     {
+      formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-tree;
       nixosConfigurations = {
         boxfish = nixpkgs.lib.nixosSystem {
           inherit system;
@@ -58,7 +59,7 @@
               home-manager.sharedModules = [
                 vicinae.homeManagerModules.default
                 plasma-manager.homeManagerModules.plasma-manager
-		nix-flatpak.homeManagerModules.nix-flatpak
+                nix-flatpak.homeManagerModules.nix-flatpak
                 streaming-kit.homeManagerModules.streaming-kit-cli
                 streaming-kit.homeManagerModules.streaming-kit-desktop
               ];

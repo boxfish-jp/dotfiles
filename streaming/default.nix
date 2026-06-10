@@ -3,7 +3,8 @@
   pkgs,
   lib,
   ...
-}: {
+}:
+{
   programs = {
     streaming-kit-cli = {
       enable = true;

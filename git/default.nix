@@ -22,15 +22,15 @@ let
 in
 {
   xdg.configFile."git/config".text = ''
-        [user]
-          name = ${currentGit.name}
-          email = ${currentGit.email}
-        [init]
-          defaultBranch = main
-        [core]
-          editor = nvim 
-        [credential "https://github.com"]
-          helper = 
-          helper = !${lib.getExe pkgs.gh} auth git-credential
-      '';
+    [user]
+      name = ${currentGit.name}
+      email = ${currentGit.email}
+    [init]
+      defaultBranch = main
+    [core]
+      editor = nvim
+    [credential "https://github.com"]
+      helper = 
+      helper = !${lib.getExe pkgs.gh} auth git-credential
+  '';
 }
