@@ -236,6 +236,9 @@
   # services.openssh.enable = true;
   services.flatpak.enable = true;
 
+  security.pki.certificateFiles = [
+    ./certificate/pve-root-ca.pem
+  ];
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
