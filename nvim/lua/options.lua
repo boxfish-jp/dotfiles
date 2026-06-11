@@ -28,7 +28,7 @@ do
 
   -- 新しい分割ウィンドウの開き方を設定する（右側と下側に開く）
   vim.o.splitright = true
-  vim.o.splitbelow = true
+  vim.o.splitbelow = false
 
   -- エディタ内で特定の空白文字をどのように表示するかを設定します。
   -- 詳細は `:help 'list'`
