@@ -38,24 +38,23 @@
     }:
     let
       system = "x86_64-linux";
-    in
-    {
-      formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-tree;
-      nixosConfigurations = {
-        boxfish = nixpkgs.lib.nixosSystem {
+      mkHost =
+        {
+          hostname,
+          username ? hostname,
+        }:
+        nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
-            ./configuration.nix
+            ./hosts/${hostname}/configuration.nix
             home-manager.nixosModules.home-manager
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
               home-manager.extraSpecialArgs = {
-                inherit inputs;
-                username = "boxfish";
-                hostname = "boxfish";
+                inherit inputs hostname username;
               };
-              home-manager.users.boxfish = ./home.nix;
+              home-manager.users.${username} = ./hosts/${hostname}/home.nix;
               home-manager.sharedModules = [
                 vicinae.homeManagerModules.default
                 plasma-manager.homeManagerModules.plasma-manager
@@ -66,6 +65,12 @@
             }
           ];
         };
+    in
+    {
+      formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-tree;
+      nixosConfigurations = {
+        laptop = mkHost { hostname = "laptop"; };
+        boxfish = mkHost { hostname = "boxfish"; };
       };
     };
 }

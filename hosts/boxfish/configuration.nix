@@ -237,7 +237,7 @@
   services.flatpak.enable = true;
 
   security.pki.certificateFiles = [
-    ./certificate/pve-root-ca.pem
+    ../../certificate/pve-root-ca.pem
   ];
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
