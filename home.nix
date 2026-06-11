@@ -23,13 +23,12 @@
     ./zellij
     ./git
     ./video_editor
+    ./bash
   ];
   home = {
     inherit username;
     homeDirectory = "/home/${username}";
     stateVersion = "25.11";
-
-    file.".bashrc".source = ./bashrc;
   };
 
   programs.home-manager.enable = true;
