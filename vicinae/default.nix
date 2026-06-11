@@ -8,6 +8,7 @@
     };
   };
   xdg.dataFile = {
-    "vicinae/scripts".source = ./scripts;
+    "vicinae/scripts".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/vicinae/scripts";
   };
 }
