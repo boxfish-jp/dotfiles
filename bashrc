@@ -131,3 +131,6 @@ esac
 # pnpm end
 #
 export PATH="$HOME/.local/bin:$PATH"
+
+alias nrt="sudo nixos-rebuild test --flake ."
+alias nrs="sudo nixos-rebuild switch --flake ."
