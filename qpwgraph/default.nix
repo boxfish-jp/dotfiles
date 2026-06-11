@@ -5,6 +5,9 @@
   ...
 }:
 {
+  home.packages = with pkgs; [
+    qpwgraph
+  ];
   systemd.user.services.qpwgraph = {
     Unit = {
       Description = "PipeWire Graph Qt GUI (qpwgraph)";

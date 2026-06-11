@@ -42,7 +42,6 @@
       starship
       pnpm
       uv
-      qpwgraph
       gh
       ffmpeg
       gdb
