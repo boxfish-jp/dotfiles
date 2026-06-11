@@ -21,6 +21,7 @@
     ./pipewire
     ./zellij
     ./git
+    ./video_editor
   ];
   home = {
     inherit username;
@@ -56,10 +57,8 @@
       krita
       vscode
       google-chrome
-      davinci-resolve
       podman-compose
       nodejs_24
-      voicevox
       kdePackages.krohnkite
     ];
 
