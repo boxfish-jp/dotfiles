@@ -5,7 +5,7 @@ do
   vim.opt.relativenumber = true
 
   -- マウスモードを有効化（例えば、ウィンドウ分割のリサイズなどに役立ちます！）
-  vim.o.mouse = 'a'
+  vim.o.mouse = "a"
 
   -- 行折り返し時のインデントを有効化
   -- vim.o.breakindent = false
@@ -18,7 +18,7 @@ do
   vim.o.smartcase = true
 
   -- デフォルトでサインカラム（行番号の横の記号表示欄）を表示したままにする
-  vim.o.signcolumn = 'yes'
+  vim.o.signcolumn = "yes"
 
   -- 更新時間を短縮する（入力待機などの反応を良くする）
   vim.o.updatetime = 250
@@ -39,10 +39,10 @@ do
   -- 詳細は `:help lua-options`
   -- および `:help lua-guide-options` を参照
   vim.o.list = true
-  vim.opt.listchars = { tab = '» ' }
+  vim.opt.listchars = { tab = "» " }
 
   -- 入力中に置換結果をリアルタイムでプレビューする！
-  vim.o.inccommand = 'split'
+  vim.o.inccommand = "split"
 
   -- カーソルが現在どの行にあるかを表示する（カーソル行をハイライト）
   vim.o.cursorline = true

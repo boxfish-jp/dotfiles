@@ -18,7 +18,7 @@ in
     viAlias = true;
     vimAlias = true;
     sideloadInitLua = true;
-    plugins = with pkgs.vimPlugins; [ 
+    plugins = with pkgs.vimPlugins; [
       nvim-treesitter
       vimdoc-ja
       bufferline-nvim
@@ -26,7 +26,15 @@ in
       which-key-nvim
       flash-nvim
       snacks-nvim
+      mini-starter
+      yanky-nvim
+      neo-tree-nvim
+      noice-nvim
+      lualine-nvim
+      grug-far-nvim
+      gitsigns-nvim
     ];
   };
-  xdg.configFile."nvim".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/nvim";
+  xdg.configFile."nvim".source =
+    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/nvim";
 }
