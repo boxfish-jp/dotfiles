@@ -38,10 +38,21 @@ in
       lualine-nvim
       grug-far-nvim
       gitsigns-nvim
-      (nvim-treesitter.withPlugins (p: with p; [
-        tree-sitter-python
-        tree-sitter-nix
-      ]))
+      trouble-nvim
+      todo-comments-nvim
+      nvim-web-devicons
+      mini-icons
+      mini-pairs
+      ts-comments-nvim
+      mini-ai
+      orgmode
+      (nvim-treesitter.withPlugins (
+        p: with p; [
+          tree-sitter-python
+          tree-sitter-nix
+        ]
+      ))
+      nvim-treesitter-parsers.regex
     ];
   };
   xdg.configFile."nvim".source =
