@@ -7,5 +7,12 @@
   ...
 }:
 {
-  home.file.".bashrc".source = ./bashrc;
+  home.file.".mybashrc".source = ./bashrc;
+  programs.bash = {
+    enable = true;
+    initExtra = ''
+      source ~/.profile
+      source ~/.mybashrc
+    '';
+  };
 }
