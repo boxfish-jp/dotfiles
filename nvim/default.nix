@@ -1,5 +1,32 @@
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
+  grammars = with pkgs.tree-sitter-grammars; [
+    tree-sitter-lua
+    tree-sitter-python
+    tree-sitter-typescript
+    tree-sitter-nix
+  ];
+  mkParserEntry = pkg: {
+    name = "nvim/site/parser/${lib.removePrefix "tree-sitter-" pkg.pname}.so";
+    value = {
+      source = "${pkg}/parser";
+    };
+  };
+
+  mkQueriesEntry = pkg: {
+    name = "nvim/site/queries/${lib.removePrefix "tree-sitter-" pkg.pname}";
+    value = {
+      source = "${pkg}/queries";
+    };
+  };
+
+  allEntries = map mkParserEntry grammars ++ map mkQueriesEntry grammars;
+
   vimdoc-ja = pkgs.vimUtils.buildVimPlugin {
     name = "vim-easygrep";
     src = pkgs.fetchFromGitHub {
@@ -37,4 +64,6 @@ in
   };
   xdg.configFile."nvim".source =
     config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/nvim";
+
+  xdg.dataFile = lib.listToAttrs allEntries;
 }
