@@ -46,6 +46,8 @@ in
       ts-comments-nvim
       mini-ai
       orgmode
+      nvim-lspconfig
+      blink-cmp
       (nvim-treesitter.withPlugins (
         p: with p; [
           tree-sitter-python
@@ -53,6 +55,7 @@ in
         ]
       ))
       nvim-treesitter-parsers.regex
+      nvim-treesitter-parsers.cpp
     ];
   };
   xdg.configFile."nvim".source =
