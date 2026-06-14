@@ -48,6 +48,7 @@ in
       orgmode
       nvim-lspconfig
       blink-cmp
+      CopilotChat-nvim
       (nvim-treesitter.withPlugins (
         p: with p; [
           tree-sitter-python
