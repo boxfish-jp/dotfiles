@@ -70,6 +70,10 @@
   services.tailscale.enable = true;
 
   hardware.graphics.enable = true;
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = false;
+  };
 
   # Enable the KDE Plasma Desktop Environment.
   services.displayManager.sddm.enable = true;
@@ -157,6 +161,9 @@
 
   virtualisation = {
     containers.enable = true;
+    waydroid.enable = true;
+    waydroid.package = pkgs.waydroid-nftables;
+
     podman = {
       enable = true;
       dockerCompat = true;
