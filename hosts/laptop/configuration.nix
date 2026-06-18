@@ -134,6 +134,7 @@
     # neovim
     qemu
     quickemu
+    usbutils
   ];
 
   fonts = {
