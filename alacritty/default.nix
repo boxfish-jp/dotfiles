@@ -11,12 +11,5 @@
     pkgs.alacritty
   ];
 
-  xdg = {
-    configFile."alacritty".source = ./.;
-
-    dataFile = {
-      "applications/alacritty.desktop".source = ./alacritty.desktop;
-      "icons/alacritty.png".source = ./alacritty.png;
-    };
-  };
+  xdg.configFile."alacritty".source = ./.;
 }
