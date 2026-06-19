@@ -20,6 +20,7 @@
     ../../zellij
     ../../git
     ../../bash
+    ../../llm
   ];
   home = {
     inherit username;

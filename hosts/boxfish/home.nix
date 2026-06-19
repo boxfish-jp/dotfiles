@@ -23,6 +23,7 @@
     ../../git
     ../../video_editor
     ../../bash
+    ../../llm
   ];
   home = {
     inherit username;

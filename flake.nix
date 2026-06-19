@@ -5,6 +5,7 @@
     # Main channel (latest packages, unstable)
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=latest";
+    llm-agents.url = "github:numtide/llm-agents.nix";
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -30,6 +31,7 @@
       self,
       nixpkgs,
       nix-flatpak,
+      llm-agents,
       home-manager,
       vicinae,
       plasma-manager,
@@ -48,6 +50,11 @@
           modules = [
             ./hosts/${hostname}/configuration.nix
             home-manager.nixosModules.home-manager
+            {
+              nixpkgs.overlays = [
+                llm-agents.overlays.default
+              ];
+            }
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
