@@ -47,6 +47,7 @@ in
       mini-ai
       orgmode
       nvim-lspconfig
+      conform-nvim
       blink-cmp
       CopilotChat-nvim
       (nvim-treesitter.withPlugins (

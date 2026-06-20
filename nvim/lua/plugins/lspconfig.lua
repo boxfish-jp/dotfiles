@@ -1,3 +1,8 @@
+-- nvim-lspconfig の組み込み設定をすべて無効化（必要なものだけ手動で有効にする）
+for server, _ in pairs(require("lspconfig").configurations) do
+  vim.lsp.config(server, { enabled = false })
+end
+
 local icons = {
   Error = "",
   Warn = "",
@@ -71,8 +76,36 @@ vim.lsp.config("clangd", {
   root_markers = { ".clangd", "compile_commands.json", "compile_flags.txt", ".git" },
 })
 
+vim.lsp.config("biome", {
+  cmd = { "biome", "lsp-proxy" },
+  filetypes = {
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "json",
+    "jsonc",
+    "css",
+    "graphql",
+  },
+  root_markers = { "biome.json", "biome.jsonc" },
+})
+
+vim.lsp.config("typescript", {
+  cmd = { "typescript-language-server", "--stdio" },
+  filetypes = {
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+  },
+  root_markers = { "tsconfig.json", "package.json", ".git" },
+})
+
 vim.lsp.enable("copilot")
 vim.lsp.enable("clangd")
+vim.lsp.enable("biome")
+vim.lsp.enable("typescript")
 
 vim.api.nvim_create_autocmd("LspAttach", {
   group = vim.api.nvim_create_augroup("UserLspConfig", {}),
@@ -97,11 +130,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
     -- リネーム
     map("n", "<leader>cr", vim.lsp.buf.rename, opts)
-
-    -- フォーマット
-    map("n", "<leader>cf", function()
-      vim.lsp.buf.format({ async = true })
-    end, opts)
 
     -- インラインヒント（サーバが対応していれば自動有効）
     local client = vim.lsp.get_client_by_id(ev.data.client_id)
