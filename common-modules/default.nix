@@ -7,35 +7,24 @@
 {
   home.packages = with pkgs; [
     git
-    curl
     lazygit
     fzf
     ripgrep
     fd
     wl-clipboard
-    gnumake
-    pkg-config
-    clang
     hackgen-nf-font
     starship
-    pnpm
-    uv
     gh
     ffmpeg
-    gdb
-    cmake
     yt-dlp
     discord
     spotify
     ncdu
     vlc
-    cargo
-    rustc
     krita
     vscode
     google-chrome
     podman-compose
-    nodejs_24
     kdePackages.krohnkite
   ];
 }
