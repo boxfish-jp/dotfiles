@@ -25,6 +25,7 @@ in
     sideloadInitLua = true;
     plugins = with pkgs.vimPlugins; [
       nvim-treesitter
+      cyberdream-nvim
       vimdoc-ja
       bufferline-nvim
       transparent-nvim
@@ -54,6 +55,12 @@ in
         p: with p; [
           tree-sitter-python
           tree-sitter-nix
+          tree-sitter-javascript
+          tree-sitter-typescript
+          tree-sitter-tsx
+          tree-sitter-json
+          tree-sitter-css
+          tree-sitter-html
         ]
       ))
       nvim-treesitter-parsers.regex

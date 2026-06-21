@@ -1,3 +1,4 @@
+require("plugins.colorscheme")
 require("plugins.flash")
 require("plugins.bufferline")
 require("plugins.which-key")
