@@ -184,6 +184,7 @@
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     #  wget
     # neovim
+    podman-compose
     qemu
     quickemu
     usbutils
@@ -194,7 +195,7 @@
       noto-fonts
       noto-fonts-cjk-sans
       noto-fonts-color-emoji
-      hackgen-font
+      hackgen-nf-font
     ];
     fontDir.enable = true;
     fontconfig = {

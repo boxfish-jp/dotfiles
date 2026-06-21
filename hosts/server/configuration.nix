@@ -64,6 +64,7 @@
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     #  wget
     # neovim
+    podman-compose
   ];
 
   virtualisation = {
@@ -82,6 +83,17 @@
       enable = false;
     }
   ];
+
+  fonts = {
+    packages = with pkgs; [
+      noto-fonts
+      noto-fonts-cjk-sans
+      noto-fonts-color-emoji
+      hackgen-nf-font
+    ];
+    fontDir.enable = true;
+  };
+
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;

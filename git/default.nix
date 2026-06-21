@@ -21,6 +21,12 @@ let
   currentGit = gitIdentities.${hostname} or gitIdentities."boxfish";
 in
 {
+  home.packages = with pkgs; [
+    git
+    lazygit
+    gh
+  ];
+
   xdg.configFile."git/config".text = ''
     [user]
       name = ${currentGit.name}

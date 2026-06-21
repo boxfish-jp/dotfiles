@@ -6,15 +6,10 @@
 }:
 {
   home.packages = with pkgs; [
-    git
-    lazygit
     fzf
     ripgrep
     fd
     wl-clipboard
-    hackgen-nf-font
-    starship
-    gh
     ffmpeg
     yt-dlp
     discord
@@ -24,7 +19,6 @@
     krita
     vscode
     google-chrome
-    podman-compose
     kdePackages.krohnkite
   ];
 }
