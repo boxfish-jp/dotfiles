@@ -78,6 +78,7 @@
       nixosConfigurations = {
         laptop = mkHost { hostname = "laptop"; };
         boxfish = mkHost { hostname = "boxfish"; };
+        server = mkHost { hostname = "server"; };
       };
     };
 }
