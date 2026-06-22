@@ -1,0 +1,44 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "opencode": {
+      "models": {
+        "deepseek-v4-flash-free": {
+          "interleaved": { "field": "reasoning_content" }
+        }
+      }
+    }
+  },
+  "permission": {
+    "read": "allow",
+    "edit": "ask",
+    "glob": "allow",
+    "grep": "allow",
+    "list": "allow",
+    "bash": {
+      "ls *": "allow",
+      "grep *": "allow",
+      "list *": "allow",
+      "cd *": "allow",
+      "tree *": "allow",
+      "cat *": "allow",
+      "head *": "allow",
+      "wc *": "allow",
+      "echo *": "allow",
+      "tail *": "allow",
+      "head *": "allow",
+      "sort *": "allow",
+      "rg *": "allow",
+      "*": "ask"
+    },
+    "task": "ask",
+    "external_directory": "ask",
+    "todowrite": "allow",
+    "webfetch": "allow",
+    "websearch": "allow",
+    "lsp": "allow",
+    "skill": "ask",
+    "question": "allow",
+    "doom_loop": "allow"
+  }
+}
