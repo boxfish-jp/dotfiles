@@ -102,10 +102,17 @@ vim.lsp.config("typescript", {
   root_markers = { "tsconfig.json", "package.json", ".git" },
 })
 
+vim.lsp.config("dartls", {
+  cmd = { "dart", "language-server", "--protocol=lsp" },
+  filetypes = { "dart" },
+  root_markers = { "pubspec.yaml", ".git" },
+})
+
 vim.lsp.enable("copilot")
 vim.lsp.enable("clangd")
 vim.lsp.enable("biome")
 vim.lsp.enable("typescript")
+vim.lsp.enable("dartls")
 
 vim.api.nvim_create_autocmd("LspAttach", {
   group = vim.api.nvim_create_augroup("UserLspConfig", {}),

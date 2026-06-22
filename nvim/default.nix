@@ -61,6 +61,7 @@ in
           tree-sitter-json
           tree-sitter-css
           tree-sitter-html
+          tree-sitter-dart
         ]
       ))
       nvim-treesitter-parsers.regex

@@ -13,6 +13,7 @@ local opts = {
     ["Markdown"] = { "textlint" },
     ["json"] = { "biome-check" },
     ["css"] = { "biome-check" },
+    ["dart"] = { "dart_format" },
     ["python"] = {
       "ruff_fix",
       "ruff_format",
