@@ -38,7 +38,7 @@
   # Enable the X11 windowing system.
   # You can disable this if you're only using the Wayland session.
   #services.xserver.enable = true;
-  services.tailscale.enable = true;
+  # services.tailscale.enable = true;
 
   users.users.server = {
     isNormalUser = true;
@@ -74,6 +74,18 @@
       enable = true;
       dockerCompat = true;
       defaultNetwork.settings.dns_enabled = true; # Required for containers under podman-compose to be able to talk to each other.
+    };
+
+    oci-containers = {
+      backend = "podman";
+      containers = {
+        voicevox = {
+          autoStart = true;
+          image = "voicevox/voicevox_engine:cpu-latest";
+          ports = [ "50021:50021" ];
+          extraOptions = [ "--pull=always" ];
+        };
+      };
     };
   };
 
@@ -112,6 +124,7 @@
   ];
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
+  networking.firewall.allowedTCPPorts = [ 50021 ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
