@@ -86,16 +86,6 @@ local opts = {
       },
     },
     lualine_x = {
-      -- Snacksプロファイラー
-      {
-        function()
-          local ok, snacks = pcall(require, "snacks")
-          if ok and snacks.profiler and snacks.profiler.status then
-            return snacks.profiler.status()
-          end
-          return ""
-        end,
-      },
       -- Noiceコマンドステータス
       {
         function()
