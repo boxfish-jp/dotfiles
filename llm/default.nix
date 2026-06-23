@@ -10,5 +10,5 @@
   ];
 
   xdg.configFile."opencode/opencode.jsonc".source =
-    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/opencode/opencode.jsonc";
+    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/llm/opencode/opencode.jsonc";
 }
