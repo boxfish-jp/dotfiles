@@ -68,6 +68,8 @@
                 nix-flatpak.homeManagerModules.nix-flatpak
                 streaming-kit.homeManagerModules.streaming-kit-cli
                 streaming-kit.homeManagerModules.streaming-kit-desktop
+                streaming-kit.homeManagerModules.streaming-kit-hub
+                streaming-kit.homeManagerModules.streaming-kit-voicevox-connector
               ];
             }
           ];
