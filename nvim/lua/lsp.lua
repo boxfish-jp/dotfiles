@@ -1,7 +1,8 @@
--- nvim-lspconfig の組み込み設定をすべて無効化（必要なものだけ手動で有効にする）
-for server, _ in pairs(require("lspconfig").configurations) do
-  vim.lsp.config(server, { enabled = false })
-end
+vim.lsp.enable("copilot")
+vim.lsp.enable("clangd")
+vim.lsp.enable("biome")
+vim.lsp.enable("ts_ls")
+vim.lsp.enable("dartls")
 
 local icons = {
   Error = "",
@@ -69,50 +70,6 @@ vim.lsp.config("copilot", {
     end,
   },
 })
-
-vim.lsp.config("clangd", {
-  cmd = { "clangd" },
-  filetypes = { "c", "cpp", "objc", "objcpp" },
-  root_markers = { ".clangd", "compile_commands.json", "compile_flags.txt", ".git" },
-})
-
-vim.lsp.config("biome", {
-  cmd = { "biome", "lsp-proxy" },
-  filetypes = {
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact",
-    "json",
-    "jsonc",
-    "css",
-    "graphql",
-  },
-  root_markers = { "biome.json", "biome.jsonc" },
-})
-
-vim.lsp.config("typescript", {
-  cmd = { "typescript-language-server", "--stdio" },
-  filetypes = {
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact",
-  },
-  root_markers = { "tsconfig.json", "package.json", ".git" },
-})
-
-vim.lsp.config("dartls", {
-  cmd = { "dart", "language-server", "--protocol=lsp" },
-  filetypes = { "dart" },
-  root_markers = { "pubspec.yaml", ".git" },
-})
-
-vim.lsp.enable("copilot")
-vim.lsp.enable("clangd")
-vim.lsp.enable("biome")
-vim.lsp.enable("typescript")
-vim.lsp.enable("dartls")
 
 vim.api.nvim_create_autocmd("LspAttach", {
   group = vim.api.nvim_create_augroup("UserLspConfig", {}),

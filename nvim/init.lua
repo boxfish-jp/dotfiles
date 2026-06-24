@@ -5,6 +5,7 @@ do
   require("globals")
   require("mappings")
   require("plugins.init")
+  require("lsp")
   vim.schedule(function()
     vim.o.clipboard = "unnamedplus"
   end)
