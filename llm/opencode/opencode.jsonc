@@ -16,6 +16,7 @@
     "grep": "allow",
     "list": "allow",
     "bash": {
+      "*": "ask",
       "ls *": "allow",
       "grep *": "allow",
       "list *": "allow",
@@ -29,7 +30,6 @@
       "head *": "allow",
       "sort *": "allow",
       "rg *": "allow",
-      "*": "ask"
     },
     "task": "ask",
     "external_directory": "ask",
@@ -39,6 +39,6 @@
     "lsp": "allow",
     "skill": "ask",
     "question": "allow",
-    "doom_loop": "allow"
+    "doom_loop": "ask"
   }
 }
