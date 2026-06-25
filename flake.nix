@@ -40,6 +40,7 @@
     }:
     let
       system = "x86_64-linux";
+      pkgs = import nixpkgs { inherit system; };
       mkHost =
         {
           hostname,
@@ -76,7 +77,13 @@
         };
     in
     {
-      formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-tree;
+      formatter.${system} = pkgs.nixfmt-tree;
+      devShell.${system} = pkgs.mkShell {
+        packages = with pkgs; [
+          biome
+          stylua
+        ];
+      };
       nixosConfigurations = {
         laptop = mkHost { hostname = "laptop"; };
         boxfish = mkHost { hostname = "boxfish"; };
