@@ -1,6 +1,7 @@
 import type { Plugin } from "@opencode-ai/plugin";
 
 const lastNotified = new Map<string, number>();
+const idleTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 const notify = async (key: string, text: string) => {
   const now = Date.now();
@@ -14,7 +15,53 @@ const notify = async (key: string, text: string) => {
   fetch(url, { method: "POST" }).catch(() => {});
 };
 
-export const NotifyPlugin: Plugin = async ({ client }) => {
+const cancelIdleTimer = (sessionID: string) => {
+  const existing = idleTimers.get(sessionID);
+  if (existing) {
+    clearTimeout(existing);
+    idleTimers.delete(sessionID);
+  }
+};
+
+const summarize = async (
+  client: any,
+  text: string,
+  directory: string,
+): Promise<string> => {
+  if (text.length <= 20) return text;
+
+  const { data: session } = await client.session.create({
+    body: { title: "notification summary" },
+    query: { directory },
+  });
+  if (!session) return "ひとことで言えないのだ";
+
+  try {
+    const { data: res } = await client.session.prompt({
+      path: { id: session.id },
+      body: {
+        parts: [
+          {
+            type: "text",
+            text: `次のテキストを20字以内で語尾に「のだ」を付けた要約文を作成して:\n\n${text}`,
+          },
+        ],
+      },
+    });
+    if (!res) return "ひとことで言えないのだ";
+
+    const summary = (res.parts as Array<{ type: string; text?: string }>)
+      .filter((p) => p.type === "text" && p.text)
+      .map((p) => p.text!)
+      .join("");
+
+    return summary || "ひとことで言えないのだ";
+  } finally {
+    client.session.delete({ path: { id: session.id } }).catch(() => {});
+  }
+};
+
+export const NotifyPlugin: Plugin = async ({ client, directory }) => {
   await client.app.log({
     body: {
       service: "NotifyPlugin",
@@ -24,12 +71,46 @@ export const NotifyPlugin: Plugin = async ({ client }) => {
   });
   return {
     event: async ({ event }) => {
-      const e = event as { type: string; properties?: Record<string, unknown> };
-      if (e.type === "session.idle") {
-        notify("completed", "作業が完了しました");
+      if (event.type === "session.status") {
+        const { sessionID, status } = event.properties;
+        if (status.type === "idle") {
+          cancelIdleTimer(sessionID);
+          idleTimers.set(
+            sessionID,
+            setTimeout(async () => {
+              try {
+                notify("completed", "応答が完了したのだ");
+                const { data: msgs } = await client.session.messages({
+                  path: { id: sessionID },
+                  query: { limit: 1 },
+                });
+                const last = msgs?.[msgs.length - 1];
+                if (last?.info.role === "assistant") {
+                  const text = (
+                    last.parts as Array<{ type: string; text?: string }>
+                  )
+                    .filter((p) => p.type === "text" && p.text)
+                    .map((p) => p.text!)
+                    .join("");
+                  if (text) {
+                    const summary = await summarize(client, text, directory);
+                    notify("completed", summary);
+                    return;
+                  }
+                }
+                notify("completed", "取得に失敗");
+              } finally {
+                idleTimers.delete(sessionID);
+              }
+            }, 3000),
+          );
+        } else {
+          cancelIdleTimer(sessionID);
+        }
       }
-      if (e.type === "permission.asked") {
-        const props = e.properties as {
+
+      if ((event.type as string) === "permission.asked") {
+        const props = event.properties as {
           permission?: string;
           patterns?: string[];
         };
@@ -46,7 +127,7 @@ export const NotifyPlugin: Plugin = async ({ client }) => {
           default:
             detail = props.permission || "";
         }
-        notify("permission", `${detail}の許可を求めています`);
+        notify("permission", `${detail}の許可が欲しいのだ`);
       }
     },
   };
