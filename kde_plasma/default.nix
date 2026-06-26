@@ -5,6 +5,9 @@
   ...
 }:
 {
+  home.packages = with pkgs; [
+    kara
+  ];
   programs.plasma = {
     enable = true;
     kwin = {
