@@ -32,7 +32,10 @@
       "sort *": "allow",
       "rg *": "allow",
     },
-    "task": "ask",
+    "task": {
+      "*": "deny",
+      "explore": "allow"
+    },
     "external_directory": {
       "*": "ask",
       "/nix/store/**": "allow"
@@ -41,7 +44,7 @@
     "webfetch": "allow",
     "websearch": "allow",
     "lsp": "allow",
-    "skill": "ask",
+    "skill": "allow",
     "question": "allow",
     "doom_loop": "ask"
   }
