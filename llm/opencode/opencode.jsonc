@@ -19,6 +19,7 @@
       "*": "ask",
       "ls *": "allow",
       "grep *": "allow",
+      "find *": "allow",
       "list *": "allow",
       "cd *": "allow",
       "tree *": "allow",
@@ -32,7 +33,10 @@
       "rg *": "allow",
     },
     "task": "ask",
-    "external_directory": "ask",
+    "external_directory": {
+      "*": "ask",
+      "/nix/store/**": "allow"
+    },
     "todowrite": "allow",
     "webfetch": "allow",
     "websearch": "allow",
