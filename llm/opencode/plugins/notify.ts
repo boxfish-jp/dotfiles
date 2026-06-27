@@ -2,6 +2,7 @@ import type { Plugin } from "@opencode-ai/plugin";
 
 const lastNotified = new Map<string, number>();
 const idleTimers = new Map<string, ReturnType<typeof setTimeout>>();
+let busy = false;
 
 const notify = async (key: string, text: string) => {
   const now = Date.now();
@@ -40,6 +41,7 @@ const summarize = async (
     const { data: res } = await client.session.prompt({
       path: { id: session.id },
       body: {
+        variant: "minimal",
         parts: [
           {
             type: "text",
@@ -74,10 +76,12 @@ export const NotifyPlugin: Plugin = async ({ client, directory }) => {
       if (event.type === "session.status") {
         const { sessionID, status } = event.properties;
         if (status.type === "idle") {
+          if (busy) return;
           cancelIdleTimer(sessionID);
           idleTimers.set(
             sessionID,
             setTimeout(async () => {
+              busy = true;
               try {
                 notify("completed", "応答が完了したのだ");
                 const { data: msgs } = await client.session.messages({
@@ -93,13 +97,19 @@ export const NotifyPlugin: Plugin = async ({ client, directory }) => {
                     .map((p) => p.text!)
                     .join("");
                   if (text) {
+                    const start = performance.now();
                     const summary = await summarize(client, text, directory);
-                    notify("completed", summary);
+                    const elapsed = ((performance.now() - start) / 1000).toFixed(1);
+                    client.app.log({
+                      body: { service: "NotifyPlugin", level: "info", message: `summarize took ${elapsed}s` },
+                    }).catch(() => {});
+                    notify("summary", summary);
                     return;
                   }
                 }
                 notify("completed", "取得に失敗");
               } finally {
+                busy = false;
                 idleTimers.delete(sessionID);
               }
             }, 3000),
