@@ -1,6 +1,10 @@
 {
   description = "NixOS configuration with stable and unstable packages";
 
+  nixConfig = {
+    extra-substituters = [ "https://vicinae.cachix.org" ];
+    extra-trusted-public-keys = [ "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc=" ];
+  };
   inputs = {
     # Main channel (latest packages, unstable)
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -13,7 +17,7 @@
     };
     vicinae = {
       url = "github:vicinaehq/vicinae";
-      inputs.nixpkgs.follows = "nixpkgs";
+      # inputs.nixpkgs.follows = "nixpkgs";
     };
     plasma-manager = {
       url = "github:nix-community/plasma-manager";
