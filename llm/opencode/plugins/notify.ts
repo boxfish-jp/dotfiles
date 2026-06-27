@@ -1,5 +1,11 @@
 import type { Plugin } from "@opencode-ai/plugin";
 
+const NOTIFY_THROTTLE_MS = 10_000;
+const IDLE_WAIT_MS = 3_000;
+const SUMMARY_MIN_LENGTH = 20;
+const NOTIFY_CHANNEL = "1";
+const NOTIFY_CHARACTER = "3";
+
 const lastNotified = new Map<string, number>();
 const idleTimers = new Map<string, ReturnType<typeof setTimeout>>();
 let busy = false;
@@ -7,12 +13,12 @@ let busy = false;
 const notify = async (key: string, text: string) => {
   const now = Date.now();
   const last = lastNotified.get(key) ?? 0;
-  if (now - last < 10_000) return;
+  if (now - last < NOTIFY_THROTTLE_MS) return;
   lastNotified.set(key, now);
   const url = new URL("http://192.168.68.16:50020/");
   url.searchParams.set("text", text);
-  url.searchParams.set("channel", "1");
-  url.searchParams.set("character", "3");
+  url.searchParams.set("channel", NOTIFY_CHANNEL);
+  url.searchParams.set("character", NOTIFY_CHARACTER);
   fetch(url, { method: "POST" }).catch(() => {});
 };
 
@@ -24,12 +30,15 @@ const cancelIdleTimer = (sessionID: string) => {
   }
 };
 
+const extractText = (parts: Array<{ type: string; text?: string }>): string =>
+  parts.filter((p) => p.type === "text" && p.text).map((p) => p.text!).join("");
+
 const summarize = async (
   client: any,
   text: string,
   directory: string,
 ): Promise<string> => {
-  if (text.length <= 20) return text;
+  if (text.length <= SUMMARY_MIN_LENGTH) return text;
 
   const { data: session } = await client.session.create({
     body: { title: "notification summary" },
@@ -52,14 +61,40 @@ const summarize = async (
     });
     if (!res) return "ひとことで言えないのだ";
 
-    const summary = (res.parts as Array<{ type: string; text?: string }>)
-      .filter((p) => p.type === "text" && p.text)
-      .map((p) => p.text!)
-      .join("");
+    const summary = extractText(res.parts);
 
     return summary || "ひとことで言えないのだ";
   } finally {
     client.session.delete({ path: { id: session.id } }).catch(() => {});
+  }
+};
+
+const onResponseReady = async (client: any, sessionID: string, directory: string) => {
+  busy = true;
+  try {
+    notify("completed", "応答が完了したのだ");
+    const { data: msgs } = await client.session.messages({
+      path: { id: sessionID },
+      query: { limit: 1 },
+    });
+    const last = msgs?.[msgs.length - 1];
+    if (last?.info.role === "assistant") {
+      const text = extractText(last.parts);
+      if (text) {
+        const start = performance.now();
+        const summary = await summarize(client, text, directory);
+        const elapsed = ((performance.now() - start) / 1000).toFixed(1);
+        client.app.log({
+          body: { service: "NotifyPlugin", level: "info", message: `summarize took ${elapsed}s` },
+        }).catch(() => {});
+        notify("summary", summary);
+        return;
+      }
+    }
+    notify("completed", "取得に失敗");
+  } finally {
+    busy = false;
+    idleTimers.delete(sessionID);
   }
 };
 
@@ -80,39 +115,7 @@ export const NotifyPlugin: Plugin = async ({ client, directory }) => {
           cancelIdleTimer(sessionID);
           idleTimers.set(
             sessionID,
-            setTimeout(async () => {
-              busy = true;
-              try {
-                notify("completed", "応答が完了したのだ");
-                const { data: msgs } = await client.session.messages({
-                  path: { id: sessionID },
-                  query: { limit: 1 },
-                });
-                const last = msgs?.[msgs.length - 1];
-                if (last?.info.role === "assistant") {
-                  const text = (
-                    last.parts as Array<{ type: string; text?: string }>
-                  )
-                    .filter((p) => p.type === "text" && p.text)
-                    .map((p) => p.text!)
-                    .join("");
-                  if (text) {
-                    const start = performance.now();
-                    const summary = await summarize(client, text, directory);
-                    const elapsed = ((performance.now() - start) / 1000).toFixed(1);
-                    client.app.log({
-                      body: { service: "NotifyPlugin", level: "info", message: `summarize took ${elapsed}s` },
-                    }).catch(() => {});
-                    notify("summary", summary);
-                    return;
-                  }
-                }
-                notify("completed", "取得に失敗");
-              } finally {
-                busy = false;
-                idleTimers.delete(sessionID);
-              }
-            }, 3000),
+            setTimeout(() => onResponseReady(client, sessionID, directory), IDLE_WAIT_MS),
           );
         } else {
           cancelIdleTimer(sessionID);
@@ -134,6 +137,7 @@ export const NotifyPlugin: Plugin = async ({ client, directory }) => {
             break;
           case "doom_loop":
             detail = "同じコマンド";
+            break;
           default:
             detail = props.permission || "";
         }
