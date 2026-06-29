@@ -1,7 +1,6 @@
 {
   config,
   pkgs,
-  lib,
   ...
 }:
 {
@@ -9,6 +8,6 @@
     llm-agents.opencode
   ];
 
-  xdg.configFile."opencode/opencode.jsonc".source =
-    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/llm/opencode/opencode.jsonc";
+  xdg.configFile."opencode".source =
+    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/llm/opencode";
 }
