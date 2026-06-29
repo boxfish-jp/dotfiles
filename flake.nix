@@ -86,6 +86,9 @@
         packages = with pkgs; [
           biome
           stylua
+          nixd
+          nixfmt
+          lua-language-server
         ];
       };
       nixosConfigurations = {

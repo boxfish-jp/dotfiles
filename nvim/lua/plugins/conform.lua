@@ -5,6 +5,7 @@ local opts = {
     quiet = false,
     lsp_format = "fallback",
   },
+
   formatters_by_ft = {
     ["javascript"] = { "biome-check" },
     ["javascriptreact"] = { "biome-check" },
@@ -13,6 +14,8 @@ local opts = {
     ["Markdown"] = { "textlint" },
     ["json"] = { "biome-check" },
     ["css"] = { "biome-check" },
+    ["nix"] = {"nixfmt"},
+    ["lua"] = { "stylua" },
   },
   formatters = {
     textlint = {
