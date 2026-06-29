@@ -14,7 +14,7 @@ local opts = {
     ["Markdown"] = { "textlint" },
     ["json"] = { "biome-check" },
     ["css"] = { "biome-check" },
-    ["nix"] = {"nixfmt"},
+    ["nix"] = { "nixfmt" },
     ["lua"] = { "stylua" },
   },
   formatters = {
