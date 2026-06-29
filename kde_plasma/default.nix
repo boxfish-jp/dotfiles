@@ -1,7 +1,5 @@
 {
-  config,
   pkgs,
-  lib,
   ...
 }:
 {
@@ -10,11 +8,19 @@
   ];
   programs.plasma = {
     enable = true;
-    kwin = {
-      virtualDesktops = {
-        number = 6;
-        rows = 1;
+    configFile = {
+      kwinrc = {
+        Desktops = {
+          Number = 6;
+          Rows = 1;
+        };
+        plugins = {
+          krohnkiteEnabled = true;
+          virtualdesktopsonlyonprimaryEnabled = true;
+        };
+        Wayland.InputMethod.value = "/run/current-system/sw/share/applications/org.fcitx.Fcitx5.desktop";
       };
+      kxkbrc.Layout.LayoutList = "jp";
     };
     shortcuts = {
       kwin = {
