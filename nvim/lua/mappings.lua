@@ -57,6 +57,10 @@ do
   -- ノーマルモードで `yap` などを試してみてください
   -- 詳細は `:help vim.hl.on_yank()` を参照
 
+  -- ビジュアルモードでのペースト時にクリップボードを上書きしない
+  vim.keymap.set("x", "p", [["_dP]], { desc = "Paste without yanking" })
+  vim.keymap.set("x", "P", [["_dP]], { desc = "Paste without yanking" })
+
   vim.api.nvim_create_autocmd("TextYankPost", {
     desc = "ヤンク（コピー）時にテキストをハイライト",
     group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
