@@ -26,7 +26,7 @@
     };
     streaming-kit = {
       url = "github:boxfish-jp/streamingkit";
-      inputs.nixpkgs.follows = "nixpkgs";
+      # inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
