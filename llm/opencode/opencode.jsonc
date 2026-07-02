@@ -5,6 +5,9 @@
       "models": {
         "deepseek-v4-flash-free": {
           "interleaved": { "field": "reasoning_content" }
+        },
+        "mimo-v2.5-free": {
+          "interleaved": { "field": "reasoning_content" }
         }
       }
     }
