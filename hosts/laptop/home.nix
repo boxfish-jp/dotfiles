@@ -8,6 +8,7 @@
 {
   imports = [
     ../../common-modules
+    ../../containers
     ../../kanata
     ../../flatpak
     ../../qpwgraph

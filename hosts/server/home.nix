@@ -7,6 +7,7 @@
 }:
 {
   imports = [
+    ../../containers
     ../../nvim
     ../../zellij
     ../../git
