@@ -10,7 +10,7 @@
       enable = true;
 
       workDir = "~/dev/";
-      serverUrl = "http://192.168.68.11:8888";
+      serverUrl = "http://192.168.68.16:8888";
 
       systemd.enable = true;
       systemd.serviceName = "streaming-kit-cli";
