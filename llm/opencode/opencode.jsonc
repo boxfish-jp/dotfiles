@@ -34,6 +34,7 @@
       "head *": "allow",
       "sort *": "allow",
       "rg *": "allow",
+      "date *": "allow",
     },
     "task": {
       "*": "deny",
@@ -41,7 +42,8 @@
     },
     "external_directory": {
       "*": "ask",
-      "/nix/store/**": "allow"
+      "/nix/store/**": "allow",
+      "/home/boxfish/.config/opencode/**": "allow"
     },
     "todowrite": "allow",
     "webfetch": "allow",
