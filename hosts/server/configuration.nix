@@ -115,31 +115,40 @@
 
   # List services that you want to enable:
 
-  services.samba = {
-    enable = true;
-    openFirewall = true;
+  services = {
+    samba = {
+      enable = true;
+      openFirewall = true;
 
-    settings = {
-      global = {
-        "workgroup" = "WORKGROUP";
-        "security" = "user";
-        "server string" = "NixOS Samba";
-      };
+      settings = {
+        global = {
+          "workgroup" = "WORKGROUP";
+          "security" = "user";
+          "server string" = "NixOS Samba";
+        };
 
-      "iohdd" = {
-        "path" = "/mnt/iohdd";
-        "browseable" = "yes";
-        "read only" = "no";
-        "guest ok" = "no";
-        "create mask" = "0666";
-        "directory mask" = "0777";
+        "iohdd" = {
+          "path" = "/mnt/iohdd";
+          "browseable" = "yes";
+          "read only" = "no";
+          "guest ok" = "no";
+          "create mask" = "0666";
+          "directory mask" = "0777";
+        };
       };
     };
-  };
 
-  services.samba-wsdd = {
-    enable = true;
-    openFirewall = true;
+    samba-wsdd = {
+      enable = true;
+      openFirewall = true;
+    };
+
+    audiobookshelf = {
+      enable = true;
+      host = "0.0.0.0";
+      port = 13378;
+      openFirewall = true;
+    };
   };
 
   # Enable the OpenSSH daemon.
