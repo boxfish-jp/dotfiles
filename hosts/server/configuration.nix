@@ -3,7 +3,6 @@
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
 {
-  config,
   modulesPath,
   pkgs,
   ...
@@ -47,6 +46,7 @@
       "networkmanager"
       "wheel"
       "podman"
+      "samba"
     ];
   };
 
@@ -114,6 +114,33 @@
   # };
 
   # List services that you want to enable:
+
+  services.samba = {
+    enable = true;
+    openFirewall = true;
+
+    settings = {
+      global = {
+        "workgroup" = "WORKGROUP";
+        "security" = "user";
+        "server string" = "NixOS Samba";
+      };
+
+      "iohdd" = {
+        "path" = "/mnt/iohdd";
+        "browseable" = "yes";
+        "read only" = "no";
+        "guest ok" = "no";
+        "create mask" = "0666";
+        "directory mask" = "0777";
+      };
+    };
+  };
+
+  services.samba-wsdd = {
+    enable = true;
+    openFirewall = true;
+  };
 
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
