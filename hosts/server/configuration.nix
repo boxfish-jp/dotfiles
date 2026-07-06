@@ -149,6 +149,41 @@
       port = 13378;
       openFirewall = true;
     };
+
+    adguardhome = {
+      enable = true;
+      host = "0.0.0.0";
+      port = 4003;
+      openFirewall = true;
+      settings = {
+        dns = {
+          upstream_dns = [
+            "tls://9.9.9.9"
+            "tls://1.1.1.1"
+          ];
+        };
+        filtering = {
+          protection_enabled = true;
+          filtering_enabled = true;
+
+          parental_enabled = false;
+          safe_search = {
+            enabled = false;
+          };
+        };
+        filters =
+          map
+            (url: {
+              enabled = true;
+              url = url;
+            })
+            [
+              "https://github.com/milleruk/adguard-filter-list/blob/main/blocklist?raw=true"
+            ];
+      };
+    };
+
+    resolved.settings.Resolve.DNSStubListener = "no";
   };
 
   # Enable the OpenSSH daemon.
