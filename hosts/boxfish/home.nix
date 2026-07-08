@@ -1,7 +1,4 @@
 {
-  config,
-  pkgs,
-  lib,
   username,
   ...
 }:
@@ -25,6 +22,7 @@
     ../../bash
     ../../llm
     ../../paint
+    ../../btop
     ../../other_cli
     ../../other_gui
   ];
