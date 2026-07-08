@@ -7,12 +7,9 @@
 }:
 {
   imports = [
-    ../../common-modules
     ../../containers
     ../../kanata
-    ../../flatpak
     ../../qpwgraph
-    ../../obs
     ../../vicinae
     ../../nvim
     ../../kde_plasma
@@ -22,6 +19,8 @@
     ../../git
     ../../bash
     ../../llm
+    ../../other_cli
+    ../../other_gui
   ];
   home = {
     inherit username;

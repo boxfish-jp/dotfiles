@@ -7,7 +7,6 @@
 }:
 {
   imports = [
-    ../../common-modules
     ../../containers
     ../../kanata
     ../../flatpak
@@ -25,6 +24,9 @@
     ../../video_editor
     ../../bash
     ../../llm
+    ../../paint
+    ../../other_cli
+    ../../other_gui
   ];
   home = {
     inherit username;

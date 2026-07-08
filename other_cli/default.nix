@@ -1,7 +1,5 @@
 {
-  config,
   pkgs,
-  lib,
   ...
 }:
 {
@@ -12,13 +10,6 @@
     wl-clipboard
     ffmpeg
     yt-dlp
-    discord
-    spotify
     ncdu
-    vlc
-    krita
-    vscode
-    google-chrome
-    kdePackages.krohnkite
   ];
 }

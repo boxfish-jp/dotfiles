@@ -5,6 +5,7 @@
 {
   home.packages = with pkgs; [
     kara
+    kdePackages.krohnkite
   ];
   programs.plasma = {
     enable = true;
