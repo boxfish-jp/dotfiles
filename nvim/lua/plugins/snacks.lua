@@ -22,6 +22,15 @@ require("snacks").setup({
   scope = { enabled = true },
   scroll = { enabled = true },
   statuscolumn = { enabled = true },
+  terminal = {
+    win = {
+      wo = {
+        winbar = "",
+      },
+    },
+    start_insert = false,
+    auto_insert = false,
+  },
   words = { enabled = true },
   styles = {
     notification = {
@@ -228,6 +237,7 @@ vim.keymap.set({ "n", "v" }, "<leader>gB", function()
 end, { desc = "Git Browse" })
 vim.keymap.set("n", "<leader>gg", function()
   Snacks.lazygit()
+  vim.cmd.startinsert()
 end, { desc = "Lazygit" })
 vim.keymap.set("n", "<leader>un", function()
   Snacks.notifier.hide()
@@ -238,6 +248,16 @@ end, { desc = "Toggle Terminal" })
 vim.keymap.set("n", "<c-_>", function()
   Snacks.terminal()
 end, { desc = "which_key_ignore" })
+vim.keymap.set("n", "<C-S-p>", function()
+  Snacks.terminal(nil, { count = 1, env = { SNACKS_TERM = "bottom" } })
+end, { desc = "Toggle Bottom Terminal" })
+vim.keymap.set("n", "<leader>aa", function()
+  local shell = vim.o.shell
+  Snacks.terminal({ shell, "-c", "opencode; exec " .. shell }, {
+    count = 2,
+    win = { position = "right", width = 0.5, wo = { winbar = "" } },
+  })
+end, { desc = "Toggle Right Terminal" })
 vim.keymap.set({ "n", "t" }, "]]", function()
   Snacks.words.jump(vim.v.count1)
 end, { desc = "Next Reference" })
@@ -334,3 +354,19 @@ vim.keymap.set("n", "<leader>uD", function()
   vim.notify("Dim toggle (カスタム実装が必要)")
 end, { desc = "Toggle dim" })
 -- snack.nvim --
+
+vim.api.nvim_create_user_command("TermCd", function()
+  local name = vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf())
+  local pid = name:match("term://.+/+(%d+):")
+  if not pid then
+    vim.notify("Not a terminal buffer", vim.log.levels.WARN)
+    return
+  end
+  local cwd = vim.fn.resolve("/proc/" .. pid .. "/cwd")
+  if vim.fn.isdirectory(cwd) == 1 then
+    vim.fn.chdir(cwd)
+    vim.notify("cwd: " .. cwd)
+  else
+    vim.notify("Could not determine terminal cwd", vim.log.levels.WARN)
+  end
+end, { desc = "Sync Neovim cwd with terminal's current directory" })

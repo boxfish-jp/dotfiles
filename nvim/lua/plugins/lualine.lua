@@ -76,6 +76,9 @@ local opts = {
       -- ファイルパス表示
       {
         function()
+          if vim.bo.buftype == "terminal" then
+            return " Terminal"
+          end
           local filename = vim.fn.expand("%:.")
           if filename == "" then
             return "[No Name]"

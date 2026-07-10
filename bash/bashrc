@@ -90,5 +90,7 @@ fi
 
 export PATH="$HOME/.local/bin:$PATH"
 
+alias vt='NVIM_TERM=1 nvim'
+alias oc='NVIM_TERM=1 NVIM_TERM_CMD=opencode nvim'
 alias nrt="sudo nixos-rebuild test --flake ."
 alias nrs="sudo nixos-rebuild switch --flake ."
