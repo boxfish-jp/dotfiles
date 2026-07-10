@@ -69,7 +69,7 @@
               home-manager.users.${username} = ./hosts/${hostname}/home.nix;
               home-manager.sharedModules = [
                 vicinae.homeManagerModules.default
-                plasma-manager.homeManagerModules.plasma-manager
+                plasma-manager.homeModules.plasma-manager
                 nix-flatpak.homeManagerModules.nix-flatpak
                 streaming-kit.homeManagerModules.streaming-kit-cli
                 streaming-kit.homeManagerModules.streaming-kit-desktop
