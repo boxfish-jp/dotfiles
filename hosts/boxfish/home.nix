@@ -15,6 +15,7 @@
     ../../kde_plasma
     ../../fcitx5
     ../../alacritty
+    ../../ghostty
     ../../pipewire
     ../../zellij
     ../../git
