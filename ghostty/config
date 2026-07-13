@@ -29,6 +29,7 @@ selection-background = #3c4048
 selection-foreground = #ffffff
 window-show-tab-bar = never
 mouse-hide-while-typing = true
+cursor-style-blink = false
 copy-on-select = clipboard
 confirm-close-surface = false
 

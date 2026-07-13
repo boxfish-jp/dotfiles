@@ -19,7 +19,8 @@ let
       --replace-fail 'float minDist = currentCursor.w * THRESHOLD_MIN_DISTANCE;' \
                      'vec2 _mv = centerCC - centerCP; float minDist = mix(currentCursor.w * 2.0, 1e10, step(abs(_mv.y), abs(_mv.x)));'
   '';
-in {
+in
+{
   home.packages = [
     pkgs.ghostty
   ];
@@ -28,8 +29,7 @@ in {
     "ghostty/config".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/ghostty/config";
 
-    "ghostty/shaders/ghostty-cursor-trails/boo-cursor.glsl".source =
-      "${patchedBooCursor}";
+    "ghostty/shaders/ghostty-cursor-trails/boo-cursor.glsl".source = "${patchedBooCursor}";
     "ghostty/shaders/ghostty-cursor-trails/tinkle-cursor.glsl".source =
       "${ghosttyCursorTrails}/tinkle-cursor.glsl";
     "ghostty/shaders/ghostty-cursor-trails/wisp-cursor.glsl".source =
