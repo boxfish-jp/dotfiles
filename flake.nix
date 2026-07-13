@@ -85,6 +85,7 @@
       devShell.${system} = pkgs.mkShell {
         packages = with pkgs; [
           biome
+          typescript-language-server
           stylua
           nixd
           nixfmt
