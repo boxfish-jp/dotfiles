@@ -135,10 +135,13 @@
     ];
   };
 
-  nix.settings.experimental-features = [
-    "nix-command"
-    "flakes"
-  ];
+  nix.settings = {
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
+    trusted-users = [ "laptop" ];
+  };
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
