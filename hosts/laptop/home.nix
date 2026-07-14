@@ -18,6 +18,7 @@
     ../../bash
     ../../llm
     ../../btop
+    ../../spotify
     ../../other_cli
     ../../other_gui
   ];

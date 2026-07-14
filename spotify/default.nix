@@ -4,9 +4,7 @@
 }:
 {
   home.packages = with pkgs; [
-    discord
-    vlc
-    vscode
-    google-chrome
+    spotify
+    spotify-player
   ];
 }

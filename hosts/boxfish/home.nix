@@ -24,6 +24,7 @@
     ../../llm
     ../../paint
     ../../btop
+    ../../spotify
     ../../other_cli
     ../../other_gui
   ];
