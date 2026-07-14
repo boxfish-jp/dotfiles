@@ -184,6 +184,15 @@
     };
 
     resolved.settings.Resolve.DNSStubListener = "no";
+
+    immich = {
+      enable = true;
+      host = "0.0.0.0";
+      port = 2283;
+      openFirewall = true;
+
+      mediaLocation = "/mnt/iohdd/share/immich";
+    };
   };
 
   # Enable the OpenSSH daemon.
