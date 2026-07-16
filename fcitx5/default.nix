@@ -1,9 +1,6 @@
 {
-  config,
-  pkgs,
-  lib,
   ...
 }:
 {
-  xdg.configFile."fcitx5".source = ./.;
+  xdg.configFile."fcitx5/profile".source = ./profile;
 }
