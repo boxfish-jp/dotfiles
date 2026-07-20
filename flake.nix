@@ -2,8 +2,15 @@
   description = "NixOS configuration with stable and unstable packages";
 
   nixConfig = {
-    extra-substituters = [ "https://vicinae.cachix.org" ];
-    extra-trusted-public-keys = [ "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc=" ];
+    extra-substituters = [
+      "https://vicinae.cachix.org"
+      "https://cache.numtide.com"
+    ];
+    extra-trusted-public-keys = [
+      "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc="
+      "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+    ];
+
   };
   inputs = {
     # Main channel (latest packages, unstable)
@@ -32,7 +39,6 @@
 
   outputs =
     inputs@{
-      self,
       nixpkgs,
       nix-flatpak,
       llm-agents,
@@ -57,7 +63,7 @@
             home-manager.nixosModules.home-manager
             {
               nixpkgs.overlays = [
-                llm-agents.overlays.default
+                llm-agents.overlays.shared-nixpkgs
               ];
             }
             {

@@ -50,10 +50,14 @@
     ];
   };
 
-  nix.settings.experimental-features = [
-    "nix-command"
-    "flakes"
-  ];
+  nix.settings = {
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
+    max-jobs = 4;
+    trusted-users = [ "server" ];
+  };
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;

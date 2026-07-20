@@ -178,6 +178,7 @@
       "flakes"
     ];
     max-jobs = 8;
+    trusted-users = [ "boxfish" ];
   };
 
   # Allow unfree packages
