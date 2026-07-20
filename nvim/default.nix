@@ -1,7 +1,6 @@
 {
   config,
   pkgs,
-  lib,
   ...
 }:
 let
@@ -50,7 +49,7 @@ in
       nvim-lspconfig
       conform-nvim
       blink-cmp
-      CopilotChat-nvim
+      mini-surround
       (nvim-treesitter.withPlugins (
         p: with p; [
           tree-sitter-python
