@@ -1,4 +1,9 @@
-{ config, pkgs, ... }:
+{
+  config,
+  inputs,
+  pkgs,
+  ...
+}:
 {
   programs.vicinae = {
     enable = true;
@@ -6,6 +11,9 @@
       enable = true;
       autoStart = true;
     };
+    extensions = with inputs.vicinae-extensions.packages.${pkgs.stdenv.hostPlatform.system}; [
+      nix
+    ];
   };
   xdg.dataFile = {
     "vicinae/scripts".source =
