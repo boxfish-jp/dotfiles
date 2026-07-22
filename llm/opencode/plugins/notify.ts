@@ -4,6 +4,10 @@ const NOTIFY_THROTTLE_MS = 10_000;
 const SUMMARY_MIN_LENGTH = 20;
 const NOTIFY_CHANNEL = "1";
 const NOTIFY_CHARACTER = "3";
+const ZEN_API_URL = "https://opencode.ai/zen/v1/chat/completions";
+const ZEN_MODEL = "deepseek-v4-flash-free";
+
+let apiKey: string | undefined;
 
 type LogicalState = "idle" | "active";
 
@@ -34,8 +38,10 @@ const sendLog = (client: OpencodeClient, message: string) =>
 
 const extractText = (parts: Array<{ type: string; text?: string }>): string =>
   parts
-    .filter((p) => p.type === "text" && p.text)
-    .map((p) => p.text!)
+    .filter(
+      (p): p is { type: "text"; text: string } => p.type === "text" && !!p.text,
+    )
+    .map((p) => p.text)
     .join("");
 
 const deriveLogicalState = (event: {
@@ -64,44 +70,50 @@ const isParentSession = async (
 };
 
 const summarize = async (
-  client: any,
+  client: OpencodeClient,
   text: string,
-  directory: string,
 ): Promise<string> => {
   if (text.length <= SUMMARY_MIN_LENGTH) return text;
 
-  const { data: session } = await client.session.create({
-    body: { title: "notification summary" },
-    query: { directory },
-  });
-  if (!session) return "ひとことで言えないのだ";
+  if (!apiKey) {
+    const { data } = await client.config.providers();
+    const provider = data?.providers.find((p) => p.id === "opencode");
+    if (!provider?.key) return "ひとことで言えないのだ";
+    apiKey = provider.key;
+  }
 
   try {
-    const { data: res } = await client.session.prompt({
-      path: { id: session.id },
-      body: {
-        variant: "minimal",
-        model: {
-          providerID: "opencode",
-          modelID: "deepseek-v4-flash-free",
-        },
-        parts: [
+    const res = await fetch(ZEN_API_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: ZEN_MODEL,
+        messages: [
           {
-            type: "text",
-            text: `次のテキストを20字以内で語尾に「のだ」を付けた要約文を作成して:\n\n${text}`,
+            role: "user",
+            content: `次のテキストを20字以内で語尾に「のだ」を付けた要約文を作成して:\n\n${text}`,
           },
         ],
-      },
+        thinking: { type: "disabled" },
+      }),
     });
-    if (!res) return "ひとことで言えないのだ";
 
-    return extractText(res.parts) || "ひとことで言えないのだ";
-  } finally {
-    client.session.delete({ path: { id: session.id } });
+    if (!res.ok) return "ひとことで言えないのだ";
+
+    const json = await res.json();
+    return json.choices?.[0]?.message?.content || "ひとことで言えないのだ";
+  } catch {
+    return "ひとことで言えないのだ";
   }
 };
 
-export const NotifyPlugin: Plugin = async ({ client, directory }) => {
+export const NotifyPlugin: Plugin = async ({
+  client,
+  directory: _directory,
+}) => {
   const notifier = new Notifier();
   const previousState = new Map<string, LogicalState>();
   sendLog(client, "Plugin initialized");
@@ -132,7 +144,7 @@ export const NotifyPlugin: Plugin = async ({ client, directory }) => {
           const text = extractText(last.parts);
           if (!text) return;
           const start = performance.now();
-          const summary = await summarize(client, text, directory);
+          const summary = await summarize(client, text);
           sendLog(
             client,
             `summarize took ${((performance.now() - start) / 1000).toFixed(1)}s`,
