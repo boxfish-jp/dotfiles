@@ -12,6 +12,7 @@
     ];
 
   };
+
   inputs = {
     # Main channel (latest packages, unstable)
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -39,6 +40,7 @@
       url = "github:boxfish-jp/streamingkit";
       # inputs.nixpkgs.follows = "nixpkgs";
     };
+    browser-tyan.url = "github:boxfish-jp/browser_tyan";
   };
 
   outputs =
@@ -50,6 +52,7 @@
       vicinae,
       plasma-manager,
       streaming-kit,
+      browser-tyan,
       ...
     }:
     let
@@ -65,6 +68,7 @@
           modules = [
             ./hosts/${hostname}/configuration.nix
             home-manager.nixosModules.home-manager
+            browser-tyan.nixosModules.default
             {
               nixpkgs.overlays = [
                 llm-agents.overlays.shared-nixpkgs
