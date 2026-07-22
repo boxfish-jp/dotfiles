@@ -22,12 +22,11 @@
       "wc *": "allow",
       "echo *": "allow",
       "tail *": "allow",
-      "head *": "allow",
       "sort *": "allow",
       "rg *": "allow",
       "date *": "allow",
       "opencode *": "allow",
-      "strings *": "allow",
+      "strings *": "allow"
     },
     "task": {
       "*": "allow"
