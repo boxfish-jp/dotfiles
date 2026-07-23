@@ -36,7 +36,8 @@
     "external_directory": {
       "*": "ask",
       "/nix/store/**": "allow",
-      "/home/boxfish/.config/opencode/**": "allow"
+      "/home/boxfish/.config/opencode/**": "allow",
+      "/tmp/**": "allow"
     },
     "todowrite": "allow",
     "webfetch": "allow",
