@@ -42,6 +42,7 @@
   users.users.sandbox = {
     isNormalUser = true;
     description = "sandbox";
+    home = "/home/sandbox";
     extraGroups = [
       "networkmanager"
       "wheel"
