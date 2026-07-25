@@ -28,7 +28,7 @@
     };
   };
 
-  networking.hostName = "server";
+  networking.hostName = "sandbox";
 
   time.timeZone = "Asia/Tokyo";
 
@@ -39,7 +39,7 @@
   #services.xserver.enable = true;
   services.tailscale.enable = true;
 
-  users.users.server = {
+  users.users.sandbox = {
     isNormalUser = true;
     description = "sandbox";
     extraGroups = [
