@@ -110,6 +110,7 @@
         laptop = mkHost { hostname = "laptop"; };
         boxfish = mkHost { hostname = "boxfish"; };
         server = mkHost { hostname = "server"; };
+        sandbox = mkHost { hostname = "sandbox"; };
       };
     };
 }

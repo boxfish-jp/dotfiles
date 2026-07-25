@@ -6,7 +6,7 @@
   ...
 }:
 {
-  imports = lib.optionals (username == "server") [ ./kimaki ];
+  imports = lib.optionals (username == "server" || username == "sandbox") [ ./kimaki ];
 
   home.packages = with pkgs; [
     llm-agents.opencode
