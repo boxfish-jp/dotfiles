@@ -111,6 +111,7 @@
         boxfish = mkHost { hostname = "boxfish"; };
         server = mkHost { hostname = "server"; };
         sandbox = mkHost { hostname = "sandbox"; };
+        game = mkHost { hostname = "game"; };
       };
     };
 }
