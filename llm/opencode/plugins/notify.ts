@@ -1,4 +1,6 @@
-import type { OpencodeClient, Plugin } from "@opencode-ai/plugin";
+import type { Plugin, PluginInput } from "@opencode-ai/plugin";
+
+type OpencodeClient = PluginInput["client"];
 
 const NOTIFY_THROTTLE_MS = 10_000;
 const SUMMARY_MIN_LENGTH = 20;
@@ -158,6 +160,7 @@ export const NotifyPlugin: Plugin = async ({
           permission?: string;
           patterns?: string[];
         };
+        if (props.permission === "question") return;
         let detail = "";
         switch (props.permission) {
           case "edit":
@@ -174,6 +177,11 @@ export const NotifyPlugin: Plugin = async ({
         }
         notifier.notify("permission", `${detail}の許可が欲しいのだ`);
       }
+    },
+    "tool.execute.before": async (input) => {
+      if (input.tool !== "question") return;
+      if (!(await isParentSession(client, input.sessionID))) return;
+      notifier.notify("question", "質問があるのだ");
     },
   };
 };
