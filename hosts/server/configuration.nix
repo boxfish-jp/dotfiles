@@ -214,6 +214,7 @@
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   networking.firewall.allowedTCPPorts = [
+    5000
     8888
     50020
     50021

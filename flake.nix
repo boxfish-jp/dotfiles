@@ -41,6 +41,7 @@
       # inputs.nixpkgs.follows = "nixpkgs";
     };
     browser-tyan.url = "github:boxfish-jp/browser_tyan";
+    twitch-stream-recoder.url = "github:boxfish-jp/twitch-stream-recorder";
   };
 
   outputs =
@@ -53,6 +54,7 @@
       plasma-manager,
       streaming-kit,
       browser-tyan,
+      twitch-stream-recoder,
       ...
     }:
     let
@@ -89,6 +91,8 @@
                 streaming-kit.homeManagerModules.streaming-kit-desktop
                 streaming-kit.homeManagerModules.streaming-kit-hub
                 streaming-kit.homeManagerModules.streaming-kit-voicevox-connector
+                streaming-kit.homeManagerModules.streaming-kit-stream-orchestrator
+                twitch-stream-recoder.homeModules.default
               ];
             }
           ];
