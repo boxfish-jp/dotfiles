@@ -13,7 +13,10 @@ in
     image = "thijsvanloef/palworld-server-docker";
     autoStart = true;
     environmentFiles = [ "/home/game/.config/palworld/.env" ];
-    ports = [ "8211:8211/udp" "27015:27015/udp" ];
+    ports = [
+      "8211:8211/udp"
+      "27015:27015/udp"
+    ];
     volumes = [ "/var/lib/palworld:/palworld" ];
     extraOptions = [ "--pull=always" ];
   };
