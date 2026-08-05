@@ -1,5 +1,21 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "agent": {
+    "plan": {
+      "permission": {
+        "edit": "deny"
+      }
+    },
+    "build": {
+      "permission": {
+        "edit": "allow",
+        "bash": {
+          "sed -i*": "allow",
+          "sed --in-place*": "allow"
+        }
+      }
+    }
+  },
   "permission": {
     "read": {
       "*": "allow",
@@ -28,7 +44,12 @@
       "rg *": "allow",
       "date *": "allow",
       "opencode *": "allow",
-      "strings *": "allow"
+      "strings *": "allow",
+      "nix eval *": "allow",
+      "readlink *": "allow",
+      "sed *": "allow",
+      "sed -i*": "deny",
+      "sed --in-place*": "deny"
     },
     "task": {
       "*": "allow"
