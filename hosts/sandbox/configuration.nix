@@ -48,6 +48,7 @@
       "wheel"
       "podman"
     ];
+    linger = true;
   };
 
   nix.settings = {
