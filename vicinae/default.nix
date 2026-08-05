@@ -1,9 +1,19 @@
 {
   config,
   inputs,
+  lib,
   pkgs,
   ...
 }:
+let
+  system = pkgs.stdenv.hostPlatform.system;
+  braveSearch = inputs.vicinae.lib.${system}.mkVicinaeExtension {
+    pname = "vicinae-extension-brave-search";
+    version = "0";
+    src = lib.cleanSource ./brave-search;
+    npmFlags = [ "--legacy-peer-deps" ];
+  };
+in
 {
   programs.vicinae = {
     enable = true;
@@ -11,8 +21,9 @@
       enable = true;
       autoStart = true;
     };
-    extensions = with inputs.vicinae-extensions.packages.${pkgs.stdenv.hostPlatform.system}; [
+    extensions = with inputs.vicinae-extensions.packages.${system}; [
       nix
+      braveSearch
     ];
   };
   xdg.dataFile = {

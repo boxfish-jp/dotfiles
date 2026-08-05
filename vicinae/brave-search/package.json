@@ -1,0 +1,41 @@
+{
+  "$schema": "https://raw.githubusercontent.com/vicinaehq/vicinae/refs/heads/main/extra/schemas/extension.json",
+  "name": "brave-search",
+  "title": "Brave Search",
+  "description": "サジェスト付きでBrave検索を実行する",
+  "categories": [
+    "Web"
+  ],
+  "license": "MIT",
+  "platforms": [
+    "Linux",
+    "macOS"
+  ],
+  "author": "boxfish",
+  "contributors": [],
+  "pastContributors": [],
+  "icon": "extension_icon.svg",
+  "commands": [
+    {
+      "name": "brave-search",
+      "title": "Brave Search",
+      "subtitle": "サジェスト付きでBrave検索",
+      "description": "入力中にBraveのサジェストを表示し、選択したキーワードで検索を実行する",
+      "mode": "view"
+    }
+  ],
+  "preferences": [],
+  "scripts": {
+    "build": "vici build",
+    "dev": "vici develop",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@vicinae/api": "^0.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "19.1.17",
+    "typescript": "^5.9.3"
+  }
+}
