@@ -1,7 +1,14 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import {
+  Action,
+  ActionPanel,
+  Icon,
+  List,
+  showToast,
+  Toast,
+} from "@vicinae/api";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Action, ActionPanel, Icon, List, showToast, Toast } from "@vicinae/api";
 
 const SUGGEST_API = "https://search.brave.com/api/suggest";
 const SEARCH_URL = "https://search.brave.com/search?q=";
@@ -9,11 +16,18 @@ const DEBOUNCE_MS = 300;
 
 const execFileAsync = promisify(execFile);
 
-const searchUrl = (query: string): string => `${SEARCH_URL}${encodeURIComponent(query)}`;
+const searchUrl = (query: string): string =>
+  `${SEARCH_URL}${encodeURIComponent(query)}`;
 
 async function fetchSuggestions(query: string): Promise<string[]> {
   const url = `${SUGGEST_API}?source=web&q=${encodeURIComponent(query)}`;
-  const { stdout } = await execFileAsync("curl", ["-sS", "--fail", "--max-time", "5", url]);
+  const { stdout } = await execFileAsync("curl", [
+    "-sS",
+    "--fail",
+    "--max-time",
+    "5",
+    url,
+  ]);
   const data = JSON.parse(stdout) as [string, string[]];
   return data[1] ?? [];
 }
@@ -90,8 +104,14 @@ export default function Command() {
           subtitle="Brave で検索"
           actions={
             <ActionPanel>
-              <Action.OpenInBrowser title="検索" url={searchUrl(trimmedQuery)} />
-              <Action.CopyToClipboard title="URLをコピー" content={searchUrl(trimmedQuery)} />
+              <Action.OpenInBrowser
+                title="検索"
+                url={searchUrl(trimmedQuery)}
+              />
+              <Action.CopyToClipboard
+                title="URLをコピー"
+                content={searchUrl(trimmedQuery)}
+              />
             </ActionPanel>
           }
         />
@@ -105,7 +125,10 @@ export default function Command() {
           actions={
             <ActionPanel>
               <Action.OpenInBrowser title="検索" url={searchUrl(suggestion)} />
-              <Action.CopyToClipboard title="URLをコピー" content={searchUrl(suggestion)} />
+              <Action.CopyToClipboard
+                title="URLをコピー"
+                content={searchUrl(suggestion)}
+              />
             </ActionPanel>
           }
         />
