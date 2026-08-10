@@ -12,6 +12,7 @@
     ../../zellij
     ../../git
     ../../bash
+    ../../direnv
   ];
   home = {
     inherit username;

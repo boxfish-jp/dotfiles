@@ -16,6 +16,7 @@
     ../../zellij
     ../../git
     ../../bash
+    ../../direnv
     ../../llm
     ../../btop
     ../../spotify
