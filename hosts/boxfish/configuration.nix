@@ -78,7 +78,11 @@
   networking.firewall = {
     enable = true;
     trustedInterfaces = [ config.services.tailscale.interfaceName ];
-    allowedUDPPorts = [ config.services.tailscale.port ];
+    allowedUDPPorts = [
+      config.services.tailscale.port
+      9
+      3389
+    ];
   };
 
   systemd.services.tailscaled.serviceConfig.Environment = [
@@ -87,6 +91,9 @@
 
   systemd.network.wait-online.enable = false;
   boot.initrd.systemd.network.wait-online.enable = false;
+
+  # Wake on LAN (magic packet) for the wired NIC
+  networking.interfaces.enp10s0.wakeOnLan.enable = true;
 
   # Set your time zone.
   time.timeZone = "Asia/Tokyo";
@@ -257,6 +264,17 @@
 
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
+  services.openssh = {
+    enable = true;
+    openFirewall = true;
+    settings = {
+      PasswordAuthentication = true;
+      KbdInteractiveAuthentication = false;
+      PermitRootLogin = "no";
+      MaxAuthTries = 3;
+      PerSourcePenalties = "crash:3600s authfail:3600s max:86400s";
+    };
+  };
   services.flatpak.enable = true;
 
   security.pki.certificateFiles = [
@@ -264,6 +282,7 @@
   ];
   # Open ports in the firewall.
   networking.firewall.allowedTCPPorts = [
+    3389
     50021
   ];
   # networking.firewall.allowedUDPPorts = [ ... ];
