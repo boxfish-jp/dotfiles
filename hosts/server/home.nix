@@ -12,7 +12,6 @@
     ../../zellij
     ../../git
     ../../bash
-    ../../direnv
     ../../llm
   ];
   home = {

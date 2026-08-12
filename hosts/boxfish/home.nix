@@ -21,7 +21,6 @@
     ../../git
     ../../video_editor
     ../../bash
-    ../../direnv
     ../../llm
     ../../paint
     ../../btop
