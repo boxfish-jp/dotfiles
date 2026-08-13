@@ -55,6 +55,7 @@
       "git show *": "allow",
       "git rev-parse": "allow",
       "nix flake check *": "allow",
+      "git ls-files*": "deny",
       "sudo*": "deny"
     },
     "task": {
