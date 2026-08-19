@@ -5,6 +5,8 @@
 {
   modulesPath,
   pkgs,
+  hostname,
+  username,
   ...
 }:
 
@@ -31,7 +33,7 @@
     };
   };
 
-  networking.hostName = "game";
+  networking.hostName = hostname;
 
   time.timeZone = "Asia/Tokyo";
 
@@ -41,10 +43,10 @@
   # You can disable this if you're only using the Wayland session.
   #services.xserver.enable = true;
 
-  users.users.game = {
+  users.users.${username} = {
     isNormalUser = true;
-    description = "game";
-    home = "/home/game";
+    description = username;
+    home = "/home/${username}";
     extraGroups = [
       "networkmanager"
       "wheel"
@@ -58,7 +60,7 @@
       "flakes"
     ];
     max-jobs = 4;
-    trusted-users = [ "game" ];
+    trusted-users = [ username ];
   };
 
   # Allow unfree packages

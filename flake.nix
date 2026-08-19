@@ -67,6 +67,7 @@
         }:
         nixpkgs.lib.nixosSystem {
           inherit system;
+          specialArgs = { inherit hostname username; };
           modules = [
             ./hosts/${hostname}/configuration.nix
             home-manager.nixosModules.home-manager

@@ -2,7 +2,13 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  hostname,
+  username,
+  ...
+}:
 
 {
   imports = [
@@ -64,7 +70,7 @@
     ];
   };
 
-  networking.hostName = "boxfish"; # Define your hostname.
+  networking.hostName = hostname;
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -168,9 +174,9 @@
   # services.xserver.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.boxfish = {
+  users.users.${username} = {
     isNormalUser = true;
-    description = "boxfish";
+    description = username;
     extraGroups = [
       "networkmanager"
       "wheel"
@@ -185,7 +191,7 @@
       "flakes"
     ];
     max-jobs = 8;
-    trusted-users = [ "boxfish" ];
+    trusted-users = [ username ];
   };
 
   # Allow unfree packages

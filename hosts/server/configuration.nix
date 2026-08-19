@@ -5,6 +5,8 @@
 {
   modulesPath,
   pkgs,
+  hostname,
+  username,
   ...
 }:
 
@@ -28,7 +30,7 @@
     };
   };
 
-  networking.hostName = "server";
+  networking.hostName = hostname;
 
   time.timeZone = "Asia/Tokyo";
 
@@ -39,9 +41,9 @@
   #services.xserver.enable = true;
   services.tailscale.enable = true;
 
-  users.users.server = {
+  users.users.${username} = {
     isNormalUser = true;
-    description = "server";
+    description = username;
     extraGroups = [
       "networkmanager"
       "wheel"
@@ -56,7 +58,7 @@
       "flakes"
     ];
     max-jobs = 4;
-    trusted-users = [ "server" ];
+    trusted-users = [ username ];
   };
 
   # Allow unfree packages
