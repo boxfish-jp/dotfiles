@@ -15,6 +15,7 @@
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     ../../voicevox_container/nixos.nix
+    ../../wake_on_lan/nixos.nix
   ];
 
   # Bootloader.
@@ -87,7 +88,6 @@
     trustedInterfaces = [ config.services.tailscale.interfaceName ];
     allowedUDPPorts = [
       config.services.tailscale.port
-      9
     ];
   };
 
@@ -99,7 +99,11 @@
   boot.initrd.systemd.network.wait-online.enable = false;
 
   # Wake on LAN (magic packet) for the wired NIC
-  networking.interfaces.enp10s0.wakeOnLan.enable = true;
+  wakeOnLan = {
+    enable = true;
+    interfaces = [ "enp10s0" ];
+    udpPorts = [ 9 ];
+  };
 
   # Set your time zone.
   time.timeZone = "Asia/Tokyo";
