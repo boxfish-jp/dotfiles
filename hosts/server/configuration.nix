@@ -11,7 +11,10 @@
 }:
 
 {
-  imports = [ (modulesPath + "/virtualisation/proxmox-lxc.nix") ];
+  imports = [
+    (modulesPath + "/virtualisation/proxmox-lxc.nix")
+    ../../voicevox_container/nixos.nix
+  ];
   nix.settings = {
     sandbox = false;
   };
@@ -80,18 +83,11 @@
       dockerCompat = true;
       defaultNetwork.settings.dns_enabled = true; # Required for containers under podman-compose to be able to talk to each other.
     };
+  };
 
-    oci-containers = {
-      backend = "podman";
-      containers = {
-        voicevox = {
-          autoStart = true;
-          image = "voicevox/voicevox_engine:cpu-latest";
-          ports = [ "50021:50021" ];
-          extraOptions = [ "--pull=always" ];
-        };
-      };
-    };
+  services.voicevox_container = {
+    enable = true;
+    user = "server";
   };
 
   systemd.mounts = [
@@ -219,7 +215,6 @@
     5000
     8888
     50020
-    50021
   ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.

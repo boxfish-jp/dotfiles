@@ -14,6 +14,7 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
+    ../../voicevox_container/nixos.nix
   ];
 
   # Bootloader.
@@ -87,7 +88,6 @@
     allowedUDPPorts = [
       config.services.tailscale.port
       9
-      3389
     ];
   };
 
@@ -238,22 +238,11 @@
       dockerCompat = true;
       defaultNetwork.settings.dns_enabled = true; # Required for containers under podman-compose to be able to talk to each other.
     };
+  };
 
-    oci-containers = {
-      backend = "podman";
-      containers = {
-        voicevox = {
-          autoStart = true;
-          image = "voicevox/voicevox_engine:nvidia-ubuntu20.04-latest";
-          ports = [ "50021:50021" ];
-          extraOptions = [
-            "--pull=always"
-            "--device"
-            "nvidia.com/gpu=all"
-          ];
-        };
-      };
-    };
+  services.voicevox_container = {
+    enable = true;
+    user = "boxfish";
   };
 
   programs.steam.enable = true;
@@ -287,10 +276,7 @@
     ../../certificate/pve-root-ca.pem
   ];
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [
-    3389
-    50021
-  ];
+  networking.firewall.allowedTCPPorts = [ ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;

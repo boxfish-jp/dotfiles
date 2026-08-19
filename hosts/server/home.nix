@@ -8,6 +8,7 @@
 {
   imports = [
     ../../containers
+    ../../voicevox_container
     ../../nvim
     ../../zellij
     ../../git
@@ -19,6 +20,8 @@
     homeDirectory = "/home/${username}";
     stateVersion = "26.11";
   };
+
+  services.voicevox_container.enable = true;
 
   programs = {
     streaming-kit-hub = {

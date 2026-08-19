@@ -5,6 +5,7 @@
 {
   imports = [
     ../../containers
+    ../../voicevox_container
     ../../kanata
     ../../flatpak
     ../../qpwgraph
@@ -32,6 +33,11 @@
     inherit username;
     homeDirectory = "/home/${username}";
     stateVersion = "26.11";
+  };
+
+  services.voicevox_container = {
+    enable = true;
+    gpu = "nvidia";
   };
 
   programs.home-manager.enable = true;
