@@ -11,7 +11,10 @@
 }:
 
 {
-  imports = [ (modulesPath + "/virtualisation/proxmox-lxc.nix") ];
+  imports = [
+    (modulesPath + "/virtualisation/proxmox-lxc.nix")
+    ../../tailscale/nixos.nix
+  ];
   nix.settings = {
     sandbox = false;
   };
@@ -39,7 +42,7 @@
   # Enable the X11 windowing system.
   # You can disable this if you're only using the Wayland session.
   #services.xserver.enable = true;
-  services.tailscale.enable = true;
+  tailscale.enable = true;
 
   users.users.${username} = {
     isNormalUser = true;

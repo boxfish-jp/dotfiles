@@ -14,6 +14,7 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
+    ../../tailscale/nixos.nix
   ];
 
   # Bootloader.
@@ -31,15 +32,7 @@
   networking.networkmanager.enable = true;
 
   networking.nftables.enable = true;
-  networking.firewall = {
-    enable = true;
-    trustedInterfaces = [ config.services.tailscale.interfaceName ];
-    allowedUDPPorts = [ config.services.tailscale.port ];
-  };
-
-  systemd.services.tailscaled.serviceConfig.Environment = [
-    "TS_DEBUG_FIREWALL_MODE=nftables"
-  ];
+  networking.firewall.enable = true;
 
   systemd.network.wait-online.enable = false;
   boot.initrd.systemd.network.wait-online.enable = false;
@@ -73,7 +66,7 @@
   # Enable the X11 windowing system.
   # You can disable this if you're only using the Wayland session.
   services.xserver.enable = true;
-  services.tailscale.enable = true;
+  tailscale.enable = true;
 
   hardware.graphics.enable = true;
   hardware.bluetooth = {
