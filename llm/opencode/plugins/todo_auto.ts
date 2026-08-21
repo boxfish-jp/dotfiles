@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import type { Part, TextPart } from "@opencode-ai/sdk";
 import type { Plugin, PluginInput } from "@opencode-ai/plugin";
+import type { Part, TextPart } from "@opencode-ai/sdk";
 
 type OpencodeClient = PluginInput["client"];
 
@@ -75,8 +75,7 @@ export const TodoAutoPlugin: Plugin = async ({ client }) => {
 
       const text = output.parts
         .filter(
-          (p): p is TextPart =>
-            p.type === "text" && !!p.text && !p.synthetic,
+          (p): p is TextPart => p.type === "text" && !!p.text && !p.synthetic,
         )
         .map((p) => p.text)
         .join("")
