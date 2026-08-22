@@ -7,7 +7,7 @@ const SUMMARY_MIN_LENGTH = 20;
 const NOTIFY_CHANNEL = "1";
 const NOTIFY_CHARACTER = "3";
 const ZEN_API_URL = "https://opencode.ai/zen/v1/chat/completions";
-const ZEN_MODEL = "deepseek-v4-flash-free";
+const ZEN_MODEL = "big-pickle";
 
 let apiKey: string | undefined;
 
@@ -99,15 +99,23 @@ const summarize = async (
             content: `次のテキストを20字以内で語尾に「のだ」を付けた要約文を作成して:\n\n${text}`,
           },
         ],
-        thinking: { type: "disabled" },
+        reasoning_effort: "low",
       }),
     });
 
-    if (!res.ok) return "ひとことで言えないのだ";
+    if (!res.ok) {
+      const body = await res.text();
+      sendLog(
+        client,
+        `summarize failed: HTTP ${res.status} ${body.slice(0, 500)}`,
+      );
+      return "ひとことで言えないのだ";
+    }
 
     const json = await res.json();
     return json.choices?.[0]?.message?.content || "ひとことで言えないのだ";
-  } catch {
+  } catch (e) {
+    sendLog(client, `summarize error: ${e}`);
     return "ひとことで言えないのだ";
   }
 };
