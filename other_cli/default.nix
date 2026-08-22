@@ -11,5 +11,7 @@
     ffmpeg
     yt-dlp
     ncdu
+    jq
+    yq
   ];
 }
