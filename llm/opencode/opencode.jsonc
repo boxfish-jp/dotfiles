@@ -74,12 +74,7 @@
       "gawk *": "allow",
       "mawk *": "allow",
 
-      "curl -sS *": "allow",
-      "curl -fsSL *": "allow",
-      "curl -sSL *": "allow",
-      "curl -sL *": "allow",
-      "curl -SL *": "allow",
-      "curl -I *": "allow",
+      "curl *": "allow",
 
       "nix flake check *": "allow",
       "env *": "deny",
