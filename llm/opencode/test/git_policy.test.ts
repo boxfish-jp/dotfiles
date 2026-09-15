@@ -1,5 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { findForbiddenGitCommand } from "../lib/git_policy.ts";
+import {
+  findForbiddenGitCommand,
+  findWriteGitSubcommands,
+  isBuildGitChain,
+  isReadOnlyGitChain,
+} from "../lib/git_policy.ts";
 
 describe("findForbiddenGitCommand", () => {
   describe("git branch", () => {
@@ -248,5 +253,125 @@ describe("findForbiddenGitCommand", () => {
         "git remote の add",
       );
     });
+  });
+});
+
+describe("findWriteGitSubcommands", () => {
+  test("読み取り専用サブコマンドでは空になる", () => {
+    expect(findWriteGitSubcommands(`git log --oneline && git status`)).toEqual(
+      [],
+    );
+  });
+
+  test("commitを検出する", () => {
+    expect(findWriteGitSubcommands(`git commit -m msg`)).toEqual(["commit"]);
+  });
+
+  test("-C付きのcommitを検出する", () => {
+    expect(findWriteGitSubcommands(`git -C repo commit -m msg`)).toEqual([
+      "commit",
+    ]);
+  });
+
+  test("-c付きのpushを検出する", () => {
+    expect(
+      findWriteGitSubcommands(`git -c user.name=x push origin main`),
+    ).toEqual(["push"]);
+  });
+
+  test("&&でつながった後続位置の検出もできる", () => {
+    expect(findWriteGitSubcommands(`git status && git push`)).toEqual([
+      "push",
+    ]);
+  });
+
+  test("複数の書き込みサブコマンドを重複なく列挙できる", () => {
+    expect(
+      findWriteGitSubcommands(`git add . && git add x && git commit -m m`),
+    ).toEqual(["add", "commit"]);
+  });
+
+  test("引用符内のgit commitという文字列は無視する", () => {
+    expect(findWriteGitSubcommands(`echo "git commit -m x"`)).toEqual([]);
+  });
+
+  test("pull fetch clone initも書き込みとして検出する", () => {
+    expect(findWriteGitSubcommands(`git pull`)).toEqual(["pull"]);
+    expect(findWriteGitSubcommands(`git fetch origin`)).toEqual(["fetch"]);
+    expect(findWriteGitSubcommands(`git clone url`)).toEqual(["clone"]);
+    expect(findWriteGitSubcommands(`git init`)).toEqual(["init"]);
+  });
+
+  test("対象外のサブコマンドは無視する", () => {
+    expect(findWriteGitSubcommands(`git checkout main`)).toEqual([]);
+    expect(findWriteGitSubcommands(`git worktree list`)).toEqual([]);
+  });
+});
+
+describe("isReadOnlyGitChain", () => {
+  test("単一の読み取り専用コマンドでtrueになる", () => {
+    expect(isReadOnlyGitChain(`git log --oneline -5`)).toBe(true);
+  });
+
+  test("-C付きの読み取り専用コマンドでtrueになる", () => {
+    expect(isReadOnlyGitChain(`git -C /tmp/repo log --oneline`)).toBe(true);
+  });
+
+  test("-c付きの読み取り専用コマンドでtrueになる", () => {
+    expect(isReadOnlyGitChain(`git -c core.pager=cat diff HEAD`)).toBe(true);
+  });
+
+  test("&&でつながった読み取り専用コマンドの連鎖でtrueになる", () => {
+    expect(isReadOnlyGitChain(`git log -1 && git status`)).toBe(true);
+  });
+
+  test("パイプ先非gitコマンドがあるとfalseになる", () => {
+    expect(isReadOnlyGitChain(`git log | head -5`)).toBe(false);
+  });
+
+  test("書き込みサブコマンドを含むとfalseになる", () => {
+    expect(isReadOnlyGitChain(`git commit -m msg`)).toBe(false);
+  });
+
+  test("対象外サブコマンドを含むとfalseになる", () => {
+    expect(isReadOnlyGitChain(`git checkout main`)).toBe(false);
+  });
+
+  test("gitを含まないコマンドはfalseになる", () => {
+    expect(isReadOnlyGitChain(`ls -la`)).toBe(false);
+  });
+
+  test("空コマンドはfalseになる", () => {
+    expect(isReadOnlyGitChain(``)).toBe(false);
+  });
+
+  test("xargs経由のgit commitはfalseになる", () => {
+    expect(isReadOnlyGitChain(`xargs git commit`)).toBe(false);
+  });
+
+  test("sudo経由の読み取り専用gitでtrueになる", () => {
+    expect(isReadOnlyGitChain(`sudo git log -1`)).toBe(true);
+  });
+});
+
+describe("isBuildGitChain", () => {
+  test("読み取り専用コマンドでtrueになる", () => {
+    expect(isBuildGitChain(`git status`)).toBe(true);
+  });
+
+  test("addを含むコマンドでtrueになる", () => {
+    expect(isBuildGitChain(`git add .`)).toBe(true);
+  });
+
+  test("addとcommitの連鎖はfalseになる", () => {
+    expect(isBuildGitChain(`git add . && git commit -m m`)).toBe(false);
+  });
+
+  test("-C付きのmvでtrueになる", () => {
+    expect(isBuildGitChain(`git -C repo mv a b`)).toBe(true);
+  });
+
+  test("rmはfalseになる", () => {
+    expect(isBuildGitChain(`git rm file`)).toBe(false);
   });
 });

@@ -1,6 +1,51 @@
-import { baseName, isFlag, isInvocationPosition, splitSegments } from "./shell_parse.ts";
+import {
+  baseName,
+  commandName,
+  isFlag,
+  isInvocationPosition,
+  splitSegments,
+} from "./shell_parse.ts";
 
 const GIT = "git";
+
+export const READONLY_GIT_SUBCOMMANDS: ReadonlySet<string> = new Set([
+  "blame",
+  "cat-file",
+  "describe",
+  "diff",
+  "grep",
+  "log",
+  "ls-files",
+  "ls-remote",
+  "ls-tree",
+  "reflog",
+  "rev-parse",
+  "shortlog",
+  "show",
+  "status",
+]);
+
+export const WRITE_GIT_SUBCOMMANDS: ReadonlySet<string> = new Set([
+  "add",
+  "cherry-pick",
+  "clone",
+  "commit",
+  "fetch",
+  "init",
+  "merge",
+  "mv",
+  "pull",
+  "push",
+  "rebase",
+  "reset",
+  "rm",
+  "stash",
+]);
+
+export const SOFT_WRITE_GIT_SUBCOMMANDS: ReadonlySet<string> = new Set([
+  "add",
+  "mv",
+]);
 
 const GLOBAL_VALUE_SHORTS = new Set(["-C", "-c"]);
 
@@ -222,3 +267,50 @@ export const findForbiddenGitCommand = (command: string): string | null => {
   }
   return null;
 };
+
+const gitSubcommandsOf = (tokens: string[]): string[] => {
+  const subs: string[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    if (baseName(tokens[i]) !== GIT) continue;
+    if (!isInvocationPosition(tokens, i)) continue;
+    const subIndex = findSubcommandIndex(tokens, i);
+    if (subIndex === -1) continue;
+    const sub = tokens[subIndex];
+    if (sub !== undefined) subs.push(sub);
+  }
+  return subs;
+};
+
+export const findWriteGitSubcommands = (command: string): string[] => {
+  const hits: string[] = [];
+  for (const tokens of splitSegments(command)) {
+    for (const sub of gitSubcommandsOf(tokens)) {
+      if (WRITE_GIT_SUBCOMMANDS.has(sub) && !hits.includes(sub)) hits.push(sub);
+    }
+  }
+  return hits;
+};
+
+const isPureGitChain = (
+  command: string,
+  allowSubcommands: ReadonlySet<string>,
+): boolean => {
+  const segments = splitSegments(command);
+  if (segments.length === 0) return false;
+  for (const tokens of segments) {
+    if (commandName(tokens) !== GIT) return false;
+    const subs = gitSubcommandsOf(tokens);
+    if (subs.length === 0) return false;
+    if (!subs.every((sub) => allowSubcommands.has(sub))) return false;
+  }
+  return true;
+};
+
+export const isReadOnlyGitChain = (command: string): boolean =>
+  isPureGitChain(command, READONLY_GIT_SUBCOMMANDS);
+
+export const isBuildGitChain = (command: string): boolean =>
+  isPureGitChain(
+    command,
+    new Set([...READONLY_GIT_SUBCOMMANDS, ...SOFT_WRITE_GIT_SUBCOMMANDS]),
+  );

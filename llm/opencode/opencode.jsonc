@@ -6,13 +6,11 @@
         "edit": "deny"
       }
     },
-    "build": {
-      "permission": {
-        "edit": "allow",
-        "bash": {
-          "git add *": "allow",
-          "git mv *": "allow",
-          "mkdir *": "allow",
+      "build": {
+        "permission": {
+          "edit": "allow",
+          "bash": {
+            "mkdir *": "allow",
           "mv *": "allow",
           "cp *": "allow",
           "touch *": "allow"
@@ -76,39 +74,11 @@
       "gawk *": "allow",
       "mawk *": "allow",
 
-      "git log*": "allow",
-      "git diff*": "allow",
-      "git show*": "allow",
-      "git rev-parse*": "allow",
-      "git status*": "allow",
-      "git ls-files*": "allow",
-      "git ls-tree*": "allow",
-      "git cat-file*": "allow",
-      "git grep*": "allow",
-      "git blame*": "allow",
-      "git shortlog*": "allow",
-      "git reflog*": "allow",
-      "git ls-remote*": "allow",
-      "git describe*": "allow",
-
-      "git add*": "deny",
-      "git mv*": "deny",
-      "git rm*": "deny",
-      "git commit*": "deny",
-      "git push*": "deny",
-      "git pull*": "ask",
-      "git fetch*": "ask",
-      "git reset*": "deny",
-      "git rebase*": "deny",
-      "git merge*": "deny",
-      "git cherry-pick*": "deny",
-      "git revert*": "deny",
-      "git clone*": "ask",
-      "git init*": "ask",
-      "git stash*": "deny",
-
       "curl -sS *": "allow",
       "curl -fsSL *": "allow",
+      "curl -sSL *": "allow",
+      "curl -sL *": "allow",
+      "curl -SL *": "allow",
       "curl -I *": "allow",
 
       "nix flake check *": "allow",
