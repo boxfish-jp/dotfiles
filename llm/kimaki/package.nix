@@ -9,7 +9,7 @@
   glibc,
 }:
 let
-  version = "0.22.0";
+  version = "0.28.0";
   lockfile = ./bun.lock;
 
   deps = stdenv.mkDerivation {
@@ -18,7 +18,7 @@ let
 
     src = fetchurl {
       url = "https://registry.npmjs.org/kimaki/-/kimaki-${version}.tgz";
-      hash = "sha256-oJc8jKxYio0dNDsMdoNbS4Fay8OOpR3rkjt3BGa67TA=";
+      hash = "sha256-BUu3b/phIn4CARbQMvModBk8tcI7X+FG7Ydgki5dvkQ=";
     };
 
     nativeBuildInputs = [
@@ -28,7 +28,7 @@ let
     ];
 
     outputHashMode = "recursive";
-    outputHash = "sha256-GxBu9DAtgszWgWR8ivxbayfMdoJ+ZLaOCDfEOrN/Smg=";
+    outputHash = "sha256-f454yg45HjwagJ8lcokhnqkdY9f7PeqWocMyMImhJHc=";
 
     buildPhase = ''
       runHook preBuild
