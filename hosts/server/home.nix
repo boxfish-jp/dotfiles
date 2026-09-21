@@ -42,7 +42,7 @@
       educationDbPath = "${config.home.homeDirectory}/.local/share/streaming-kit/education.db";
       headlessBrowserUrl = "http://0.0.0.0:4321";
       voicepeakPath = "${config.home.homeDirectory}/.local/share/streaming-kit/voicepeak/voicepeak";
-      oauthCallbackBaseUrl = "https://nixos-ct.taildb6ca.ts.net:5000";
+      oauthCallbackBaseUrl = "http://127.0.0.1:5000";
       systemd.enable = true;
     };
   };
