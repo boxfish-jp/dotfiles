@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ ... }:
+{ lib, ... }:
 
 {
   imports = [
@@ -40,6 +40,14 @@
   };
 
   tailscale.enable = true;
+
+  # LXC非特権での pam_setcred 失敗回避 (192.168.68.16 Connection reset by peer)
+  # modules/nixos/ssh.nix:13 の UsePAM yes をホスト限定で上書き
+  services.openssh.settings = {
+    UsePAM = lib.mkForce false;
+    KbdInteractiveAuthentication = lib.mkForce false;
+    PermitEmptyPasswords = lib.mkForce false;
+  };
 
   services.voicevox_container = {
     enable = true;
