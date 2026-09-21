@@ -92,6 +92,30 @@
     ];
   };
 
+  # noauto + x-systemd.automount + nofail: boot never blocks on the NAS;
+  # the mount is established on first access to /mnt/nas and kept until reboot.
+  # If the NAS is unreachable, access to /mnt/nas fails after a short timeout.
+  fileSystems."/mnt/nas" = {
+    device = "//192.168.68.16/iohdd";
+    fsType = "cifs";
+    options = [
+      "x-systemd.automount"
+      "noauto"
+      "nofail"
+      "_netdev"
+      "x-systemd.device-timeout=5s"
+      "x-systemd.mount-timeout=5s"
+      "credentials=/etc/samba/credentials.nas"
+      "hard"
+      "uid=1000"
+      "gid=100"
+      "forceuid"
+      "forcegid"
+      "file_mode=0660"
+      "dir_mode=0770"
+    ];
+  };
+
   services.voicevox_container = {
     enable = true;
     user = "boxfish";
@@ -111,5 +135,6 @@
     qemu
     quickemu
     usbutils
+    cifs-utils
   ];
 }
