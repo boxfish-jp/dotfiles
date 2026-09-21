@@ -75,6 +75,7 @@
       "mawk *": "allow",
 
       "curl *": "allow",
+      "git *": "allow",
 
       "nix flake check *": "allow",
       "env *": "deny",
