@@ -1,13 +1,7 @@
 { self, ... }:
 {
-  flake.homeModules.ghostty =
-    {
-      config,
-      pkgs,
-      lib,
-      ...
-    }:
-
+  perSystem =
+    { pkgs, ... }:
     let
       ghosttyCursorTrails = pkgs.fetchFromGitHub {
         owner = "hced";
@@ -22,23 +16,37 @@
           --replace-fail 'float minDist = currentCursor.w * THRESHOLD_MIN_DISTANCE;' \
                          'vec2 _mv = centerCC - centerCP; float minDist = mix(currentCursor.w * 2.0, 1e10, step(abs(_mv.y), abs(_mv.x)));'
       '';
+
+      # 設定ツリー（config と shaders/ を同梱）。
+      # config 内の custom-shader 相対パスはファイル所在ディレクトリ基準で解決される。
+      # 先頭に空値の custom-shader を挿入し、XDG 側に設定が残っていても
+      # シェーダーが二重適用されないようにする。
+      ghosttyConfigTree = pkgs.runCommand "ghostty-config" { } ''
+        mkdir -p $out/shaders/ghostty-cursor-trails
+        cp ${ghosttyCursorTrails}/tinkle-cursor.glsl $out/shaders/ghostty-cursor-trails/
+        cp ${ghosttyCursorTrails}/wisp-cursor.glsl $out/shaders/ghostty-cursor-trails/
+        cp ${patchedBooCursor} $out/shaders/ghostty-cursor-trails/boo-cursor.glsl
+        cp ${./config} $out/config
+        chmod u+w $out/config
+        sed -i '0,/^custom-shader =/s//custom-shader =\n&/' $out/config
+      '';
+
+      # --config-file は XDG 既定設定の後に読まれ後勝ち。
+      # --gtk-single-instance=false は既存インスタンスへのフォワード（設定無視で開く）を防ぐため。
+      ghostty = pkgs.writeShellScriptBin "ghostty" ''
+        exec ${pkgs.lib.getExe pkgs.ghostty} \
+          --gtk-single-instance=false \
+          --config-file=${ghosttyConfigTree}/config \
+          "$@"
+      '';
     in
     {
-      home.packages = [
-        pkgs.ghostty
-      ];
+      packages.ghostty = ghostty;
+    };
 
-      xdg.configFile = {
-        "ghostty/config".source =
-          config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/ghostty/config";
-
-        "ghostty/shaders/ghostty-cursor-trails/boo-cursor.glsl".source = "${patchedBooCursor}";
-        "ghostty/shaders/ghostty-cursor-trails/tinkle-cursor.glsl".source =
-          "${ghosttyCursorTrails}/tinkle-cursor.glsl";
-        "ghostty/shaders/ghostty-cursor-trails/wisp-cursor.glsl".source =
-          "${ghosttyCursorTrails}/wisp-cursor.glsl";
-      };
-    }
-
-  ;
+  flake.homeModules.ghostty =
+    { pkgs, ... }:
+    {
+      home.packages = [ self.packages.${pkgs.system}.ghostty ];
+    };
 }
