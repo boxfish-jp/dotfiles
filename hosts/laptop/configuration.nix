@@ -72,5 +72,20 @@
         quickemu
         usbutils
       ];
+
+      users.users.stream = {
+        isNormalUser = true;
+        description = "streaming";
+        extraGroups = [
+          "networkmanager"
+          "wheel"
+          "podman"
+          "input"
+        ];
+        home = "/home/stream";
+        shell = pkgs.bash;
+      };
+
+      home-manager.users.stream = self.homeModules."laptop/stream";
     };
 }
