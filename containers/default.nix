@@ -1,28 +1,34 @@
+{ self, ... }:
 {
-  pkgs,
-  ...
-}:
-{
-  home.packages = with pkgs; [
-    podman-compose
-  ];
-
-  xdg.configFile."containers/policy.json".text = ''
+  flake.homeModules.containers =
     {
-      "default": [
+      pkgs,
+      ...
+    }:
+    {
+      home.packages = with pkgs; [
+        podman-compose
+      ];
+
+      xdg.configFile."containers/policy.json".text = ''
         {
-          "type": "insecureAcceptAnything"
-        }
-      ],
-      "transports": {
-        "docker-daemon": {
-          "": [
+          "default": [
             {
               "type": "insecureAcceptAnything"
             }
-          ]
+          ],
+          "transports": {
+            "docker-daemon": {
+              "": [
+                {
+                  "type": "insecureAcceptAnything"
+                }
+              ]
+            }
+          }
         }
-      }
+      '';
     }
-  '';
+
+  ;
 }

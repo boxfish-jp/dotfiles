@@ -1,32 +1,38 @@
+{ self, ... }:
 {
-  config,
-  pkgs,
-  lib,
-  ...
-}:
-{
-  home.packages = with pkgs; [
-    qpwgraph
-  ];
-  systemd.user.services.qpwgraph = {
-    Unit = {
-      Description = "PipeWire Graph Qt GUI (qpwgraph)";
-      After = [
-        "graphical-session.target"
-        "pipewire.service"
+  flake.homeModules.qpwgraph =
+    {
+      config,
+      pkgs,
+      lib,
+      ...
+    }:
+    {
+      home.packages = with pkgs; [
+        qpwgraph
       ];
-      PartOf = [ "graphical-session.target" ];
-    };
-    Service = {
-      Type = "simple";
-      ExecStart = "${pkgs.qpwgraph}/bin/qpwgraph -m";
-      Environment = [
-        "WAYLAND_DISPLAY=wayland-0"
-        "XDG_RUNTIME_DIR=%t"
-      ];
-    };
-    Install = {
-      WantedBy = [ "graphical-session.target" ];
-    };
-  };
+      systemd.user.services.qpwgraph = {
+        Unit = {
+          Description = "PipeWire Graph Qt GUI (qpwgraph)";
+          After = [
+            "graphical-session.target"
+            "pipewire.service"
+          ];
+          PartOf = [ "graphical-session.target" ];
+        };
+        Service = {
+          Type = "simple";
+          ExecStart = "${pkgs.qpwgraph}/bin/qpwgraph -m";
+          Environment = [
+            "WAYLAND_DISPLAY=wayland-0"
+            "XDG_RUNTIME_DIR=%t"
+          ];
+        };
+        Install = {
+          WantedBy = [ "graphical-session.target" ];
+        };
+      };
+    }
+
+  ;
 }

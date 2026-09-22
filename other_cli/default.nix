@@ -1,17 +1,23 @@
+{ self, ... }:
 {
-  pkgs,
-  ...
-}:
-{
-  home.packages = with pkgs; [
-    fzf
-    ripgrep
-    fd
-    wl-clipboard
-    ffmpeg
-    yt-dlp
-    ncdu
-    jq
-    yq
-  ];
+  flake.homeModules.other_cli =
+    {
+      pkgs,
+      ...
+    }:
+    {
+      home.packages = with pkgs; [
+        fzf
+        ripgrep
+        fd
+        wl-clipboard
+        ffmpeg
+        yt-dlp
+        ncdu
+        jq
+        yq
+      ];
+    }
+
+  ;
 }

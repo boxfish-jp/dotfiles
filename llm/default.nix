@@ -1,21 +1,28 @@
+{ self, ... }:
 {
-  config,
-  pkgs,
-  lib,
-  username,
-  ...
-}:
-{
-  imports = lib.optionals (username == "sandbox") [ ./kimaki ];
+  flake.homeModules.llm =
+    {
+      config,
+      pkgs,
+      self,
+      ...
+    }:
+    {
+      imports = [ self.homeModules.kimaki ];
 
-  home.packages = with pkgs; [
-    llm-agents.opencode
-  ];
+      llm.kimaki.enable = config.home.username == "sandbox";
 
-  home.sessionVariables = {
-    OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS = "true";
-  };
+      home.packages = with pkgs; [
+        llm-agents.opencode
+      ];
 
-  xdg.configFile."opencode".source =
-    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/llm/opencode";
+      home.sessionVariables = {
+        OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS = "true";
+      };
+
+      xdg.configFile."opencode".source =
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/llm/opencode";
+    }
+
+  ;
 }

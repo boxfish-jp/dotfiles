@@ -1,30 +1,31 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ ... }:
-
+{ self, ... }:
 {
-  imports = [
-    ../../modules/nixos/lxc.nix
-    ../../modules/nixos/locale.nix
-    ../../modules/nixos/networking.nix
-    ../../modules/nixos/nix.nix
-    ../../modules/nixos/user.nix
-    ../../modules/nixos/fonts.nix
-    ../../modules/nixos/virtualisation.nix
-    ../../modules/nixos/ssh.nix
-    ../../modules/nixos/certificate.nix
-    ../../palworld
-  ];
+  flake.nixosConfigurations.game = self.lib.mkHost { hostname = "game"; };
 
-  domains = {
-    networking.allowedTCPPorts = [ ];
-    nix = {
-      sandbox = false;
-      maxJobs = 4;
+  flake.nixosModules."host-game" =
+    { ... }:
+    {
+      imports = [
+        self.nixosModules.lxc
+        self.nixosModules.locale
+        self.nixosModules.networking
+        self.nixosModules.nix
+        self.nixosModules.user
+        self.nixosModules.fonts
+        self.nixosModules.virtualisation
+        self.nixosModules.ssh
+        self.nixosModules.certificate
+        self.nixosModules.palworld
+      ];
+
+      domains = {
+        networking.allowedTCPPorts = [ ];
+        nix = {
+          sandbox = false;
+          maxJobs = 4;
+        };
+        virtualisation.podman = true;
+        ssh.rootLogin = true;
+      };
     };
-    virtualisation.podman = true;
-    ssh.rootLogin = true;
-  };
 }

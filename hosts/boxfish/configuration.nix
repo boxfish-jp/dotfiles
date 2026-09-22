@@ -1,140 +1,139 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ pkgs, ... }:
-
+{ self, ... }:
 {
-  imports = [
-    # Include the results of the hardware scan.
-    ./hardware-configuration.nix
-    ../../modules/nixos/locale.nix
-    ../../modules/nixos/keyboard.nix
-    ../../modules/nixos/networking.nix
-    ../../modules/nixos/nix.nix
-    ../../modules/nixos/user.nix
-    ../../modules/nixos/fonts.nix
-    ../../modules/nixos/virtualisation.nix
-    ../../modules/nixos/graphics.nix
-    ../../modules/nixos/audio.nix
-    ../../modules/nixos/desktop.nix
-    ../../modules/nixos/ssh.nix
-    ../../modules/nixos/certificate.nix
-    ../../tailscale/nixos.nix
-    ../../voicevox_container/nixos.nix
-    ../../wake_on_lan/nixos.nix
-  ];
+  flake.nixosConfigurations.boxfish = self.lib.mkHost { hostname = "boxfish"; };
 
-  domains = {
-    locale.japanese = true;
-    networking.desktop = true;
-    nix.maxJobs = 8;
-    virtualisation.podman = true;
-    graphics.nvidia = true;
-    fonts.defaultFonts = true;
-    users.extraGroups = [
-      "networkmanager"
-      "wheel"
-      "podman"
-      "input"
-    ];
-  };
+  flake.nixosModules."host-boxfish" =
+    { pkgs, ... }:
+    {
+      imports = [
+        self.nixosModules.locale
+        self.nixosModules.keyboard
+        self.nixosModules.networking
+        self.nixosModules.nix
+        self.nixosModules.user
+        self.nixosModules.fonts
+        self.nixosModules.virtualisation
+        self.nixosModules.graphics
+        self.nixosModules.audio
+        self.nixosModules.desktop
+        self.nixosModules.ssh
+        self.nixosModules.certificate
+        self.nixosModules.tailscale
+        self.nixosModules.voicevox_container
+        self.nixosModules.wake_on_lan
+      ];
 
-  tailscale.enable = true;
+      domains = {
+        locale.japanese = true;
+        networking.desktop = true;
+        nix.maxJobs = 8;
+        virtualisation.podman = true;
+        graphics.nvidia = true;
+        fonts.defaultFonts = true;
+        users.extraGroups = [
+          "networkmanager"
+          "wheel"
+          "podman"
+          "input"
+        ];
+      };
 
-  fileSystems."/mnt/ext4-ssd" = {
-    device = "/dev/disk/by-uuid/a5409329-4ec1-46a7-8966-b61994048e9a";
-    fsType = "ext4";
-    options = [
-      "users"
-      "nofail"
-      "exec"
-    ];
-  };
+      tailscale.enable = true;
 
-  fileSystems."/mnt/windows" = {
-    device = "/dev/disk/by-uuid/C49E52179E5201FA";
-    fsType = "ntfs3";
-    options = [
-      "users"
-      "nofail"
-      "exec"
-      "uid=1000"
-      "gid=100"
-      "umask=022"
-    ];
-  };
+      fileSystems."/mnt/ext4-ssd" = {
+        device = "/dev/disk/by-uuid/a5409329-4ec1-46a7-8966-b61994048e9a";
+        fsType = "ext4";
+        options = [
+          "users"
+          "nofail"
+          "exec"
+        ];
+      };
 
-  fileSystems."/home/boxfish/.local/share/Steam/steamapps" = {
-    depends = [
-      # The mounts above have to be mounted in this given order
-      "/"
-      "/mnt/ext4-ssd"
-    ];
-    device = "/mnt/ext4-ssd/steamapps";
-    fsType = "none";
-    options = [
-      "bind"
-    ];
-  };
+      fileSystems."/mnt/windows" = {
+        device = "/dev/disk/by-uuid/C49E52179E5201FA";
+        fsType = "ntfs3";
+        options = [
+          "users"
+          "nofail"
+          "exec"
+          "uid=1000"
+          "gid=100"
+          "umask=022"
+        ];
+      };
 
-  fileSystems."/mnt/windows/steam/steamapps/compatdata" = {
-    depends = [
-      # The mounts above have to be mounted in this given order
-      "/"
-      "/mnt/ext4-ssd"
-      "/mnt/windows"
-    ];
-    device = "/mnt/ext4-ssd/steamapps/compatdata";
-    fsType = "none";
-    options = [
-      "bind"
-    ];
-  };
+      fileSystems."/home/boxfish/.local/share/Steam/steamapps" = {
+        depends = [
+          # The mounts above have to be mounted in this given order
+          "/"
+          "/mnt/ext4-ssd"
+        ];
+        device = "/mnt/ext4-ssd/steamapps";
+        fsType = "none";
+        options = [
+          "bind"
+        ];
+      };
 
-  # noauto + x-systemd.automount + nofail: boot never blocks on the NAS;
-  # the mount is established on first access to /mnt/nas and kept until reboot.
-  # If the NAS is unreachable, access to /mnt/nas fails after a short timeout.
-  fileSystems."/mnt/nas" = {
-    device = "//192.168.68.16/iohdd";
-    fsType = "cifs";
-    options = [
-      "x-systemd.automount"
-      "noauto"
-      "nofail"
-      "_netdev"
-      "x-systemd.device-timeout=5s"
-      "x-systemd.mount-timeout=5s"
-      "credentials=/etc/samba/credentials.nas"
-      "hard"
-      "uid=1000"
-      "gid=100"
-      "forceuid"
-      "forcegid"
-      "file_mode=0660"
-      "dir_mode=0770"
-    ];
-  };
+      fileSystems."/mnt/windows/steam/steamapps/compatdata" = {
+        depends = [
+          # The mounts above have to be mounted in this given order
+          "/"
+          "/mnt/ext4-ssd"
+          "/mnt/windows"
+        ];
+        device = "/mnt/ext4-ssd/steamapps/compatdata";
+        fsType = "none";
+        options = [
+          "bind"
+        ];
+      };
 
-  services.voicevox_container = {
-    enable = true;
-    user = "boxfish";
-  };
+      # noauto + x-systemd.automount + nofail: boot never blocks on the NAS;
+      # the mount is established on first access to /mnt/nas and kept until reboot.
+      # If the NAS is unreachable, access to /mnt/nas fails after a short timeout.
+      fileSystems."/mnt/nas" = {
+        device = "//192.168.68.16/iohdd";
+        fsType = "cifs";
+        options = [
+          "x-systemd.automount"
+          "noauto"
+          "nofail"
+          "_netdev"
+          "x-systemd.device-timeout=5s"
+          "x-systemd.mount-timeout=5s"
+          "credentials=/etc/samba/credentials.nas"
+          "hard"
+          "uid=1000"
+          "gid=100"
+          "forceuid"
+          "forcegid"
+          "file_mode=0660"
+          "dir_mode=0770"
+        ];
+      };
 
-  wakeOnLan = {
-    enable = true;
-    interfaces = [ "enp10s0" ];
-    udpPorts = [ 9 ];
-  };
+      services.voicevox_container = {
+        enable = true;
+        user = "boxfish";
+      };
 
-  programs.steam.enable = true;
-  services.flatpak.enable = true;
+      wakeOnLan = {
+        enable = true;
+        interfaces = [ "enp10s0" ];
+        udpPorts = [ 9 ];
+      };
 
-  # List packages installed in system profile.
-  environment.systemPackages = with pkgs; [
-    qemu
-    quickemu
-    usbutils
-    cifs-utils
-  ];
+      programs.steam.enable = true;
+      services.flatpak.enable = true;
+
+      # List packages installed in system profile.
+      environment.systemPackages = with pkgs; [
+        qemu
+        quickemu
+        usbutils
+        cifs-utils
+      ];
+    };
 }

@@ -30,7 +30,7 @@
     "grep": "allow",
     "list": "allow",
     "bash": {
-      "*": "ask",
+      "*": "allow",
       "ls *": "allow",
       "which*": "allow",
       "type*": "allow",

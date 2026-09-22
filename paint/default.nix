@@ -1,9 +1,15 @@
+{ self, ... }:
 {
-  pkgs,
-  ...
-}:
-{
-  home.packages = with pkgs; [
-    krita
-  ];
+  flake.homeModules.paint =
+    {
+      pkgs,
+      ...
+    }:
+    {
+      home.packages = with pkgs; [
+        krita
+      ];
+    }
+
+  ;
 }

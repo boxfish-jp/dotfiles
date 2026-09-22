@@ -1,17 +1,23 @@
+{ self, ... }:
 {
-  pkgs,
-  username,
-  ...
-}:
-with pkgs;
-{
-  home.packages =
-    if username == "boxfish" then
-      [
-        btop-cuda
-      ]
-    else
-      [
-        btop
-      ];
+  flake.homeModules.btop =
+    {
+      config,
+      pkgs,
+      ...
+    }:
+    with pkgs;
+    {
+      home.packages =
+        if config.home.username == "boxfish" then
+          [
+            btop-cuda
+          ]
+        else
+          [
+            btop
+          ];
+    }
+
+  ;
 }
