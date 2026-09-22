@@ -94,6 +94,8 @@ let
   };
 in
 {
+  imports = [ inputs.wrapper-modules.flakeModules.wrappers ];
+
   config.systems = [ "x86_64-linux" ];
 
   options.flake = inputs.flake-parts.lib.mkSubmoduleOptions {
