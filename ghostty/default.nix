@@ -1,6 +1,7 @@
 { self, ... }:
 {
-  flake.wrappers.terminal =
+  # 設定込みの ghostty 単体。ツール一式への依存はないので起動シェルは素のものになる。
+  flake.wrappers.ghostty =
     { wlib, pkgs, ... }:
     let
       ghosttyCursorTrails = pkgs.fetchFromGitHub {
@@ -41,24 +42,9 @@
     {
       imports = [ wlib.wrapperModules.ghostty ];
 
-      aliases = [ "terminal" ];
-
       addFlag = [ "--gtk-single-instance=false" ];
 
-      # 設定込みのツール一式を wrapper の実行時 PATH に注入し、
-      # nix run github:<repo>#terminal だけで完結させる。
-      runtimePkgs = [
-        self.packages.${pkgs.system}.bash
-        self.packages.${pkgs.system}.nvim
-        self.packages.${pkgs.system}.opencode
-        self.packages.${pkgs.system}.zellij
-      ];
-
-      env = {
-        # zellij のペインシェルは $SHELL 参照なので repo bash にピン留めする。
-        SHELL = "${self.packages.${pkgs.system}.bash}/bin/bash";
-        FONTCONFIG_FILE = "${fontconfigConf}";
-      };
+      env.FONTCONFIG_FILE = "${fontconfigConf}";
 
       settings = {
         font-family = "HackGen Console NF";
@@ -68,7 +54,6 @@
         window-decoration = "none";
         background-opacity = 0.6;
         background-blur = 20;
-        command = "zellij";
         term = "xterm-256color";
         background = "#16181a";
         foreground = "#ffffff";
