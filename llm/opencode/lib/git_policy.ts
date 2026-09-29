@@ -3,6 +3,7 @@ import {
   commandName,
   isFlag,
   isInvocationPosition,
+  SCRIPT_INTERPRETERS,
   splitSegments,
 } from "./shell_parse.ts";
 
@@ -54,7 +55,82 @@ const GLOBAL_VALUE_LONGS = new Set([
   "--work-tree",
   "--namespace",
   "--super-prefix",
+  "--config-env",
 ]);
+
+// 設定値そのものがコマンドとして実行されるキー(値に関係なく危険)
+const FORBIDDEN_EXEC_CONFIG_KEYS = new Set([
+  "core.askPass",
+  "core.editor",
+  "core.fsmonitor",
+  "core.sshCommand",
+  "credential.helper",
+  "sequence.editor",
+  "ssh.variant",
+]);
+
+const FORBIDDEN_EXEC_CONFIG_PREFIXES = [
+  "alias.",
+  "difftool.",
+  "mergetool.",
+  "remote.",
+  "url.",
+];
+
+const EXEC_CAPABLE_PAGER_PREFIX = "pager.";
+
+const hasExecutableShape = (value: string): boolean => {
+  const firstWord = value.split(/\s+/)[0] ?? value;
+  return (
+    value.startsWith("!") ||
+    value.startsWith("ext::") ||
+    value.includes("/") ||
+    value.includes("~") ||
+    SCRIPT_INTERPRETERS.has(firstWord)
+  );
+};
+
+const isForbiddenConfigAssignment = (option: string, raw: string): boolean => {
+  const [key] = raw.split(option === "-c" ? "=" : ":");
+  if (!key) return false;
+  const isPagerKey = key === "core.pager" || key.startsWith(EXEC_CAPABLE_PAGER_PREFIX);
+  if (FORBIDDEN_EXEC_CONFIG_KEYS.has(key)) return true;
+  if (FORBIDDEN_EXEC_CONFIG_PREFIXES.some((p) => key.startsWith(p))) return true;
+  if (option !== "-c") return isPagerKey;
+  return isPagerKey && hasExecutableShape(raw.slice(key.length + 1));
+};
+
+// git サブコマンドより前(グローバルオプション領域)の実行ベクタを検出する
+const findForbiddenGlobalOption = (
+  tokens: string[],
+  start: number,
+  end: number,
+): string | null => {
+  for (let k = start; k < end; k++) {
+    const t = tokens[k];
+    if (t.startsWith("--exec-path=")) return t;
+
+    let option = "";
+    let raw = "";
+    if (t === "-c" || t === "--config-env") {
+      option = t;
+      raw = tokens[k + 1] ?? "";
+      k++;
+    } else if (t.startsWith("--config-env=")) {
+      option = "--config-env";
+      raw = t.slice("--config-env=".length);
+    } else if (t.startsWith("-c") && !t.startsWith("--")) {
+      option = "-c";
+      raw = t.slice(2);
+    } else {
+      continue;
+    }
+
+    if (isForbiddenConfigAssignment(option, raw))
+      return `${option} ${raw}`;
+  }
+  return null;
+};
 
 const findSubcommandIndex = (tokens: string[], gitIndex: number): number => {
   for (let k = gitIndex + 1; k < tokens.length; k++) {
@@ -257,6 +333,12 @@ export const findForbiddenGitCommand = (command: string): string | null => {
       if (baseName(tokens[i]) !== GIT) continue;
       if (!isInvocationPosition(tokens, i)) continue;
       const subIndex = findSubcommandIndex(tokens, i);
+      const globalHit = findForbiddenGlobalOption(
+        tokens,
+        i + 1,
+        subIndex === -1 ? tokens.length : subIndex,
+      );
+      if (globalHit) return `${GIT} の ${globalHit}`;
       if (subIndex === -1) continue;
       const subcommand = tokens[subIndex];
       const validator = SUBCOMMAND_VALIDATORS[subcommand];
@@ -295,6 +377,7 @@ const isPureGitChain = (
   command: string,
   allowSubcommands: ReadonlySet<string>,
 ): boolean => {
+  if (findForbiddenGitCommand(command) !== null) return false;
   const segments = splitSegments(command);
   if (segments.length === 0) return false;
   for (const tokens of segments) {

@@ -30,7 +30,7 @@
     "grep": "allow",
     "list": "allow",
     "bash": {
-      "*": "allow",
+      "*": "ask",
       "ls *": "allow",
       "which*": "allow",
       "type*": "allow",
@@ -67,7 +67,7 @@
       "uniq *": "allow",
       "cut *": "allow",
       "tr *": "allow",
-      "xargs *": "allow",
+      "xargs *": "deny",
 
       "sed *": "allow",
       "awk *": "allow",
@@ -84,7 +84,35 @@
       "mv *": "deny",
       "cp *": "deny",
       "touch *": "deny",
-      "sudo*": "deny"
+      "sudo*": "deny",
+      // シェル組み込み経由の任意実行
+      "eval *": "deny",
+      "source *": "deny",
+      ". *": "deny",
+      "npx *": "deny",
+      "git commit *": "deny",
+      "at *": "deny",
+      "crontab *": "deny",
+      "opencode run *": "deny",
+      // 破壊・権限変更系
+      "rm *": "deny",
+      "chmod *": "deny",
+      "chown *": "deny",
+      "chgrp *": "deny",
+      "install *": "deny",
+      "dd *": "deny",
+      // 権限昇格・名前空間経由の実行
+      "su *": "deny",
+      "doas *": "deny",
+      "runuser *": "deny",
+      "pkexec *": "deny",
+      "chroot *": "deny",
+      "unshare *": "deny",
+      "nsenter *": "deny",
+      "bwrap *": "deny",
+      "runc *": "deny",
+      "crun *": "deny",
+      "buildah *": "deny"
     },
     "task": {
       "*": "allow"

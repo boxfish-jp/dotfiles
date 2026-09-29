@@ -254,6 +254,86 @@ describe("findForbiddenGitCommand", () => {
       );
     });
   });
+
+  describe("危険なグローバルオプションの検出", () => {
+    test("-c core.pagerのパス値をブロックする", () => {
+      expect(findForbiddenGitCommand(`git -c core.pager=./evil log`)).toBe(
+        "git の -c core.pager=./evil",
+      );
+    });
+
+    test("-c core.pager=lessのような安全な値をブロックしない", () => {
+      expect(findForbiddenGitCommand(`git -c core.pager=less log`)).toBeNull();
+    });
+
+    test("-c core.pagerのインタプリタ値をブロックする", () => {
+      expect(
+        findForbiddenGitCommand(`git -c 'core.pager=python3 evil.py' log`),
+      ).toBe("git の -c core.pager=python3 evil.py");
+    });
+
+    test("値に関係なく-c core.editorをブロックする", () => {
+      expect(findForbiddenGitCommand(`git -c core.editor=vim log`)).toBe(
+        "git の -c core.editor=vim",
+      );
+    });
+
+    test("値に関係なく-c core.fsmonitorをブロックする", () => {
+      expect(
+        findForbiddenGitCommand(`git -c core.fsmonitor=true status`),
+      ).toBe("git の -c core.fsmonitor=true");
+    });
+
+    test("-c alias.*をブロックする", () => {
+      expect(
+        findForbiddenGitCommand(`git -c alias.x='!rm -rf ~' x`),
+      ).toBe("git の -c alias.x=!rm -rf ~");
+    });
+
+    test("-c remote.*をブロックする", () => {
+      expect(
+        findForbiddenGitCommand(`git -c remote.origin.url=ext::evil fetch`),
+      ).toBe("git の -c remote.origin.url=ext::evil");
+    });
+
+    test("引用符付きの-c指定も検出できる", () => {
+      expect(findForbiddenGitCommand(`git -c 'core.pager=./evil' log`)).toBe(
+        "git の -c core.pager=./evil",
+      );
+    });
+
+    test("結合形-ccore.pager=./evilも検出できる", () => {
+      expect(findForbiddenGitCommand(`git -ccore.pager=./evil log`)).toBe(
+        "git の -c core.pager=./evil",
+      );
+    });
+
+    test("--config-env経由のpagerキーをブロックする", () => {
+      expect(
+        findForbiddenGitCommand(`git --config-env core.pager:EVIL log`),
+      ).toBe("git の --config-env core.pager:EVIL");
+    });
+
+    test("--config-envの後でもサブコマンドを特定できる", () => {
+      expect(
+        findForbiddenGitCommand(`git --config-env user.name:NAME branch -D x`),
+      ).toBe("git branch の -D");
+    });
+
+    test("--exec-path=によるヘルパー探索先の変更をブロックする", () => {
+      expect(
+        findForbiddenGitCommand(`git --exec-path=/tmp/evil log`),
+      ).toBe("git の --exec-path=/tmp/evil");
+    });
+
+    test("値なしの--exec-path表示をブロックしない", () => {
+      expect(findForbiddenGitCommand(`git --exec-path`)).toBeNull();
+    });
+
+    test("-Cの値のパスはグローバル危険指定扱いにしない", () => {
+      expect(findForbiddenGitCommand(`git -C /tmp/x log`)).toBeNull();
+    });
+  });
 });
 
 describe("findWriteGitSubcommands", () => {
@@ -351,6 +431,14 @@ describe("isReadOnlyGitChain", () => {
 
   test("sudo経由の読み取り専用gitでtrueになる", () => {
     expect(isReadOnlyGitChain(`sudo git log -1`)).toBe(true);
+  });
+
+  test("危険なグローバルオプション付きはfalseになる", () => {
+    expect(isReadOnlyGitChain(`git -c core.pager=./evil log`)).toBe(false);
+  });
+
+  test("ブロック対象のサブコマンド用法を含むとfalseになる", () => {
+    expect(isReadOnlyGitChain(`git branch feature-x`)).toBe(false);
   });
 });
 
