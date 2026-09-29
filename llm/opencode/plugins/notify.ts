@@ -59,6 +59,22 @@ const deriveLogicalState = (event: {
   return null;
 };
 
+const permissionNotifyWaitMs = () =>
+  Number(process.env.OPENCODE_NOTIFY_PERMISSION_WAIT_MS ?? 2_500);
+
+const permissionDetail = (permission?: string): string => {
+  switch (permission) {
+    case "edit":
+      return "編集";
+    case "external_directory":
+      return "外部フォルダ";
+    case "doom_loop":
+      return "同じコマンド";
+    default:
+      return permission ?? "";
+  }
+};
+
 const isParentSession = async (
   client: OpencodeClient,
   sessionID: string,
@@ -126,6 +142,28 @@ export const NotifyPlugin: Plugin = async ({
 }) => {
   const notifier = new Notifier();
   const previousState = new Map<string, LogicalState>();
+  const pendingPermissionTimers = new Map<
+    string,
+    ReturnType<typeof setTimeout>
+  >();
+
+  const schedulePermissionNotify = (id: string, text: string) => {
+    const timer = setTimeout(() => {
+      pendingPermissionTimers.delete(id);
+      notifier.notify("permission", text);
+    }, permissionNotifyWaitMs());
+    timer.unref?.();
+    pendingPermissionTimers.set(id, timer);
+  };
+
+  const cancelPermissionNotify = (id?: string) => {
+    if (!id) return;
+    const timer = pendingPermissionTimers.get(id);
+    if (!timer) return;
+    clearTimeout(timer);
+    pendingPermissionTimers.delete(id);
+  };
+
   sendLog(client, "Plugin initialized");
   return {
     event: async ({ event }) => {
@@ -165,25 +203,28 @@ export const NotifyPlugin: Plugin = async ({
 
       if ((event.type as string) === "permission.asked") {
         const props = event.properties as {
+          id?: string;
           permission?: string;
-          patterns?: string[];
         };
         if (props.permission === "question") return;
-        let detail = "";
-        switch (props.permission) {
-          case "edit":
-            detail = "編集";
-            break;
-          case "external_directory":
-            detail = "外部フォルダ";
-            break;
-          case "doom_loop":
-            detail = "同じコマンド";
-            break;
-          default:
-            detail = props.permission || "";
+        let permission = permissionDetail(props.permission);
+        if (permission == "bash") {
+          permission = "バッシュ";
         }
-        notifier.notify("permission", `${detail}の許可が欲しいのだ`);
+        const text = `${permission}の許可が欲しいのだ`;
+        if (props.permission === "bash" && props.id) {
+          schedulePermissionNotify(props.id, text);
+          return;
+        }
+        notifier.notify("permission", text);
+      }
+
+      if ((event.type as string) === "permission.replied") {
+        const props = event.properties as {
+          permissionID?: string;
+          requestID?: string;
+        };
+        cancelPermissionNotify(props.permissionID ?? props.requestID);
       }
     },
     "tool.execute.before": async (input) => {
