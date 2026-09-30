@@ -16,6 +16,7 @@
         self.nixosModules.graphics
         self.nixosModules.audio
         self.nixosModules.desktop
+        self.nixosModules.niri
         self.nixosModules.certificate
         self.nixosModules.tailscale
       ];
