@@ -47,6 +47,11 @@
     };
     browser-tyan.url = "github:boxfish-jp/browser_tyan";
     twitch-stream-recoder.url = "github:boxfish-jp/twitch-stream-recorder";
+
+    noctalia = {
+      url = "github:noctalia-dev/noctalia";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

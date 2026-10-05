@@ -1,7 +1,5 @@
 { self, ... }:
 {
-  # 設定と noctalia-shell 起動を焼いた niri 。
-  # nix run .#desktop で単体起動できる(video 76 相当)。
   flake.wrappers.desktop =
     {
       wlib,
@@ -10,14 +8,13 @@
       ...
     }:
     let
-      noctalia = self.packages.${pkgs.system}.noctalia;
       terminal = self.packages.${pkgs.system}.terminal;
     in
     {
       imports = [ wlib.wrapperModules.niri ];
 
       settings = {
-        spawn-at-startup = [ (lib.getExe noctalia) ];
+        spawn-at-startup = [ (lib.getExe pkgs.noctalia) ];
 
         # SDDM 経由では fcitx5 の user service が起動済みのためガードする。
         spawn-sh-at-startup = [ "pgrep -x fcitx5 || fcitx5 -d" ];
@@ -27,7 +24,6 @@
         input.keyboard.xkb.layout = "jp";
 
         # niri は input.touchpad の未記述フラグを明示的に無効化する
-        # (tap 漏れでタップクリックが効かなくなった件)。書きたい項目は全て列挙する。
         input.touchpad = {
           tap = _: { };
           natural-scroll = _: { };
@@ -36,11 +32,35 @@
           click-method = "clickfinger";
         };
 
+        outputs = {
+          "HDMI-A-1" = {
+            mode = "1920x1080@59.934";
+            scale = 1.0;
+            transform = "normal";
+            position = _: {
+              props = {
+                x = 1920;
+                y = 0;
+              };
+            };
+          };
+          "eDP-1" = {
+            mode = "1920x1080@60.049";
+            scale = 1.25;
+            transform = "normal";
+            position = _: {
+              props = {
+                x = 3840;
+                y = 0;
+              };
+            };
+          };
+        };
+
         layout = {
           gaps = 5;
 
-          # リングは背景ベタ描画され ghostty の透過背景に滲むので廃止し、
-          # border で細い枠線だけ描く。
+          # リングは背景ベタ描画され ghostty の透過背景に滲むので廃止し、border で細い枠線だけ描く。
           focus-ring = {
             off = _: { };
           };
@@ -55,14 +75,51 @@
         # border も既定は背景ベタ描画。枠線描画に強制して透過中に滲まないようにする。
         window-rules = [
           { draw-border-with-background = false; }
+
+          {
+            geometry-corner-radius = 20;
+            clip-to-geometry = true;
+          }
+
+          {
+            # match は props 付きノードとして出す(子ブロックに落到ると parse 失敗)。
+            match = _: { props.app-id = "dev.noctalia.Noctalia"; };
+            open-floating = true;
+            default-column-width = {
+              fixed = 1080;
+            };
+            default-window-height = {
+              fixed = 920;
+            };
+          }
         ];
 
-        # niri の binds セクションはデフォルトとマージされず丸ごと差し替えになるため、
-        # 必要なバインドを全て列挙する(HJKL 主体・音量/輝度はなし)。
+        layer-rules = [
+          {
+            match = _: {
+              props.namespace = "^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd)$";
+            };
+            background-effect = {
+              xray = false;
+            };
+          }
+
+          # overview の backdrop を Noctalia の backdrop layer に読ませる。
+          {
+            match = _: { props.namespace = "^noctalia-backdrop"; };
+            place-within-backdrop = true;
+          }
+        ];
+
+        # Noctalia からの通知アクションと window 起動を許可する。
+        debug = {
+          honor-xdg-activation-with-invalid-serial = _: { };
+        };
+
         binds = {
           "Mod+Return".spawn = lib.getExe' terminal "terminal";
           "Mod+Q".close-window = _: { };
-          "Mod+S".spawn-sh = "${lib.getExe noctalia} ipc call launcher toggle";
+          "Mod+S".spawn-sh = "${lib.getExe pkgs.noctalia} msg panel-toggle launcher";
 
           "Mod+Shift+Slash".show-hotkey-overlay = _: { };
           "Mod+Shift+E".quit = _: { };
@@ -147,9 +204,6 @@
       };
     };
 
-  # SDDM で niri セッションを選べるようにする。
-  # programs.niri と plasma6 が defaultSession を mkDefault し合って衝突するため
-  # ここで明示的に決める(nixosModules.desktop は使用中のため名前は niri)。
   flake.nixosModules.niri =
     { pkgs, lib, ... }:
     {

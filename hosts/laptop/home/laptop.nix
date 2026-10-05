@@ -4,6 +4,7 @@
     imports = [
       self.homeModules.containers
       self.homeModules.kanata
+      self.homeModules.noctalia
       self.homeModules.qpwgraph
       self.homeModules.vicinae
       self.homeModules.nvim
