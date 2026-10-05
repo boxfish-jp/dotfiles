@@ -39,6 +39,7 @@
       "grep *": "allow",
       "find *": "allow",
       "list *": "allow",
+      "timeout *": "allow",
       "cd *": "allow",
       "tree *": "allow",
       "cat *": "allow",
@@ -78,6 +79,9 @@
       "git *": "allow",
 
       "nix flake check *": "allow",
+      "nix log *": "allow",
+      "nix build *": "allow",
+      "nix fmt*": "allow",
       "env *": "deny",
       "printenv *": "deny",
       "mkdir *": "deny",
