@@ -39,6 +39,27 @@
 
       tailscale.enable = true;
 
+      fileSystems."/mnt/nas" = {
+        device = "//192.168.68.16/iohdd";
+        fsType = "cifs";
+        options = [
+          "x-systemd.automount"
+          "noauto"
+          "nofail"
+          "_netdev"
+          "x-systemd.device-timeout=5s"
+          "x-systemd.mount-timeout=5s"
+          "credentials=/etc/samba/credentials.nas"
+          "hard"
+          "uid=1000"
+          "gid=100"
+          "forceuid"
+          "forcegid"
+          "file_mode=0660"
+          "dir_mode=0770"
+        ];
+      };
+
       hardware.bluetooth = {
         enable = true;
         powerOnBoot = false;
@@ -72,6 +93,7 @@
         qemu
         quickemu
         usbutils
+        cifs-utils
       ];
 
       users.users.stream = {
