@@ -128,6 +128,7 @@
           dock = {
             enabled = true;
             auto_hide = true;
+            reserve_space = false;
             position = "bottom";
             launcher_position = "none";
             background_opacity = 1.0;
@@ -146,6 +147,9 @@
           osd = {
             position = "top_right";
             background_opacity = 1.0;
+            kinds = {
+              keyboard_layout = false;
+            };
           };
 
           brightness = {
