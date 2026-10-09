@@ -7,7 +7,6 @@
       self.homeModules.qpwgraph
       self.homeModules.vicinae
       self.homeModules.nvim
-      self.homeModules.kde_plasma
       self.homeModules.fcitx5
       self.homeModules.alacritty
       self.homeModules.ghostty

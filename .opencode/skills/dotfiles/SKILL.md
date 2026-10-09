@@ -2,7 +2,7 @@
 name: dotfiles
 description: >
   このリポジトリが管理するアプリ(ghostty, nvim, alacritty, zellij,
-  fcitx5, kanata, git, bash, KDE Plasma, niri, noctalia-shell, opencode,
+  fcitx5, kanata, git, bash, niri, noctalia-shell, opencode,
   vicinae, pipewire,
   OBS, streaming-kit, DaVinci Resolve, Krita, Flatpak, qpwgraph)の
   設定変更について言及されたら必ずロードする。設定ファイルは
@@ -30,7 +30,6 @@ description: >
 | git / lazygit | `~/.config/dotfiles/git/` |
 | bash | `~/.config/dotfiles/bash/` |
 | btop | `~/.config/dotfiles/btop/` |
-| KDE Plasma | `~/.config/dotfiles/kde_plasma/` |
 | niri | `~/.config/dotfiles/niri/` (flake.wrappers.desktop / nixosModules.niri) |
 | noctalia-shell | `~/.config/dotfiles/noctalia/` (flake.wrappers.noctalia) |
 | opencode | `~/.config/dotfiles/llm/opencode/` |

@@ -45,7 +45,6 @@ let
           home-manager.users = genAttrs users (u: self.homeModules."${hostname}/${u}");
           home-manager.sharedModules = [
             inputs.vicinae.homeManagerModules.default
-            inputs.plasma-manager.homeModules.plasma-manager
             inputs.nix-flatpak.homeManagerModules.nix-flatpak
             inputs.streaming-kit.homeManagerModules.streaming-kit-cli
             inputs.streaming-kit.homeManagerModules.streaming-kit-desktop

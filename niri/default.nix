@@ -16,7 +16,7 @@
       settings = {
         spawn-at-startup = [ (lib.getExe pkgs.noctalia) ];
 
-        # SDDM 経由では fcitx5 の user service が起動済みのためガードする。
+        # greeter(greetd)経由でも fcitx5 が二重起動しないようガードする。
         spawn-sh-at-startup = [ "pgrep -x fcitx5 || fcitx5 -d" ];
 
         xwayland-satellite.path = lib.getExe pkgs.xwayland-satellite;

@@ -36,11 +36,6 @@
       url = "github:vicinaehq/extensions";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    plasma-manager = {
-      url = "github:nix-community/plasma-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.home-manager.follows = "home-manager";
-    };
     streaming-kit = {
       url = "github:boxfish-jp/streamingkit";
       # inputs.nixpkgs.follows = "nixpkgs";

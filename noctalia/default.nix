@@ -9,7 +9,7 @@
   # プラグインは community source(既定の git source)の clone に任せる。
   # ここは `[plugins].enabled` の宣言だけ
   flake.homeModules.noctalia =
-    { pkgs, ... }:
+    { pkgs, config, ... }:
     {
       imports = [ inputs.noctalia.homeModules.default ];
 
@@ -108,7 +108,7 @@
           };
 
           wallpaper = {
-            directory = "/home/laptop/Pictures/Wallpapers";
+            directory = "${config.home.homeDirectory}/Pictures/Wallpapers";
             fill_color = "#000000";
             fill_mode = "crop";
             transition = [
@@ -195,7 +195,7 @@
           };
 
           shell = {
-            avatar_path = "/home/laptop/.face";
+            avatar_path = "${config.home.homeDirectory}/.face";
             setup_wizard_enabled = false;
             telemetry_enabled = false;
             clipboard_auto_paste = "off";
