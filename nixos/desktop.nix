@@ -6,13 +6,15 @@
 
     services.xserver.enable = true;
 
-    # sddm の代わりに Noctalia 製ログイン画面(greetd ベース)を使う。
-    # noctalia-greeter 側で greetd が有効化され、セッション選択は
-    # services.displayManager の sessionPackages(defaultSession)に従う。
+    # Noctalia 製ログイン画面(greetd ベース)を使う。
     services.displayManager.noctalia-greeter = {
       enable = true;
       settings.keyboard.layout = "jp";
     };
+
+    # Noctalia のバッテリーウィジェット(UPower)と電源プロファイルのバックエンド。
+    services.upower.enable = true;
+    services.power-profiles-daemon.enable = true;
   };
 
   flake.vmTests.desktop.modules = [ self.nixosModules.desktop ];
