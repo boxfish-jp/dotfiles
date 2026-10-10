@@ -16,6 +16,9 @@ concurrency:
   group: attic-push-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   build-and-push-server:
     runs-on: ubuntu-latest
