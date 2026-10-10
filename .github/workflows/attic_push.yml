@@ -19,13 +19,16 @@ concurrency:
 jobs:
   build-and-push-server:
     runs-on: ubuntu-latest
+    env:
+      TS_OAUTH_SECRET: ${{ secrets.TS_OAUTH_SECRET }}
+      ATTIC_TOKEN: ${{ secrets.ATTIC_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: DeterminateSystems/nix-installer-action@main
 
       - name: Tailscale
-        if: ${{ secrets.TS_OAUTH_SECRET != '' }}
+        if: ${{ env.TS_OAUTH_SECRET != '' }}
         uses: tailscale/github-action@v4
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
@@ -34,7 +37,7 @@ jobs:
           ping: ${{ vars.ATTIC_HOST }}
 
       - name: Setup Attic cache
-        if: ${{ secrets.ATTIC_TOKEN != '' && vars.ATTIC_ENDPOINT != '' }}
+        if: ${{ env.ATTIC_TOKEN != '' && vars.ATTIC_ENDPOINT != '' }}
         uses: ryanccn/attic-action@v0
         with:
           endpoint: ${{ vars.ATTIC_ENDPOINT }}
@@ -47,5 +50,5 @@ jobs:
         run: nix build .#nixosConfigurations.server.config.system.build.toplevel --print-out-paths
 
       - name: Push server closure to attic
-        if: ${{ secrets.ATTIC_TOKEN != '' }}
+        if: ${{ env.ATTIC_TOKEN != '' }}
         run: attic push shared ./result
