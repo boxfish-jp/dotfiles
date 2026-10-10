@@ -25,13 +25,13 @@
         };
         atticEndpoint = mkOption {
           type = types.nullOr types.str;
-          default = null;
+          default = "http://monitor-server.taildb6ca.ts.net:8080/shared";
           example = "http://monitor-server.taildb6ca.ts.net:8080/shared";
           description = "自前 attic キャッシュの substituter URL。null のときは使わない。";
         };
         atticPublicKey = mkOption {
           type = types.nullOr types.str;
-          default = null;
+          default = "shared:sm7OWaMrlVQqfEGCymYziZ8TzBl0ft0LBTRI2boAJPE=";
           example = "shared:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=";
           description = "自前 attic キャッシュの公開鍵 (`attic cache info` で取得)。null のときは使わない。";
         };

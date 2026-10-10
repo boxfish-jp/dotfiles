@@ -20,16 +20,15 @@
         networking.allowedTCPPorts = [
           8080
         ];
-        # 非力なキャッシュ専用ホストのため並列数は抑える
-        nix.maxJobs = 2;
       };
 
       tailscale.enable = true;
 
       # ベアメタル起動用 (UEFI 前提。実機で nixos-generate-config した
       # hosts/monitor-server/hardware-configuration.nix を laptop と同型で追加すること)
-      boot.loader.systemd-boot.enable = true;
-      boot.loader.efi.canTouchEfiVariables = true;
+      boot.loader.grub.enable = true;
+      boot.loader.grub.device = "/dev/sda";
+      boot.loader.grub.useOSProber = true;
 
       services.atticd = {
         enable = true;

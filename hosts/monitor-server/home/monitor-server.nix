@@ -7,6 +7,7 @@
       self.homeModules.zellij
       self.homeModules.git
       self.homeModules.bash
+      self.homeModules.llm
     ];
 
     home.stateVersion = "26.11";

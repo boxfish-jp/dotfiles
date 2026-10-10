@@ -1,20 +1,35 @@
-# 要置換スタブ: 実機で nixos-generate-config を実行し、その出力でこのファイルを
-# 置き換えること(laptop の hosts/laptop/hardware-configuration.nix と同型)。
-# このままデプロイすると起動しない。
 {
   flake.nixosModules."host-monitor-server" =
-    { modulesPath, ... }:
+    {
+      config,
+      lib,
+      modulesPath,
+      ...
+    }:
     {
       imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
 
+      boot.initrd.availableKernelModules = [
+        "ehci_pci"
+        "ahci"
+        "usb_storage"
+        "sd_mod"
+        "sr_mod"
+      ];
+      boot.initrd.kernelModules = [ ];
+      boot.kernelModules = [ "kvm-intel" ];
+      boot.extraModulePackages = [ ];
+
       fileSystems."/" = {
-        device = "/dev/disk/by-label/nixos";
+        device = "/dev/disk/by-uuid/7db5ae5a-7226-4529-aad8-0aa2d606b87c";
         fsType = "ext4";
       };
 
-      fileSystems."/boot" = {
-        device = "/dev/disk/by-label/boot";
-        fsType = "vfat";
-      };
+      swapDevices = [
+        { device = "/dev/disk/by-uuid/a220a852-89ae-45d3-9874-13e651cef027"; }
+      ];
+
+      nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+      hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
     };
 }
