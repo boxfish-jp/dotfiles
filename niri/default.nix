@@ -23,6 +23,8 @@
 
         input.keyboard.xkb.layout = "jp";
 
+        input.mouse.accel-profile = "flat";
+
         # niri は input.touchpad の未記述フラグを明示的に無効化する
         input.touchpad = {
           tap = _: { };
@@ -33,6 +35,28 @@
         };
 
         outputs = {
+          "DP-2" = {
+            mode = "1920x1080@60.000";
+            scale = 1.0;
+            transform = "normal";
+            position = _: {
+              props = {
+                x = 0;
+                y = 0;
+              };
+            };
+          };
+          "DP-3" = {
+            mode = "1920x1080@60.000";
+            scale = 1.0;
+            transform = "normal";
+            position = _: {
+              props = {
+                x = 1920;
+                y = 0;
+              };
+            };
+          };
           "HDMI-A-1" = {
             mode = "1920x1080@59.934";
             scale = 1.0;
