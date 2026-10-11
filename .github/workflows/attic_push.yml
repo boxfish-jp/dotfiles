@@ -1,7 +1,5 @@
 name: attic-push
 
-# 全ブランチへの push で server のシステム closure をビルドし自前 attic へ push する。
-# 秘密は Secrets/Variables 参照のみ。ファイルへの直書きは禁止(public リポジトリのため)。
 # 必要な設定:
 #   Variables: ATTIC_HOST (例: monitor-server.taildb6ca.ts.net /疎通確認用),
 #              ATTIC_ENDPOINT (例: http://monitor-server.taildb6ca.ts.net:8080 /cache 名なし)
@@ -17,7 +15,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-push-server:
+  build-and-push:
+    strategy:
+      # 1ホストの失敗で他ホストを巻き添えにしない
+      fail-fast: false
+      matrix:
+        # monitor-server は hardware-configuration.nix が要置換スタブのため除外。
+        host: [game, laptop, sandbox, server]
     runs-on: ubuntu-latest
     env:
       TS_OAUTH_SECRET: ${{ secrets.TS_OAUTH_SECRET }}
@@ -43,12 +47,50 @@ jobs:
           endpoint: ${{ vars.ATTIC_ENDPOINT }}
           cache: shared
           token: ${{ secrets.ATTIC_TOKEN }}
-          # 自動 push は切って server closure のみ明示 push する
+          # 自動 push は切って closure のみ明示 push する
           skip-push: "true"
 
-      - name: Build server system closure
-        run: nix build .#nixosConfigurations.server.config.system.build.toplevel --print-out-paths
+      - name: Build system closure
+        run: nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel --print-out-paths
 
-      - name: Push server closure to attic
+      - name: Push closure to attic
         if: ${{ env.ATTIC_TOKEN != '' }}
         run: attic push shared ./result
+
+  # こけやすいパッケージのカナリア。失敗しても全体を赤にしない。
+  # 成功時は attic へ push し、実機の `nix run` を高速化する
+  fragile-watch:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      TS_OAUTH_SECRET: ${{ secrets.TS_OAUTH_SECRET }}
+      ATTIC_TOKEN: ${{ secrets.ATTIC_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: DeterminateSystems/nix-installer-action@main
+
+      - name: Tailscale
+        if: ${{ env.TS_OAUTH_SECRET != '' }}
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          ping: ${{ vars.ATTIC_HOST }}
+
+      - name: Setup Attic cache
+        if: ${{ env.ATTIC_TOKEN != '' && vars.ATTIC_ENDPOINT != '' }}
+        uses: ryanccn/attic-action@v0
+        with:
+          endpoint: ${{ vars.ATTIC_ENDPOINT }}
+          cache: shared
+          token: ${{ secrets.ATTIC_TOKEN }}
+          skip-push: "true"
+
+      - name: Build fragile packages
+        run: nix build .#davinci-resolve .#voicevox --print-out-paths
+
+      - name: Push fragile packages to attic
+        if: ${{ env.ATTIC_TOKEN != '' }}
+        run: attic push shared ./result ./result-1

@@ -18,7 +18,6 @@
       self.homeModules.pipewire
       self.homeModules.zellij
       self.homeModules.git
-      self.homeModules.video_editor
       self.homeModules.bash
       self.homeModules.llm
       self.homeModules.paint
