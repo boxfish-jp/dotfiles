@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         # monitor-server は hardware-configuration.nix が要置換スタブのため除外。
-        host: [game, laptop, sandbox, server]
+        host: [boxfish, game, laptop, sandbox, server]
     runs-on: ubuntu-latest
     env:
       TS_OAUTH_SECRET: ${{ secrets.TS_OAUTH_SECRET }}
