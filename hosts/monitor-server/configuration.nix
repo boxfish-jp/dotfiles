@@ -24,15 +24,12 @@
 
       tailscale.enable = true;
 
-      # ベアメタル起動用 (UEFI 前提。実機で nixos-generate-config した
-      # hosts/monitor-server/hardware-configuration.nix を laptop と同型で追加すること)
       boot.loader.grub.enable = true;
       boot.loader.grub.device = "/dev/sda";
       boot.loader.grub.useOSProber = true;
 
       services.atticd = {
         enable = true;
-        # /etc/atticd.env は手動配置 (git管理外、chmod 600):
         #   ATTIC_SERVER_TOKEN_RS256_SECRET_BASE64="<openssl genrsa -traditional 4096 | base64 -w0>"
         environmentFile = "/etc/atticd.env";
 
@@ -46,13 +43,12 @@
             path = "/var/lib/atticd/storage";
           };
 
-          database.url = "postgresql://atticd@/atticd?host=/run/postgresql";
+          database.url = "postgresql://atticd@127.0.0.1/atticd";
         };
       };
 
       services.postgresql = {
         enable = true;
-        # ensureDBOwnership は同名DBを要求するため、DB名も atticd とする
         ensureDatabases = [ "atticd" ];
         ensureUsers = [
           {
@@ -60,9 +56,11 @@
             ensureDBOwnership = true;
           }
         ];
-        # atticdはDynamicUser起動のためpeer認証が使えない。単独管理マシンに
-        # つきローカルソケットはtrustとする(TCP公開なし、ソケット経由のみ)
-        authentication = lib.mkForce "local all all trust";
+        authentication = lib.mkForce ''
+          local all all trust
+          host all all 127.0.0.1/32 trust
+          host all all ::1/128 trust
+        '';
       };
     };
 }
