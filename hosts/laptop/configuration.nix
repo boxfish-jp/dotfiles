@@ -85,6 +85,10 @@
 
       services.fprintd.enable = true;
 
+      # login の PAM スタック先頭に pam_fprintd が入ると、スリープロックで
+      # パワード入力後に指認証待ち(最大30秒)が発生して解錠が遅くなるため無効化
+      security.pam.services.login.fprintAuth = false;
+
       programs.steam.enable = true;
       services.flatpak.enable = true;
 
