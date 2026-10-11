@@ -31,7 +31,7 @@
         };
         atticPublicKey = mkOption {
           type = types.nullOr types.str;
-          default = "shared:sm7OWaMrlVQqfEGCymYziZ8TzBl0ft0LBTRI2boAJPE=";
+          default = "shared:zirXxgy7HG4Brl/x1uOci6nt+4SNgsDvCEZstiuQ8gA=";
           example = "shared:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=";
           description = "自前 attic キャッシュの公開鍵 (`attic cache info` で取得)。null のときは使わない。";
         };
