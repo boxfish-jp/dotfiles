@@ -52,7 +52,7 @@
         window-padding-x = 14;
         window-padding-y = 14;
         window-decoration = "none";
-        background-opacity = 0.6;
+        background-opacity = 0.8;
         background-blur = 20;
         term = "xterm-256color";
         background = "#16181a";
