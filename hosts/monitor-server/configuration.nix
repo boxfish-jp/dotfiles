@@ -3,7 +3,7 @@
   flake.nixosConfigurations.monitor-server = self.lib.mkHost { hostname = "monitor-server"; };
 
   flake.nixosModules."host-monitor-server" =
-    { ... }:
+    { lib, ... }:
     {
       imports = [
         self.nixosModules.locale
@@ -46,8 +46,23 @@
             path = "/var/lib/atticd/storage";
           };
 
-          database.url = "sqlite:///var/lib/atticd/server.db?mode=rwc";
+          database.url = "postgresql://atticd@/atticd?host=/run/postgresql";
         };
+      };
+
+      services.postgresql = {
+        enable = true;
+        # ensureDBOwnership は同名DBを要求するため、DB名も atticd とする
+        ensureDatabases = [ "atticd" ];
+        ensureUsers = [
+          {
+            name = "atticd";
+            ensureDBOwnership = true;
+          }
+        ];
+        # atticdはDynamicUser起動のためpeer認証が使えない。単独管理マシンに
+        # つきローカルソケットはtrustとする(TCP公開なし、ソケット経由のみ)
+        authentication = lib.mkForce "local all all trust";
       };
     };
 }
