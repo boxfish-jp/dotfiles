@@ -24,6 +24,12 @@
 
       tailscale.enable = true;
 
+      boot.kernelModules = [ "tcp_bbr" ];
+      boot.kernel.sysctl = {
+        "net.core.default_qdisc" = "fq";
+        "net.ipv4.tcp_congestion_control" = "bbr";
+      };
+
       boot.loader.grub.enable = true;
       boot.loader.grub.device = "/dev/sda";
       boot.loader.grub.useOSProber = true;
