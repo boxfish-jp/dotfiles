@@ -29,6 +29,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Enable BBR congestion control
+        run: |
+          sudo modprobe tcp_bbr || true
+          sudo modprobe sch_fq || true
+          sudo sysctl -w net.core.default_qdisc=fq || true
+          sudo sysctl -w net.ipv4.tcp_congestion_control=bbr || true
+          sysctl net.ipv4.tcp_available_congestion_control || true
+          sysctl net.ipv4.tcp_congestion_control || true
+
       - uses: DeterminateSystems/nix-installer-action@main
 
       - name: Tailscale
@@ -67,6 +76,15 @@ jobs:
       ATTIC_TOKEN: ${{ secrets.ATTIC_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Enable BBR congestion control
+        run: |
+          sudo modprobe tcp_bbr || true
+          sudo modprobe sch_fq || true
+          sudo sysctl -w net.core.default_qdisc=fq || true
+          sudo sysctl -w net.ipv4.tcp_congestion_control=bbr || true
+          sysctl net.ipv4.tcp_available_congestion_control || true
+          sysctl net.ipv4.tcp_congestion_control || true
 
       - uses: DeterminateSystems/nix-installer-action@main
 
