@@ -1,16 +1,16 @@
 import { describe, expect, test } from "bun:test";
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import type { FetchLike } from "../lib/jev_client.ts";
+import { JEV_ENDPOINT, JEV_MODEL } from "../lib/jev_client.ts";
 import {
   buildStatePrompt,
   CONFIDENCE_THRESHOLD,
   judgeBashCommand,
-  resolveApiKey,
 } from "../lib/jev_policy.ts";
-import { JEV_ENDPOINT, JEV_MODEL } from "../lib/jev_client.ts";
-import type { FetchLike } from "../lib/jev_client.ts";
 
-type CapturedRequest = { url: string; init: { headers: Record<string, string>; body: string } };
+type CapturedRequest = {
+  url: string;
+  init: { headers: Record<string, string>; body: string };
+};
 
 const jevBody = (choice: string, confidence: number): string =>
   JSON.stringify({
@@ -211,36 +211,5 @@ describe("judgeBashCommand", () => {
       }
     ).questions.judgment.criteria;
     expect(planCriteria.reject).toContain("stored code");
-  });
-});
-
-describe("resolveApiKey", () => {
-  test("OPENROUTER_API_KEYの値をそのまま返す", () => {
-    expect(resolveApiKey({ OPENROUTER_API_KEY: "env-key" })).toBe("env-key");
-  });
-
-  test("envが無くてもauth.jsonのopenrouterキーを読む", () => {
-    const dir = mkdtempSync(`${tmpdir()}/jev-auth-`);
-    mkdirSync(`${dir}/opencode`, { recursive: true });
-    writeFileSync(
-      `${dir}/opencode/auth.json`,
-      JSON.stringify({ openrouter: { type: "api", key: "file-key" } }),
-    );
-    expect(resolveApiKey({ XDG_DATA_HOME: dir })).toBe("file-key");
-  });
-
-  test("typeがapiでないopenrouterエントリは使わない", () => {
-    const dir = mkdtempSync(`${tmpdir()}/jev-auth-`);
-    mkdirSync(`${dir}/opencode`, { recursive: true });
-    writeFileSync(
-      `${dir}/opencode/auth.json`,
-      JSON.stringify({ openrouter: { type: "oauth", key: "file-key" } }),
-    );
-    expect(resolveApiKey({ XDG_DATA_HOME: dir })).toBeNull();
-  });
-
-  test("envにもauth.jsonにも無ければnull", () => {
-    const dir = mkdtempSync(`${tmpdir()}/jev-auth-`);
-    expect(resolveApiKey({ XDG_DATA_HOME: `${dir}/opencode` })).toBeNull();
   });
 });

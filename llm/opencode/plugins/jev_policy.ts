@@ -1,6 +1,7 @@
 import type { Plugin } from "@opencode-ai/plugin";
 import type { JevVerdict } from "../lib/jev_policy.ts";
-import { judgeBashCommand, resolveApiKey } from "../lib/jev_policy.ts";
+import { judgeBashCommand } from "../lib/jev_policy.ts";
+import { resolveApiKey } from "../lib/openrouter_key.ts";
 import { isPlanSession } from "../lib/session_policy.ts";
 
 type PermissionAskedProperties = {

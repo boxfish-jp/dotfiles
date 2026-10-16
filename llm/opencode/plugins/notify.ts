@@ -1,4 +1,6 @@
+import { userInfo } from "node:os";
 import type { Plugin, PluginInput } from "@opencode-ai/plugin";
+import { resolveApiKey } from "../lib/openrouter_key.ts";
 
 type OpencodeClient = PluginInput["client"];
 
@@ -6,10 +8,9 @@ const NOTIFY_THROTTLE_MS = 10_000;
 const SUMMARY_MIN_LENGTH = 20;
 const NOTIFY_CHANNEL = "1";
 const NOTIFY_CHARACTER = "3";
-const ZEN_API_URL = "https://opencode.ai/zen/v1/chat/completions";
-const ZEN_MODEL = "big-pickle";
-
-let apiKey: string | undefined;
+const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+const OPENROUTER_MODEL = "openrouter/free";
+const DEFAULT_SUMMARY_USERS = "boxfish,server";
 
 type LogicalState = "idle" | "active";
 
@@ -62,6 +63,17 @@ const deriveLogicalState = (event: {
 const permissionNotifyWaitMs = () =>
   Number(process.env.OPENCODE_NOTIFY_PERMISSION_WAIT_MS ?? 2_500);
 
+const summaryUsers = (env: NodeJS.ProcessEnv): string[] =>
+  (env.OPENCODE_NOTIFY_SUMMARY_USERS ?? DEFAULT_SUMMARY_USERS)
+    .split(",")
+    .map((user) => user.trim())
+    .filter(Boolean);
+
+export const isSummaryUser = (
+  username: string,
+  env: NodeJS.ProcessEnv = process.env,
+): boolean => summaryUsers(env).includes(username);
+
 const permissionDetail = (permission?: string): string => {
   switch (permission) {
     case "edit":
@@ -93,29 +105,24 @@ const summarize = async (
 ): Promise<string> => {
   if (text.length <= SUMMARY_MIN_LENGTH) return text;
 
-  if (!apiKey) {
-    const { data } = await client.config.providers();
-    const provider = data?.providers.find((p) => p.id === "opencode");
-    if (!provider?.key) return "ひとことで言えないのだ";
-    apiKey = provider.key;
-  }
+  const apiKey = resolveApiKey();
+  if (!apiKey) return "ひとことで言えないのだ";
 
   try {
-    const res = await fetch(ZEN_API_URL, {
+    const res = await fetch(OPENROUTER_API_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: ZEN_MODEL,
+        model: OPENROUTER_MODEL,
         messages: [
           {
             role: "user",
             content: `次のテキストを20字以内で語尾に「のだ」を付けた要約文を作成して:\n\n${text}`,
           },
         ],
-        reasoning_effort: "low",
       }),
     });
 
@@ -142,6 +149,7 @@ export const NotifyPlugin: Plugin = async ({
 }) => {
   const notifier = new Notifier();
   const previousState = new Map<string, LogicalState>();
+  const summarizeEnabled = isSummaryUser(userInfo().username);
   const pendingPermissionTimers = new Map<
     string,
     ReturnType<typeof setTimeout>
@@ -180,6 +188,7 @@ export const NotifyPlugin: Plugin = async ({
           if (!(await isParentSession(client, sessionID))) return; // 子セッションは除外
 
           notifier.notify("completed", "応答が完了したのだ");
+          if (!summarizeEnabled) return;
           const { data: msgs } = await client.session.messages({
             path: { id: sessionID },
             query: { limit: 1 },
@@ -208,7 +217,7 @@ export const NotifyPlugin: Plugin = async ({
         };
         if (props.permission === "question") return;
         let permission = permissionDetail(props.permission);
-        if (permission == "bash") {
+        if (permission === "bash") {
           permission = "バッシュ";
         }
         const text = `${permission}の許可が欲しいのだ`;

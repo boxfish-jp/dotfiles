@@ -1,52 +1,119 @@
 import { describe, expect, test } from "bun:test";
-import { NotifyPlugin } from "../plugins/notify.ts";
+import { mkdtempSync } from "node:fs";
+import { tmpdir, userInfo } from "node:os";
+import { isSummaryUser, NotifyPlugin } from "../plugins/notify.ts";
 
 type PluginInput = Parameters<typeof NotifyPlugin>[0];
 
 const WAIT_MS = 50;
+const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+const ASSISTANT_TEXT =
+  "これはテスト用の長いアシスタント応答テキストです。要約対象になります。";
+
+type HarnessOptions = {
+  apiKey?: string | null;
+  summaryUsers?: string;
+  summary?: string;
+  openrouterStatus?: number;
+  messages?: Array<{
+    info: { role: string };
+    parts: Array<{ type: string; text?: string }>;
+  }>;
+};
 
 type Captured = {
   notified: string[];
+  openrouter: Array<{
+    url: string;
+    headers: Record<string, string>;
+    body: Record<string, unknown>;
+  }>;
 };
 
-const makeHarness = () => {
-  const captured: Captured = { notified: [] };
+const makeHarness = (options: HarnessOptions = {}) => {
+  const captured: Captured = { notified: [], openrouter: [] };
+  const emptyDataHome =
+    options.apiKey === null
+      ? mkdtempSync(`${tmpdir()}/notify-auth-`)
+      : undefined;
+  const messages = options.messages ?? [
+    {
+      info: { role: "assistant" },
+      parts: [{ type: "text", text: ASSISTANT_TEXT }],
+    },
+  ];
+  const summary = options.summary ?? "テスト要約なのだ";
+  const status = options.openrouterStatus ?? 200;
 
   const client = {
     app: { log: async () => undefined },
     session: {
       get: async () => ({ data: { parentID: undefined } }),
-      messages: async () => ({ data: [] }),
+      messages: async () => ({ data: messages }),
     },
-    config: { providers: async () => ({ data: { providers: [] } }) },
   };
 
   const previousFetch = globalThis.fetch;
-  const previousWait = process.env.OPENCODE_NOTIFY_PERMISSION_WAIT_MS;
-  globalThis.fetch = (async (input: URL | string) => {
-    const url = typeof input === "string" ? new URL(input) : input;
-    captured.notified.push(url.searchParams.get("text") ?? "");
+  const previousEnv = {
+    wait: process.env.OPENCODE_NOTIFY_PERMISSION_WAIT_MS,
+    apiKey: process.env.OPENROUTER_API_KEY,
+    summaryUsers: process.env.OPENCODE_NOTIFY_SUMMARY_USERS,
+    dataHome: process.env.XDG_DATA_HOME,
+  };
+
+  globalThis.fetch = (async (input: URL | string, init?: RequestInit) => {
+    const url = typeof input === "string" ? input : input.toString();
+    if (url.startsWith("http://192.168.68.16")) {
+      captured.notified.push(new URL(url).searchParams.get("text") ?? "");
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({}),
+        text: async () => "",
+      };
+    }
+    captured.openrouter.push({
+      url,
+      headers: (init?.headers ?? {}) as Record<string, string>,
+      body: JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>,
+    });
     return {
-      ok: true,
-      status: 200,
-      json: async () => ({}),
+      ok: status < 400,
+      status,
+      json: async () => ({ choices: [{ message: { content: summary } }] }),
       text: async () => "",
     };
   }) as unknown as typeof fetch;
+
   process.env.OPENCODE_NOTIFY_PERMISSION_WAIT_MS = String(WAIT_MS);
+  if (options.summaryUsers === undefined) {
+    delete process.env.OPENCODE_NOTIFY_SUMMARY_USERS;
+  } else {
+    process.env.OPENCODE_NOTIFY_SUMMARY_USERS = options.summaryUsers;
+  }
+  if (options.apiKey === null) {
+    delete process.env.OPENROUTER_API_KEY;
+    process.env.XDG_DATA_HOME = emptyDataHome;
+  } else {
+    process.env.OPENROUTER_API_KEY = options.apiKey ?? "test-key";
+  }
 
   const hooks = NotifyPlugin({
     client,
     directory: "/tmp",
   } as unknown as PluginInput);
 
+  const restoreEnv = (name: string, value: string | undefined) => {
+    if (value === undefined) delete process.env[name];
+    else process.env[name] = value;
+  };
+
   const restore = () => {
     globalThis.fetch = previousFetch;
-    if (previousWait === undefined) {
-      delete process.env.OPENCODE_NOTIFY_PERMISSION_WAIT_MS;
-    } else {
-      process.env.OPENCODE_NOTIFY_PERMISSION_WAIT_MS = previousWait;
-    }
+    restoreEnv("OPENCODE_NOTIFY_PERMISSION_WAIT_MS", previousEnv.wait);
+    restoreEnv("OPENROUTER_API_KEY", previousEnv.apiKey);
+    restoreEnv("OPENCODE_NOTIFY_SUMMARY_USERS", previousEnv.summaryUsers);
+    restoreEnv("XDG_DATA_HOME", previousEnv.dataHome);
   };
   return { captured, hooks, restore };
 };
@@ -59,6 +126,21 @@ const emit = async (
   properties: Record<string, unknown>,
 ) => {
   await hooks.event?.({ event: { type, properties } });
+};
+
+const completeSession = async (
+  h: ReturnType<typeof makeHarness>,
+  sessionID = "ses_1",
+) => {
+  const hooks = await h.hooks;
+  await emit(hooks, "session.status", {
+    sessionID,
+    status: { type: "busy" },
+  });
+  await emit(hooks, "session.status", {
+    sessionID,
+    status: { type: "idle" },
+  });
 };
 
 const askPermission = async (
@@ -147,5 +229,105 @@ describe("NotifyPlugin", () => {
         h.restore();
       }
     });
+  });
+
+  describe("応答完了時の要約", () => {
+    test("要約対象ユーザーではopenrouter/freeへ要約を依頼し結果を通知する", async () => {
+      const h = makeHarness({ summaryUsers: userInfo().username });
+      try {
+        await completeSession(h);
+
+        expect(h.captured.openrouter).toHaveLength(1);
+        const [request] = h.captured.openrouter;
+        expect(request.url).toBe(OPENROUTER_API_URL);
+        expect(request.headers.Authorization).toBe("Bearer test-key");
+        expect(request.body.model).toBe("openrouter/free");
+        expect(h.captured.notified).toEqual([
+          "応答が完了したのだ",
+          "テスト要約なのだ",
+        ]);
+      } finally {
+        h.restore();
+      }
+    });
+
+    test("要約対象外ユーザーでは要約せず完了通知のみを送る", async () => {
+      const h = makeHarness({ summaryUsers: `${userInfo().username}-other` });
+      try {
+        await completeSession(h);
+
+        expect(h.captured.openrouter).toHaveLength(0);
+        expect(h.captured.notified).toEqual(["応答が完了したのだ"]);
+      } finally {
+        h.restore();
+      }
+    });
+
+    test("openrouterのキーが無ければ要約せずフォールバックする", async () => {
+      const h = makeHarness({ apiKey: null });
+      try {
+        await completeSession(h);
+
+        expect(h.captured.openrouter).toHaveLength(0);
+        expect(h.captured.notified).toEqual([
+          "応答が完了したのだ",
+          "ひとことで言えないのだ",
+        ]);
+      } finally {
+        h.restore();
+      }
+    });
+
+    test("openrouterが失敗すると「ひとことで言えないのだ」を通知する", async () => {
+      const h = makeHarness({ openrouterStatus: 429 });
+      try {
+        await completeSession(h);
+
+        expect(h.captured.openrouter).toHaveLength(1);
+        expect(h.captured.notified).toEqual([
+          "応答が完了したのだ",
+          "ひとことで言えないのだ",
+        ]);
+      } finally {
+        h.restore();
+      }
+    });
+
+    test("最後のメッセージがassistantでなければ要約しない", async () => {
+      const h = makeHarness({
+        messages: [
+          {
+            info: { role: "user" },
+            parts: [{ type: "text", text: ASSISTANT_TEXT }],
+          },
+        ],
+      });
+      try {
+        await completeSession(h);
+
+        expect(h.captured.openrouter).toHaveLength(0);
+        expect(h.captured.notified).toEqual(["応答が完了したのだ"]);
+      } finally {
+        h.restore();
+      }
+    });
+  });
+});
+
+describe("isSummaryUser", () => {
+  test("既定ではboxfishとserverを要約対象にする", () => {
+    expect(isSummaryUser("boxfish", {})).toBe(true);
+    expect(isSummaryUser("server", {})).toBe(true);
+  });
+
+  test("既定ではlaptopやmonitor-serverを要約対象にしない", () => {
+    expect(isSummaryUser("laptop", {})).toBe(false);
+    expect(isSummaryUser("monitor-server", {})).toBe(false);
+  });
+
+  test("OPENCODE_NOTIFY_SUMMARY_USERSで対象を上書きできる", () => {
+    expect(
+      isSummaryUser("laptop", { OPENCODE_NOTIFY_SUMMARY_USERS: "laptop" }),
+    ).toBe(true);
   });
 });

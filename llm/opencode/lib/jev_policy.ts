@@ -1,9 +1,9 @@
 // bash パーミッション要求を jev に判定させるプロンプト構築と結果解釈。
 // 判定語彙は allow / reject の2択。confidence が閾値に届かない・通信失敗は
 // fail-open で allow とする。
-import { readFileSync } from "node:fs";
-import { askJev } from "./jev_client.ts";
+
 import type { JevJudgment } from "./jev_client.ts";
+import { askJev } from "./jev_client.ts";
 
 export type BashMode = "build" | "plan";
 export type JevVerdict = "allow" | "reject";
@@ -51,10 +51,7 @@ const TRANSPARENCY_RULE =
   "execution channel, not this read-only mode, so such commands must be " +
   "rejected even if they look harmless.";
 
-const CRITERIA: Record<
-  BashMode,
-  Record<JevVerdict, string>
-> = {
+const CRITERIA: Record<BashMode, Record<JevVerdict, string>> = {
   build: {
     allow:
       "The command is permitted by the build mode policy above: either " +
@@ -144,25 +141,4 @@ export const judgeBashCommand = async (params: {
   } catch {
     return failed;
   }
-};
-
-// OPENROUTER_API_KEY があればそれ、無ければ opencode 自身の auth ストアから
-// openrouter の API キーを読み取る。両方無ければ null(jev 不发動=人間判定のまま)。
-export const resolveApiKey = (
-  env: NodeJS.ProcessEnv = process.env,
-): string | null => {
-  if (env.OPENROUTER_API_KEY) return env.OPENROUTER_API_KEY;
-  const dataHome = env.XDG_DATA_HOME ?? `${env.HOME}/.local/share`;
-  try {
-    const raw = readFileSync(`${dataHome}/opencode/auth.json`, "utf8");
-    const auth = JSON.parse(raw) as {
-      openrouter?: { type?: string; key?: string };
-    };
-    if (auth.openrouter?.type === "api" && auth.openrouter.key) {
-      return auth.openrouter.key;
-    }
-  } catch {
-    // auth ストア不在はフォールバック失敗なので握りつぶす
-  }
-  return null;
 };
