@@ -9,6 +9,9 @@ on:
   push:
     branches:
       - "**"
+    paths:
+      - flake.lock
+  workflow_dispatch:
 
 concurrency:
   group: attic-push-${{ github.ref }}
