@@ -45,6 +45,7 @@ export const WRITE_GIT_SUBCOMMANDS: ReadonlySet<string> = new Set([
 
 export const SOFT_WRITE_GIT_SUBCOMMANDS: ReadonlySet<string> = new Set([
   "add",
+  "commit",
   "mv",
 ]);
 

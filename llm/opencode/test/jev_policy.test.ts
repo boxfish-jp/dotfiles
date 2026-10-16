@@ -128,23 +128,23 @@ describe("judgeBashCommand", () => {
     expect(decision.verdict).toBe("allow");
   });
 
-  test("低confidenceはhumanを返す", async () => {
+  test("低confidenceは自動許可する", async () => {
     const decision = await judge("allow", 0.6);
-    expect(decision.verdict).toBe("human");
+    expect(decision.verdict).toBe("allow");
   });
 
-  test("未知のchoiceはhumanを返す", async () => {
+  test("未知のchoiceは自動許可する", async () => {
     const decision = await judge("maybe", 0.99);
-    expect(decision.verdict).toBe("human");
+    expect(decision.verdict).toBe("allow");
   });
 
-  test("HTTP失敗時はhumanを返す", async () => {
+  test("HTTP失敗時は自動許可する", async () => {
     const decision = await judge("allow", 0.95, false);
-    expect(decision.verdict).toBe("human");
+    expect(decision.verdict).toBe("allow");
     expect(decision.cost).toBe(0);
   });
 
-  test("fetchの例外はhumanに転じて漏らさない", async () => {
+  test("fetchの例外はallowに転じて漏らさない", async () => {
     const throwing = (async () => {
       throw new Error("network down");
     }) as unknown as FetchLike;
@@ -154,17 +154,17 @@ describe("judgeBashCommand", () => {
       apiKey: "k",
       fetchImpl: throwing,
     });
-    expect(decision.verdict).toBe("human");
+    expect(decision.verdict).toBe("allow");
   });
 
-  test("応答スキーマが壊れていてもhumanを返す", async () => {
+  test("応答スキーマが壊れていてもallowを返す", async () => {
     const decision = await judgeBashCommand({
       command: "ls",
       mode: "build",
       apiKey: "k",
       fetchImpl: stubFetch(JSON.stringify({ unexpected: true })),
     });
-    expect(decision.verdict).toBe("human");
+    expect(decision.verdict).toBe("allow");
   });
 
   test("jev decision形式でBearerキーとallow/reject基準を送る", async () => {

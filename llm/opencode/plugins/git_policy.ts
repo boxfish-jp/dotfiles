@@ -1,4 +1,4 @@
-import type { Plugin, PluginInput } from "@opencode-ai/plugin";
+import type { Plugin } from "@opencode-ai/plugin";
 import {
   findForbiddenGitCommand,
   findWriteGitSubcommands,
@@ -6,26 +6,13 @@ import {
   isReadOnlyGitChain,
   SOFT_WRITE_GIT_SUBCOMMANDS,
 } from "../lib/git_policy.ts";
-
-type OpencodeClient = PluginInput["client"];
+import { isBuildSession } from "../lib/session_policy.ts";
 
 type PermissionAskedProperties = {
   id: string;
   sessionID: string;
   permission: string;
   metadata?: { command?: unknown };
-};
-
-const isBuildAgent = async (
-  client: OpencodeClient,
-  sessionID: string,
-): Promise<boolean> => {
-  try {
-    const { data } = await client.session.get({ path: { id: sessionID } });
-    return data?.agent === "build";
-  } catch {
-    return false;
-  }
 };
 
 export const GitPolicyPlugin: Plugin = async ({ client }) => ({
@@ -46,7 +33,7 @@ export const GitPolicyPlugin: Plugin = async ({ client }) => ({
         SOFT_WRITE_GIT_SUBCOMMANDS.has(sub),
       );
       const buildAllowed =
-        softOnly && (await isBuildAgent(client, input.sessionID));
+        softOnly && (await isBuildSession(client, input.sessionID));
       if (!buildAllowed) {
         throw new Error(
           `git ${writes.join(", ")} はこのプラグインにより拒否されます。git の変更操作は build モードでか、ユーザーが直接実行してください。`,
@@ -71,7 +58,8 @@ export const GitPolicyPlugin: Plugin = async ({ client }) => ({
     if (!command.includes("git")) return;
     const passable =
       isReadOnlyGitChain(command) ||
-      ((await isBuildAgent(client, req.sessionID)) && isBuildGitChain(command));
+      ((await isBuildSession(client, req.sessionID)) &&
+        isBuildGitChain(command));
     if (!passable) return;
     await client
       .postSessionIdPermissionsPermissionId({

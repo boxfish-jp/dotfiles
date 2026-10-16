@@ -451,8 +451,12 @@ describe("isBuildGitChain", () => {
     expect(isBuildGitChain(`git add .`)).toBe(true);
   });
 
-  test("addとcommitの連鎖はfalseになる", () => {
-    expect(isBuildGitChain(`git add . && git commit -m m`)).toBe(false);
+  test("commit単体でtrueになる", () => {
+    expect(isBuildGitChain(`git commit -m msg`)).toBe(true);
+  });
+
+  test("addとcommitの連鎖でtrueになる", () => {
+    expect(isBuildGitChain(`git add . && git commit -m m`)).toBe(true);
   });
 
   test("-C付きのmvでtrueになる", () => {

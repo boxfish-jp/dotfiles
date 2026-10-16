@@ -13,7 +13,9 @@ type Hook = {
 
 type PluginInput = Parameters<typeof GitPolicyPlugin>[0];
 
-const makeHarness = (agent: string) => {
+type SessionRecord = { agent?: string; parentID?: string };
+
+const makeHarness = (sessions: Record<string, SessionRecord>) => {
   const replies: {
     id: string;
     sessionID: string;
@@ -22,7 +24,9 @@ const makeHarness = (agent: string) => {
   }[] = [];
   const client = {
     session: {
-      get: async () => ({ data: { agent } }),
+      get: async ({ path }: { path: { id: string } }) => ({
+        data: sessions[path.id],
+      }),
     },
     app: { log: async () => undefined },
     postSessionIdPermissionsPermissionId: async (options: {
@@ -43,8 +47,10 @@ const makeHarness = (agent: string) => {
   return { replies, hooks: plugin as unknown as Promise<Hook> };
 };
 
+const singleSession = (agent: string) => ({ ses_1: { agent } });
+
 const ask = async (agent: string, command: string) => {
-  const { replies, hooks } = makeHarness(agent);
+  const { replies, hooks } = makeHarness(singleSession(agent));
   const hook = await hooks;
   await hook.event?.({
     event: {
@@ -63,12 +69,58 @@ const ask = async (agent: string, command: string) => {
 };
 
 const before = async (agent: string, command: string) => {
-  const { hooks } = makeHarness(agent);
+  const { hooks } = makeHarness(singleSession(agent));
   const hook = await hooks;
   await hook["tool.execute.before"]?.(
     { tool: "bash", sessionID: "ses_1", callID: "call_1" },
     { args: { command } },
   );
+};
+
+const askIn = async (
+  sessions: Record<string, SessionRecord>,
+  sessionID: string,
+  command: string,
+) => {
+  const { replies, hooks } = makeHarness(sessions);
+  const hook = await hooks;
+  await hook.event?.({
+    event: {
+      type: "permission.asked",
+      properties: {
+        id: "per_1",
+        sessionID,
+        permission: "bash",
+        patterns: [command],
+        metadata: { command },
+        always: [],
+      },
+    },
+  });
+  return replies;
+};
+
+const beforeIn = async (
+  sessions: Record<string, SessionRecord>,
+  sessionID: string,
+  command: string,
+) => {
+  const { hooks } = makeHarness(sessions);
+  const hook = await hooks;
+  await hook["tool.execute.before"]?.(
+    { tool: "bash", sessionID, callID: "call_1" },
+    { args: { command } },
+  );
+};
+
+const buildRootWithGeneral = {
+  ses_root: { agent: "build" },
+  ses_child: { agent: "general", parentID: "ses_root" },
+};
+
+const planRootWithGeneral = {
+  ses_root: { agent: "plan" },
+  ses_child: { agent: "general", parentID: "ses_root" },
 };
 
 describe("GitPolicyPlugin", () => {
@@ -82,6 +134,17 @@ describe("GitPolicyPlugin", () => {
     test("buildモードではgit addも自動承認する", async () => {
       const replies = await ask("build", "git add .");
       expect(replies).toHaveLength(1);
+    });
+
+    test("buildモードではgit commitも自動承認する", async () => {
+      const replies = await ask("build", "git commit -m m");
+      expect(replies).toHaveLength(1);
+      expect(replies[0].response).toBe("once");
+    });
+
+    test("planモードではgit commitを自動承認しない", async () => {
+      const replies = await ask("plan", "git commit -m m");
+      expect(replies).toHaveLength(0);
     });
 
     test("planモードではgit addを自動承認しない", async () => {
@@ -129,10 +192,14 @@ describe("GitPolicyPlugin", () => {
   });
 
   describe("tool.execute.beforeによる拒否", () => {
-    test("-C付きのgit commitを拒否する", async () => {
-      await expect(before("build", "git -C repo commit -m m")).rejects.toThrow(
-        /commit/,
-      );
+    test("buildモードの-C付きgit commitは拒否しない", async () => {
+      await expect(
+        before("build", "git -C repo commit -m m"),
+      ).resolves.toBeUndefined();
+    });
+
+    test("planモードのgit commitは拒否する", async () => {
+      await expect(before("plan", "git commit -m m")).rejects.toThrow(/commit/);
     });
 
     test("buildモードのgit addは拒否しない", async () => {
@@ -153,6 +220,48 @@ describe("GitPolicyPlugin", () => {
 
     test("非gitコマンドは拒否しない", async () => {
       await expect(before("plan", "rm -rf /tmp/x")).resolves.toBeUndefined();
+    });
+  });
+
+  describe("サブエージェントは祖先セッションのモードで判定される", () => {
+    test("buildルートのgeneralサブエージェントのgit addを自動承認する", async () => {
+      const replies = await askIn(
+        buildRootWithGeneral,
+        "ses_child",
+        "git add .",
+      );
+      expect(replies).toHaveLength(1);
+      expect(replies[0].response).toBe("once");
+    });
+
+    test("planルートのgeneralサブエージェントのgit addを自動承認しない", async () => {
+      const replies = await askIn(planRootWithGeneral, "ses_child", "git add .");
+      expect(replies).toHaveLength(0);
+    });
+
+    test("buildルートのgeneralサブエージェントのgit addを拒否しない", async () => {
+      await expect(
+        beforeIn(buildRootWithGeneral, "ses_child", "git add ."),
+      ).resolves.toBeUndefined();
+    });
+
+    test("planルートのgeneralサブエージェントのgit addを拒否する", async () => {
+      await expect(
+        beforeIn(planRootWithGeneral, "ses_child", "git add ."),
+      ).rejects.toThrow(/add/);
+    });
+
+    test("explorerルートのサブエージェントのgit addを拒否する", async () => {
+      await expect(
+        beforeIn(
+          {
+            ses_root: { agent: "explorer" },
+            ses_child: { agent: "general", parentID: "ses_root" },
+          },
+          "ses_child",
+          "git add .",
+        ),
+      ).rejects.toThrow(/add/);
     });
   });
 });

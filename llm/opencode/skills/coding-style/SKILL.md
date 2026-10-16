@@ -1,6 +1,6 @@
 ---
 name: coding-style
-description: コードを書く・編集するあらゆる作業(軽微な修正や1行の編集含む)で必ずロードする。privateメンバの`_` prefix、ファイル名 snake_case 規則、インポート書式のまとめ、名前衝突の import エイリアス解決、アロー関数とreturn省略の記法を扱う。
+description: コードを書く・編集するあらゆる作業(軽微な修正や1行の編集含む)で必ずロードする。privateメンバの`_` prefix、ファイル名 snake_case 規則、インポート書式のまとめ、名前衝突の import エイリアス解決、アロー関数とreturn省略の記法、コメント文の禁止と、意図・制約・挙動保証を命名/型/テストで表現し直す規則、Clean Code準拠の1行justification例外を扱う。
 ---
 
 # Coding Style
@@ -65,3 +65,17 @@ val b = NearbyPayload(...)
 ## 関数の書き方
 JavaScript, TypeScriptの通常関数はアロー関数で書く。JSXコンポーネントは`function`のままでよい。
 return文しかない関数はreturnを省略する。
+
+## コメント文
+コメントは書かない。コメントは「より良く表現できなかった失敗の記録」であり(Clean Code)、
+書きたくなる衝動は設計の欠陥のサインとしてコード側で表現し直す。
+
+- 処理の意図 → 命名と関数抽出で書く
+- 状態・呼び出し順・使い方の制約 → 型とAPI設計で強制する
+  （不正な状態を表現不能に、不正な呼び出しをコンパイル/実行時に失敗させる）
+- コンパイルで担保できない挙動の担保 → テストに書く
+
+例外は Clean Code の justification と warn of consequences のみ許容する。
+コードやテストで強制できない外部世界の制約（ライブラリの同期呼び出し義務、spec の穴など）
+に対する 1 行の justification に限る。参照（issue/commit/URL）を添える。
+1 行を超えるならそれは設計の話であり、コメントではなく型かテストに落とす。

@@ -16,6 +16,11 @@
           "touch *": "allow"
         }
       }
+    },
+    "explore": {
+      "permission": {
+        "edit": "deny"
+      }
     }
   },
   "permission": {
@@ -25,7 +30,7 @@
       "*.env.*": "deny",
       "*.env.example": "allow"
     },
-    "edit": "ask",
+    "edit": "allow",
     "glob": "allow",
     "grep": "allow",
     "list": "allow",
@@ -94,12 +99,12 @@
       "source *": "deny",
       ". *": "deny",
       "npx *": "deny",
-      "git commit *": "deny",
       "at *": "deny",
       "crontab *": "deny",
       "opencode run *": "deny",
       // 破壊・権限変更系
       "rm *": "deny",
+      "unlink *": "deny",
       "chmod *": "deny",
       "chown *": "deny",
       "chgrp *": "deny",
@@ -122,7 +127,7 @@
       "*": "allow"
     },
     "external_directory": {
-      "*": "ask",
+      "*": "deny",
       "/nix/store/**": "allow",
       "/home/boxfish/.config/opencode/**": "allow",
       "/tmp/**": "allow"

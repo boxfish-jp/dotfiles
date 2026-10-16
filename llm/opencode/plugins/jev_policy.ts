@@ -1,8 +1,7 @@
-import type { Plugin, PluginInput } from "@opencode-ai/plugin";
+import type { Plugin } from "@opencode-ai/plugin";
+import type { JevVerdict } from "../lib/jev_policy.ts";
 import { judgeBashCommand, resolveApiKey } from "../lib/jev_policy.ts";
-import type { BashMode, JevVerdict } from "../lib/jev_policy.ts";
-
-type OpencodeClient = PluginInput["client"];
+import { isPlanSession } from "../lib/session_policy.ts";
 
 type PermissionAskedProperties = {
   id: string;
@@ -11,21 +10,9 @@ type PermissionAskedProperties = {
   metadata?: { command?: unknown };
 };
 
-const RESPONSE_BY_VERDICT: Record<Exclude<JevVerdict, "human">, "once" | "reject"> = {
+const RESPONSE_BY_VERDICT: Record<JevVerdict, "once" | "reject"> = {
   allow: "once",
   reject: "reject",
-};
-
-const bashModeOf = async (
-  client: OpencodeClient,
-  sessionID: string,
-): Promise<BashMode> => {
-  try {
-    const { data } = await client.session.get({ path: { id: sessionID } });
-    return data?.agent === "plan" ? "plan" : "build";
-  } catch {
-    return "build";
-  }
 };
 
 export const JevPolicyPlugin: Plugin = async ({ client }) => {
@@ -41,7 +28,9 @@ export const JevPolicyPlugin: Plugin = async ({ client }) => {
       const command = String(req.metadata?.command ?? "");
       if (!command) return;
 
-      const mode = await bashModeOf(client, req.sessionID);
+      const mode = (await isPlanSession(client, req.sessionID))
+        ? "plan"
+        : "build";
       const cacheKey = `${mode}:${command}`;
       let verdict = verdictByCommand.get(cacheKey);
       if (verdict === undefined) {
@@ -56,8 +45,6 @@ export const JevPolicyPlugin: Plugin = async ({ client }) => {
           },
         });
       }
-      if (verdict === "human") return;
-
       await client
         .postSessionIdPermissionsPermissionId({
           path: { id: req.sessionID, permissionID: req.id },

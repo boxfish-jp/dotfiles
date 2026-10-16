@@ -97,7 +97,7 @@ describe("NotifyPlugin", () => {
         await askPermission(h, "per_1", "bash");
         expect(h.captured.notified).toHaveLength(0);
         await sleep(WAIT_MS * 3);
-        expect(h.captured.notified).toEqual(["bashの許可が欲しいのだ"]);
+        expect(h.captured.notified).toEqual(["バッシュの許可が欲しいのだ"]);
       } finally {
         h.restore();
       }
@@ -121,7 +121,7 @@ describe("NotifyPlugin", () => {
         await askPermission(h, "per_1", "bash");
         await replyPermission(h, "per_2");
         await sleep(WAIT_MS * 3);
-        expect(h.captured.notified).toEqual(["bashの許可が欲しいのだ"]);
+        expect(h.captured.notified).toEqual(["バッシュの許可が欲しいのだ"]);
       } finally {
         h.restore();
       }

@@ -1,12 +1,12 @@
 // bash パーミッション要求を jev に判定させるプロンプト構築と結果解釈。
-// 判定語彙は allow / reject の2択。confidence が閾値に届かない・通信失敗・
-// APIキー不在は "human"(人間のaskプロンプトに残す)とする。
+// 判定語彙は allow / reject の2択。confidence が閾値に届かない・通信失敗は
+// fail-open で allow とする。
 import { readFileSync } from "node:fs";
 import { askJev } from "./jev_client.ts";
 import type { JevJudgment } from "./jev_client.ts";
 
 export type BashMode = "build" | "plan";
-export type JevVerdict = "allow" | "reject" | "human";
+export type JevVerdict = "allow" | "reject";
 
 export type JevDecision = {
   verdict: JevVerdict;
@@ -53,7 +53,7 @@ const TRANSPARENCY_RULE =
 
 const CRITERIA: Record<
   BashMode,
-  Record<Exclude<JevVerdict, "human">, string>
+  Record<JevVerdict, string>
 > = {
   build: {
     allow:
@@ -117,7 +117,7 @@ const toVerdict = (judgment: JevJudgment): JevVerdict =>
   (judgment.choice === "allow" || judgment.choice === "reject") &&
   judgment.confidence >= CONFIDENCE_THRESHOLD
     ? judgment.choice
-    : "human";
+    : "allow";
 
 export const judgeBashCommand = async (params: {
   command: string;
@@ -126,7 +126,7 @@ export const judgeBashCommand = async (params: {
   fetchImpl?: Parameters<typeof askJev>[0]["fetchImpl"];
 }): Promise<JevDecision> => {
   const { command, mode, apiKey, fetchImpl } = params;
-  const failed: JevDecision = { verdict: "human", confidence: 0, cost: 0 };
+  const failed: JevDecision = { verdict: "allow", confidence: 0, cost: 0 };
   try {
     const response = await askJev({
       prompt: buildStatePrompt(command, mode),

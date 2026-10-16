@@ -445,11 +445,10 @@ describe("buildDenyRules", () => {
     ]) {
       expect(actual.names.has(name)).toBe(false);
     }
-    expect([...actual.subcommands.keys()].sort()).toEqual(["git", "opencode"]);
-    expect(actual.subcommands.get("git")).toContain("commit");
+    expect([...actual.subcommands.keys()].sort()).toEqual(["opencode"]);
     expect(actual.subcommands.get("opencode")).toContain("run");
     expect(findDeniedCommand(`nohup rm -rf /tmp/stuff`, actual)).toBe("rm");
-    expect(findDeniedCommand(`nohup git commit -m msg`, actual)).toBe("git commit");
+    expect(findDeniedCommand(`nohup git commit -m msg`, actual)).toBeNull();
     expect(findDeniedCommand(`timeout 30 docker run alpine true`, actual)).toBeNull();
     expect(findDeniedCommand(`npm test`, actual)).toBeNull();
     expect(findDeniedCommand(`nix run nixpkgs#bun`, actual)).toBeNull();
