@@ -9,7 +9,11 @@ const SUMMARY_MIN_LENGTH = 20;
 const NOTIFY_CHANNEL = "1";
 const NOTIFY_CHARACTER = "3";
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-const OPENROUTER_MODEL = "openrouter/free";
+const OPENROUTER_MODELS = [
+  "google/gemma-4-26b-a4b-it:free",
+  "nvidia/nemotron-3-super-120b-a12b:free",
+  "cohere/north-mini-code:free",
+];
 const DEFAULT_SUMMARY_USERS = "boxfish,server";
 
 type LogicalState = "idle" | "active";
@@ -116,11 +120,11 @@ const summarize = async (
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: OPENROUTER_MODEL,
+        models: OPENROUTER_MODELS,
         messages: [
           {
             role: "user",
-            content: `次のテキストを20字以内で語尾に「のだ」を付けた要約文を作成して:\n\n${text}`,
+            content: `次のテキストを20字以内で語尾に「のだ」を付けた要約文を作成して。英字・英単語・アルファベットはすべてカタカナで表記して:\n\n${text}`,
           },
         ],
       }),

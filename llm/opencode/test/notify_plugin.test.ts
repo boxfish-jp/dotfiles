@@ -232,7 +232,7 @@ describe("NotifyPlugin", () => {
   });
 
   describe("応答完了時の要約", () => {
-    test("要約対象ユーザーではopenrouter/freeへ要約を依頼し結果を通知する", async () => {
+    test("要約対象ユーザーではgemma-4-26b-a4b-it:freeを筆頭にfreeモデルへ要約を依頼し結果を通知する", async () => {
       const h = makeHarness({ summaryUsers: userInfo().username });
       try {
         await completeSession(h);
@@ -241,7 +241,11 @@ describe("NotifyPlugin", () => {
         const [request] = h.captured.openrouter;
         expect(request.url).toBe(OPENROUTER_API_URL);
         expect(request.headers.Authorization).toBe("Bearer test-key");
-        expect(request.body.model).toBe("openrouter/free");
+        expect(request.body.models).toEqual([
+          "google/gemma-4-26b-a4b-it:free",
+          "nvidia/nemotron-3-super-120b-a12b:free",
+          "cohere/north-mini-code:free",
+        ]);
         expect(h.captured.notified).toEqual([
           "応答が完了したのだ",
           "テスト要約なのだ",
