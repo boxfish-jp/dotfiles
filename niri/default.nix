@@ -14,7 +14,11 @@
       imports = [ wlib.wrapperModules.niri ];
 
       settings = {
-        spawn-at-startup = [ (lib.getExe pkgs.noctalia) ];
+        # udiskie/mount 用の polkit エージェントは libexec にしか置かれないため getExe で引けない。
+        spawn-at-startup = [
+          (lib.getExe pkgs.noctalia)
+          "${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1"
+        ];
 
         # greeter(greetd)経由でも fcitx5 が二重起動しないようガードする。
         spawn-sh-at-startup = [ "pgrep -x fcitx5 || fcitx5 -d" ];

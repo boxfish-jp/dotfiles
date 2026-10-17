@@ -16,7 +16,6 @@
       programs.noctalia = {
         enable = true;
 
-        # flake の build ではなく nixpkgs 側を使う(バイナリキャッシュ済み)。
         package = pkgs.noctalia;
 
         settings = {
@@ -262,5 +261,7 @@
           };
         };
       };
+
+      home.packages = [ pkgs.ddcutil ];
     };
 }
