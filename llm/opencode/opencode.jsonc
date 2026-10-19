@@ -16,6 +16,11 @@
           "touch *": "allow"
         }
       }
+    },
+    "explore": {
+      "permission": {
+        "edit": "deny"
+      }
     }
   },
   "permission": {
@@ -25,7 +30,7 @@
       "*.env.*": "deny",
       "*.env.example": "allow"
     },
-    "edit": "ask",
+    "edit": "allow",
     "glob": "allow",
     "grep": "allow",
     "list": "allow",
@@ -39,6 +44,7 @@
       "grep *": "allow",
       "find *": "allow",
       "list *": "allow",
+      "timeout *": "allow",
       "cd *": "allow",
       "tree *": "allow",
       "cat *": "allow",
@@ -67,7 +73,7 @@
       "uniq *": "allow",
       "cut *": "allow",
       "tr *": "allow",
-      "xargs *": "allow",
+      "xargs *": "deny",
 
       "sed *": "allow",
       "awk *": "allow",
@@ -78,19 +84,50 @@
       "git *": "allow",
 
       "nix flake check *": "allow",
+      "nix log *": "allow",
+      "nix build *": "allow",
+      "nix fmt*": "allow",
       "env *": "deny",
       "printenv *": "deny",
       "mkdir *": "deny",
       "mv *": "deny",
       "cp *": "deny",
       "touch *": "deny",
-      "sudo*": "deny"
+      "sudo*": "deny",
+      // シェル組み込み経由の任意実行
+      "eval *": "deny",
+      "source *": "deny",
+      ". *": "deny",
+      "npx *": "deny",
+      "at *": "deny",
+      "crontab *": "deny",
+      "opencode run *": "deny",
+      // 破壊・権限変更系
+      "rm *": "deny",
+      "unlink *": "deny",
+      "chmod *": "deny",
+      "chown *": "deny",
+      "chgrp *": "deny",
+      "install *": "deny",
+      "dd *": "deny",
+      // 権限昇格・名前空間経由の実行
+      "su *": "deny",
+      "doas *": "deny",
+      "runuser *": "deny",
+      "pkexec *": "deny",
+      "chroot *": "deny",
+      "unshare *": "deny",
+      "nsenter *": "deny",
+      "bwrap *": "deny",
+      "runc *": "deny",
+      "crun *": "deny",
+      "buildah *": "deny"
     },
     "task": {
       "*": "allow"
     },
     "external_directory": {
-      "*": "ask",
+      "*": "deny",
       "/nix/store/**": "allow",
       "/home/boxfish/.config/opencode/**": "allow",
       "/tmp/**": "allow"

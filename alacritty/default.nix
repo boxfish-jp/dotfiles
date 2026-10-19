@@ -1,15 +1,20 @@
+{ self, ... }:
 {
-  config,
-  pkgs,
-  lib,
-  username,
-  hostname,
-  ...
-}:
-{
-  home.packages = [
-    pkgs.alacritty
-  ];
+  flake.homeModules.alacritty =
+    {
+      config,
+      pkgs,
+      lib,
+      hostname,
+      ...
+    }:
+    {
+      home.packages = [
+        pkgs.alacritty
+      ];
 
-  xdg.configFile."alacritty".source = ./.;
+      xdg.configFile."alacritty".source = ./.;
+    }
+
+  ;
 }

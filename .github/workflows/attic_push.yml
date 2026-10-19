@@ -1,0 +1,117 @@
+name: attic-push
+
+# 必要な設定:
+#   Variables: ATTIC_HOST (例: monitor-server.taildb6ca.ts.net /疎通確認用),
+#              ATTIC_ENDPOINT (例: http://monitor-server.taildb6ca.ts.net:8080 /cache 名なし)
+#   Secrets:   TS_OAUTH_CLIENT_ID, TS_OAUTH_SECRET (tag:ci 付き OAuth client),
+#              ATTIC_TOKEN (`atticadm make-token --pull shared --push shared` で発行。root 不可)
+on:
+  push:
+    branches:
+      - "**"
+    paths:
+      - flake.lock
+  workflow_dispatch:
+
+concurrency:
+  group: attic-push-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-push:
+    strategy:
+      # 1ホストの失敗で他ホストを巻き添えにしない
+      fail-fast: false
+      matrix:
+        # monitor-server は hardware-configuration.nix が要置換スタブのため除外。
+        host: [boxfish, game, laptop, sandbox, server]
+    runs-on: ubuntu-latest
+    env:
+      TS_OAUTH_SECRET: ${{ secrets.TS_OAUTH_SECRET }}
+      ATTIC_TOKEN: ${{ secrets.ATTIC_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable BBR congestion control
+        run: |
+          sudo modprobe tcp_bbr || true
+          sudo modprobe sch_fq || true
+          sudo sysctl -w net.core.default_qdisc=fq || true
+          sudo sysctl -w net.ipv4.tcp_congestion_control=bbr || true
+          sysctl net.ipv4.tcp_available_congestion_control || true
+          sysctl net.ipv4.tcp_congestion_control || true
+
+      - uses: DeterminateSystems/nix-installer-action@main
+
+      - name: Tailscale
+        if: ${{ env.TS_OAUTH_SECRET != '' }}
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          ping: ${{ vars.ATTIC_HOST }}
+
+      - name: Setup Attic cache
+        if: ${{ env.ATTIC_TOKEN != '' && vars.ATTIC_ENDPOINT != '' }}
+        uses: ryanccn/attic-action@v0
+        with:
+          endpoint: ${{ vars.ATTIC_ENDPOINT }}
+          cache: shared
+          token: ${{ secrets.ATTIC_TOKEN }}
+          # 自動 push は切って closure のみ明示 push する
+          skip-push: "true"
+
+      - name: Build system closure
+        run: nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel --print-out-paths
+
+      - name: Push closure to attic
+        if: ${{ env.ATTIC_TOKEN != '' }}
+        run: attic push shared ./result
+
+  # こけやすいパッケージのカナリア。失敗しても全体を赤にしない。
+  # 成功時は attic へ push し、実機の `nix run` を高速化する
+  fragile-watch:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      TS_OAUTH_SECRET: ${{ secrets.TS_OAUTH_SECRET }}
+      ATTIC_TOKEN: ${{ secrets.ATTIC_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable BBR congestion control
+        run: |
+          sudo modprobe tcp_bbr || true
+          sudo modprobe sch_fq || true
+          sudo sysctl -w net.core.default_qdisc=fq || true
+          sudo sysctl -w net.ipv4.tcp_congestion_control=bbr || true
+          sysctl net.ipv4.tcp_available_congestion_control || true
+          sysctl net.ipv4.tcp_congestion_control || true
+
+      - uses: DeterminateSystems/nix-installer-action@main
+
+      - name: Tailscale
+        if: ${{ env.TS_OAUTH_SECRET != '' }}
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          ping: ${{ vars.ATTIC_HOST }}
+
+      - name: Setup Attic cache
+        if: ${{ env.ATTIC_TOKEN != '' && vars.ATTIC_ENDPOINT != '' }}
+        uses: ryanccn/attic-action@v0
+        with:
+          endpoint: ${{ vars.ATTIC_ENDPOINT }}
+          cache: shared
+          token: ${{ secrets.ATTIC_TOKEN }}
+          skip-push: "true"
+
+      - name: Build fragile packages
+        run: nix build .#davinci-resolve .#voicevox --print-out-paths
+
+      - name: Push fragile packages to attic
+        if: ${{ env.ATTIC_TOKEN != '' }}
+        run: attic push shared ./result ./result-1

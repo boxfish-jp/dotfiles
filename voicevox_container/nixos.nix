@@ -1,36 +1,42 @@
-{ lib, config, ... }:
-
-let
-  cfg = config.services.voicevox_container;
-in
+{ self, ... }:
 {
-  options.services.voicevox_container = {
-    enable = lib.mkEnableOption "VoiceVox text-to-speech engine container";
+  flake.nixosModules.voicevox_container =
+    { lib, config, ... }:
 
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "boxfish";
-      description = "Unix user that runs the container (rootless podman).";
-    };
-  };
+    let
+      cfg = config.services.voicevox_container;
+    in
+    {
+      options.services.voicevox_container = {
+        enable = lib.mkEnableOption "VoiceVox text-to-speech engine container";
 
-  config = lib.mkIf cfg.enable {
-    networking.firewall.allowedTCPPorts = [ 50021 ];
+        user = lib.mkOption {
+          type = lib.types.str;
+          default = "boxfish";
+          description = "Unix user that runs the container (rootless podman).";
+        };
+      };
 
-    users.users.${cfg.user} = {
-      subUidRanges = [
-        {
-          startUid = 100000;
-          count = 65536;
-        }
-      ];
+      config = lib.mkIf cfg.enable {
+        networking.firewall.allowedTCPPorts = [ 50021 ];
 
-      subGidRanges = [
-        {
-          startGid = 100000;
-          count = 65536;
-        }
-      ];
-    };
-  };
+        users.users.${cfg.user} = {
+          subUidRanges = [
+            {
+              startUid = 100000;
+              count = 65536;
+            }
+          ];
+
+          subGidRanges = [
+            {
+              startGid = 100000;
+              count = 65536;
+            }
+          ];
+        };
+      };
+    }
+
+  ;
 }

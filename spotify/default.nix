@@ -1,10 +1,16 @@
+{ self, ... }:
 {
-  pkgs,
-  ...
-}:
-{
-  home.packages = with pkgs; [
-    spotify
-    spotify-player
-  ];
+  flake.homeModules.spotify =
+    {
+      pkgs,
+      ...
+    }:
+    {
+      home.packages = with pkgs; [
+        spotify
+        spotify-player
+      ];
+    }
+
+  ;
 }

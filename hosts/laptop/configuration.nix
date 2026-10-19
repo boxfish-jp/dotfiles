@@ -1,75 +1,118 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ pkgs, ... }:
-
+{ self, ... }:
 {
-  imports = [
-    # Include the results of the hardware scan.
-    ./hardware-configuration.nix
-    ../../modules/nixos/locale.nix
-    ../../modules/nixos/keyboard.nix
-    ../../modules/nixos/networking.nix
-    ../../modules/nixos/nix.nix
-    ../../modules/nixos/user.nix
-    ../../modules/nixos/fonts.nix
-    ../../modules/nixos/virtualisation.nix
-    ../../modules/nixos/graphics.nix
-    ../../modules/nixos/audio.nix
-    ../../modules/nixos/desktop.nix
-    ../../modules/nixos/certificate.nix
-    ../../tailscale/nixos.nix
-  ];
+  flake.nixosConfigurations.laptop = self.lib.mkHost { hostname = "laptop"; };
 
-  domains = {
-    locale.japanese = true;
-    networking.desktop = true;
-    virtualisation = {
-      podman = true;
-      waydroid = true;
+  flake.nixosModules."host-laptop" =
+    { pkgs, ... }:
+    {
+      imports = [
+        self.nixosModules.locale
+        self.nixosModules.keyboard
+        self.nixosModules.networking
+        self.nixosModules.nix
+        self.nixosModules.user
+        self.nixosModules.fonts
+        self.nixosModules.virtualisation
+        self.nixosModules.graphics
+        self.nixosModules.audio
+        self.nixosModules.desktop
+        self.nixosModules.niri
+        self.nixosModules.certificate
+        self.nixosModules.tailscale
+      ];
+
+      domains = {
+        locale.japanese = true;
+        networking.desktop = true;
+        virtualisation = {
+          podman = true;
+          waydroid = true;
+        };
+        fonts.defaultFonts = true;
+        users.extraGroups = [
+          "networkmanager"
+          "wheel"
+          "podman"
+          "input"
+        ];
+      };
+
+      tailscale.enable = true;
+
+      fileSystems."/mnt/nas" = {
+        device = "//192.168.68.16/iohdd";
+        fsType = "cifs";
+        options = [
+          "x-systemd.automount"
+          "noauto"
+          "nofail"
+          "_netdev"
+          "x-systemd.device-timeout=5s"
+          "x-systemd.mount-timeout=5s"
+          "credentials=/etc/samba/credentials.nas"
+          "hard"
+          "uid=1000"
+          "gid=100"
+          "forceuid"
+          "forcegid"
+          "file_mode=0660"
+          "dir_mode=0770"
+        ];
+      };
+
+      hardware.bluetooth = {
+        enable = true;
+        powerOnBoot = false;
+      };
+
+      # Enable CUPS to print documents.
+      services.printing = {
+        enable = true;
+        drivers = with pkgs; [
+          canon-cups-ufr2
+        ];
+      };
+
+      services.avahi = {
+        enable = true;
+        publish = {
+          enable = true;
+          userServices = true;
+        };
+        nssmdns4 = true;
+        openFirewall = true;
+      };
+
+      services.fprintd.enable = true;
+
+      # login の PAM スタック先頭に pam_fprintd が入ると、スリープロックで
+      # パワード入力後に指認証待ち(最大30秒)が発生して解錠が遅くなるため無効化
+      security.pam.services.login.fprintAuth = false;
+
+      programs.steam.enable = true;
+      services.flatpak.enable = true;
+
+      # List packages installed in system profile.
+      environment.systemPackages = with pkgs; [
+        qemu
+        quickemu
+        usbutils
+        cifs-utils
+      ];
+
+      users.users.stream = {
+        isNormalUser = true;
+        description = "streaming";
+        extraGroups = [
+          "networkmanager"
+          "wheel"
+          "podman"
+          "input"
+        ];
+        home = "/home/stream";
+        shell = pkgs.bash;
+      };
+
+      home-manager.users.stream = self.homeModules."laptop/stream";
     };
-    fonts.defaultFonts = true;
-    users.extraGroups = [
-      "networkmanager"
-      "wheel"
-      "podman"
-      "input"
-    ];
-  };
-
-  tailscale.enable = true;
-
-  hardware.bluetooth = {
-    enable = true;
-    powerOnBoot = false;
-  };
-
-  # Enable CUPS to print documents.
-  services.printing = {
-    enable = true;
-    drivers = with pkgs; [ canon-cups-ufr2 ];
-  };
-
-  services.avahi = {
-    enable = true;
-    publish = {
-      enable = true;
-      userServices = true;
-    };
-    nssmdns4 = true;
-    openFirewall = true;
-  };
-
-  services.fprintd.enable = true;
-
-  programs.steam.enable = true;
-  services.flatpak.enable = true;
-
-  # List packages installed in system profile.
-  environment.systemPackages = with pkgs; [
-    qemu
-    quickemu
-    usbutils
-  ];
 }

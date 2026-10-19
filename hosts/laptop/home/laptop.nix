@@ -1,0 +1,29 @@
+{ self, ... }:
+{
+  flake.homeModules."laptop/laptop" = _: {
+    imports = [
+      self.homeModules.containers
+      self.homeModules.kanata
+      self.homeModules.noctalia
+      self.homeModules.qpwgraph
+      self.homeModules.vicinae
+      self.homeModules.nvim
+      self.homeModules.fcitx5
+      self.homeModules.alacritty
+      self.homeModules.ghostty
+      self.homeModules.zellij
+      self.homeModules.git
+      self.homeModules.bash
+      self.homeModules.llm
+      self.homeModules.btop
+      self.homeModules.spotify
+      self.homeModules.discord
+      self.homeModules.other_cli
+      self.homeModules.other_gui
+    ];
+
+    home.stateVersion = "26.11";
+
+    programs.home-manager.enable = true;
+  };
+}

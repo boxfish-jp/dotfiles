@@ -11,13 +11,40 @@ const WRAPPERS = new Set([
   "xargs",
 ]);
 
+export const SCRIPT_INTERPRETERS: ReadonlySet<string> = new Set([
+  ".",
+  "ash",
+  "bash",
+  "bun",
+  "dash",
+  "deno",
+  "eval",
+  "ksh",
+  "node",
+  "perl",
+  "php",
+  "pypy",
+  "pypy3",
+  "python",
+  "python2",
+  "python3",
+  "ruby",
+  "sh",
+  "source",
+  "zsh",
+]);
+
 const SEGMENT_CHARS = new Set(["\n", "|", "&", ";", "(", ")"]);
 
 export const isFlag = (token: string): boolean => token.startsWith("-");
 
-const isNumber = (token: string): boolean => /^\d+$/.test(token);
+export const isNumber = (token: string): boolean => /^\d+$/.test(token);
 
-const isAssignment = (token: string): boolean => /^[A-Za-z_]\w*=/.test(token);
+export const isAssignment = (token: string): boolean =>
+  /^[A-Za-z_]\w*=/.test(token);
+
+export const isOperandToken = (token: string): boolean =>
+  !isFlag(token) && !isNumber(token) && !isAssignment(token);
 
 export const baseName = (token: string): string => {
   const parts = token.split("/");

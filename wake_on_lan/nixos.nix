@@ -1,35 +1,41 @@
-{ lib, config, ... }:
-
-let
-  cfg = config.wakeOnLan;
-in
+{ self, ... }:
 {
-  options.wakeOnLan = {
-    enable = lib.mkEnableOption "Wake on LAN (magic packet) on the wired NICs";
+  flake.nixosModules.wake_on_lan =
+    { lib, config, ... }:
 
-    interfaces = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      example = [ "enp10s0" ];
-      description = "Wired NIC interface names to enable Wake on LAN on.";
-    };
+    let
+      cfg = config.wakeOnLan;
+    in
+    {
+      options.wakeOnLan = {
+        enable = lib.mkEnableOption "Wake on LAN (magic packet) on the wired NICs";
 
-    udpPorts = lib.mkOption {
-      type = lib.types.listOf lib.types.port;
-      default = [ 9 ];
-      example = [
-        9
-        7
-      ];
-      description = "UDP ports to open for magic packets (7=echo, 9=discard).";
-    };
-  };
+        interfaces = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+          example = [ "enp10s0" ];
+          description = "Wired NIC interface names to enable Wake on LAN on.";
+        };
 
-  config = lib.mkIf cfg.enable {
-    networking.interfaces = lib.genAttrs cfg.interfaces (iface: {
-      wakeOnLan.enable = true;
-    });
+        udpPorts = lib.mkOption {
+          type = lib.types.listOf lib.types.port;
+          default = [ 9 ];
+          example = [
+            9
+            7
+          ];
+          description = "UDP ports to open for magic packets (7=echo, 9=discard).";
+        };
+      };
 
-    networking.firewall.allowedUDPPorts = cfg.udpPorts;
-  };
+      config = lib.mkIf cfg.enable {
+        networking.interfaces = lib.genAttrs cfg.interfaces (iface: {
+          wakeOnLan.enable = true;
+        });
+
+        networking.firewall.allowedUDPPorts = cfg.udpPorts;
+      };
+    }
+
+  ;
 }

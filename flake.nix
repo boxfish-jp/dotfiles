@@ -16,8 +16,13 @@
   inputs = {
     # Main channel (latest packages, unstable)
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
     nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=latest";
     llm-agents.url = "github:numtide/llm-agents.nix";
+    wrapper-modules = {
+      url = "github:BirdeeHub/nix-wrapper-modules";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -31,92 +36,28 @@
       url = "github:vicinaehq/extensions";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    plasma-manager = {
-      url = "github:nix-community/plasma-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.home-manager.follows = "home-manager";
-    };
     streaming-kit = {
       url = "github:boxfish-jp/streamingkit";
       # inputs.nixpkgs.follows = "nixpkgs";
     };
     browser-tyan.url = "github:boxfish-jp/browser_tyan";
     twitch-stream-recoder.url = "github:boxfish-jp/twitch-stream-recorder";
+
+    noctalia = {
+      url = "github:noctalia-dev/noctalia";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
-    inputs@{
-      nixpkgs,
-      nix-flatpak,
-      llm-agents,
-      home-manager,
-      vicinae,
-      plasma-manager,
-      streaming-kit,
-      browser-tyan,
-      twitch-stream-recoder,
-      ...
-    }:
+    inputs:
     let
-      system = "x86_64-linux";
-      pkgs = import nixpkgs { inherit system; };
-      mkHost =
-        {
-          hostname,
-          username ? hostname,
-        }:
-        nixpkgs.lib.nixosSystem {
-          inherit system;
-          specialArgs = { inherit hostname username; };
-          modules = [
-            ./hosts/${hostname}/configuration.nix
-            home-manager.nixosModules.home-manager
-            browser-tyan.nixosModules.default
-            {
-              nixpkgs.overlays = [
-                llm-agents.overlays.shared-nixpkgs
-              ];
-            }
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.extraSpecialArgs = {
-                inherit inputs hostname username;
-              };
-              home-manager.users.${username} = ./hosts/${hostname}/home.nix;
-              home-manager.sharedModules = [
-                vicinae.homeManagerModules.default
-                plasma-manager.homeModules.plasma-manager
-                nix-flatpak.homeManagerModules.nix-flatpak
-                streaming-kit.homeManagerModules.streaming-kit-cli
-                streaming-kit.homeManagerModules.streaming-kit-desktop
-                streaming-kit.homeManagerModules.streaming-kit-hub
-                streaming-kit.homeManagerModules.streaming-kit-voicevox-connector
-                streaming-kit.homeManagerModules.streaming-kit-stream-orchestrator
-                twitch-stream-recoder.homeModules.default
-              ];
-            }
-          ];
-        };
+      inherit (inputs.nixpkgs.lib) hasPrefix;
+      inherit (inputs.nixpkgs.lib.fileset) fileFilter toList;
+
+      isFlakeModule = file: file.hasExt "nix" && file.name != "flake.nix" && !hasPrefix "_" file.name;
     in
-    {
-      formatter.${system} = pkgs.nixfmt-tree;
-      devShell.${system} = pkgs.mkShell {
-        packages = with pkgs; [
-          biome
-          typescript-language-server
-          stylua
-          nixd
-          nixfmt
-          lua-language-server
-        ];
-      };
-      nixosConfigurations = {
-        laptop = mkHost { hostname = "laptop"; };
-        boxfish = mkHost { hostname = "boxfish"; };
-        server = mkHost { hostname = "server"; };
-        sandbox = mkHost { hostname = "sandbox"; };
-        game = mkHost { hostname = "game"; };
-      };
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = toList (fileFilter isFlakeModule ./.);
     };
 }
