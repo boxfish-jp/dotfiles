@@ -23,6 +23,7 @@
       self.homeModules.paint
       self.homeModules.btop
       self.homeModules.spotify
+      self.homeModules.discord
       self.homeModules.other_cli
       self.homeModules.other_gui
     ];

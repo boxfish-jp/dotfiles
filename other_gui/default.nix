@@ -7,7 +7,6 @@
     }:
     {
       home.packages = with pkgs; [
-        discord
         kdePackages.dolphin
         vlc
         vscode
