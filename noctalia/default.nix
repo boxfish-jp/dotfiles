@@ -158,6 +158,17 @@
 
           battery.warning_threshold = 20;
 
+          idle.behavior = {
+            battery-screen-off = {
+              timeout = 300;
+              command = "test \"$(cat /sys/class/power_supply/AC/online)\" = 0 && niri msg action power-off-monitors";
+            };
+            battery-suspend = {
+              timeout = 1200;
+              command = "test \"$(cat /sys/class/power_supply/AC/online)\" = 0 && noctalia msg session lock-and-suspend";
+            };
+          };
+
           system.monitor = {
             cpu_usage_activity_threshold = 80.0;
             cpu_usage_critical_threshold = 90.0;
@@ -184,8 +195,8 @@
           };
 
           nightlight = {
-            temperature_day = 6500;
-            temperature_night = 4000;
+            enabled = true;
+            force = true;
           };
 
           backdrop = {
