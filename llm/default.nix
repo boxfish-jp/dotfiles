@@ -51,7 +51,10 @@ in
       ...
     }:
     {
-      imports = [ self.homeModules.kimaki ];
+      imports = [
+        self.homeModules.dsh
+        self.homeModules.kimaki
+      ];
 
       llm.kimaki.enable = config.home.username == "sandbox";
 
