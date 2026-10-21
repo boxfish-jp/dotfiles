@@ -13,7 +13,9 @@ let
       ./opencode/lib
       ./opencode/opencode.jsonc
       ./opencode/plugins
-      ./opencode/skills
+      # スキルは llm/skills に集約しており、opencode 側のリンクは現在無い。
+      # 将来 skills/ を置いた場合もそのまま同梱できるよう maybeMissing にする。
+      (lib.fileset.maybeMissing ./opencode/skills)
       ./opencode/themes
       ./opencode/tui.json
     ];

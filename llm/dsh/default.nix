@@ -24,12 +24,19 @@ in
     };
 
   flake.homeModules.dsh =
-    { config, pkgs, ... }:
+    {
+      config,
+      pkgs,
+      ...
+    }:
+    let
+      dshHome = "${config.home.homeDirectory}/${dshHomeRel}";
+    in
     {
       home.packages = [ pkgs.llm-agents.dsh ];
 
-      # dsh のランタイムデータ（sessions / storages / profiles）を置く場所。
-      # ワークツリー内なので .gitignore で追跡除外している。
-      home.sessionVariables.DSH_HOME = "${config.home.homeDirectory}/${dshHomeRel}";
+      home.sessionVariables.DSH_HOME = dshHome;
+
+      home.file."${dshHomeRel}/skills".source = ../skills;
     };
 }
