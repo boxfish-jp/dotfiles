@@ -48,30 +48,53 @@
 
       # `--patch` takes effect after the profile name, so insert it there.
       dsh = pkgs.writeShellScriptBin "dsh" ''
-        case "''${1:-}" in
+        set -e
+
+        args=("$@")
+        rest=()
+
+        case "''${args[0]:-}" in
           "" | plugin | --help | --version | -h | -V)
-            exec ${lib.getExe base} "$@"
+            exec ${lib.getExe base} "''${args[@]}"
             ;;
           --profile)
-            exec ${lib.getExe base} "$1" "$2" --patch ${pluginSet.overlay} "''${@:3}"
+            profile="''${args[1]:-}"
+            rest=("''${args[@]:2}")
             ;;
           --profile=*)
-            exec ${lib.getExe base} "$1" --patch ${pluginSet.overlay} "''${@:2}"
+            profile="''${args[0]#--profile=}"
+            rest=("''${args[@]:1}")
             ;;
           -*)
-            exec ${lib.getExe base} "$@"
+            exec ${lib.getExe base} "''${args[@]}"
             ;;
           *)
-            exec ${lib.getExe base} "$1" --patch ${pluginSet.overlay} "''${@:2}"
+            profile="''${args[0]}"
+            rest=("''${args[@]:1}")
             ;;
         esac
+
+        if [ -z "$profile" ]; then
+          exec ${lib.getExe base} "''${args[@]}"
+        fi
+
+        if [ "$profile" = tui ]; then
+          profile=dsh-tui
+        fi
+
+        if [ "$profile" = dsh-tui ] && [ "''${rest[0]:-}" != plugin ]; then
+          ${tui.provision}
+        fi
+
+        exec ${lib.getExe base} "$profile" --patch ${pluginSet.overlay} "''${rest[@]}"
       '';
     in
     {
       packages = {
         dsh = dsh;
-        dsh-tui = tui.package;
+        dsh-tui = tui.launcher;
         dsh-tui-profile = tui.profile;
+        dsh-tui-provision = tui.provision;
       };
     };
 
@@ -83,7 +106,6 @@
     }:
     let
       tuiPackage = self.packages.${pkgs.system}.dsh-tui;
-      tuiProfile = self.packages.${pkgs.system}.dsh-tui-profile;
     in
     {
       home.packages = [
@@ -92,19 +114,7 @@
       ];
 
       # dsh rewrites cordis.yml on every boot, so the profile cannot be a store symlink.
-      home.activation.dshTuiProfile = ''
-        profile_dir="$HOME/.dsh/profiles/dsh-tui"
-        package_link="$profile_dir/node_modules/@deepseek-harness-tui/dsh-tui"
-
-        mkdir -p "$(dirname "$package_link")"
-        install -m 0644 ${tuiProfile}/package.json "$profile_dir/package.json"
-        install -m 0644 ${tuiProfile}/pnpm-workspace.yaml "$profile_dir/pnpm-workspace.yaml"
-        [ -e "$profile_dir/cordis.patch.yml" ] || install -m 0644 ${tuiProfile}/cordis.patch.yml "$profile_dir/cordis.patch.yml"
-        [ -e "$profile_dir/cordis.yml" ] || printf '[]\n' > "$profile_dir/cordis.yml"
-
-        rm -rf "$package_link"
-        ln -s ${tuiPackage}/lib/node_modules/@deepseek-harness-tui/dsh-tui "$package_link"
-      '';
+      home.activation.dshTuiProfile = "${self.packages.${pkgs.system}.dsh-tui-provision}";
 
       # スキルの読み込み先は ~/.dsh/skills へのリンクではなく、dsh の
       # skill-filesystem 設定（--patch で渡す customSkillDirs）で指定する。
