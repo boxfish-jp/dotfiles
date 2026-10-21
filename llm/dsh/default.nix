@@ -44,6 +44,8 @@
         extraPatches = [ skillsPatch ];
       };
 
+      tui = import ./tui/_package.nix { inherit lib pkgs base; };
+
       # `--patch` takes effect after the profile name, so insert it there.
       dsh = pkgs.writeShellScriptBin "dsh" ''
         case "''${1:-}" in
@@ -66,7 +68,11 @@
       '';
     in
     {
-      packages.dsh = dsh;
+      packages = {
+        dsh = dsh;
+        dsh-tui = tui.package;
+        dsh-tui-profile = tui.profile;
+      };
     };
 
   flake.homeModules.dsh =
@@ -75,8 +81,30 @@
       self,
       ...
     }:
+    let
+      tuiPackage = self.packages.${pkgs.system}.dsh-tui;
+      tuiProfile = self.packages.${pkgs.system}.dsh-tui-profile;
+    in
     {
-      home.packages = [ self.packages.${pkgs.system}.dsh ];
+      home.packages = [
+        self.packages.${pkgs.system}.dsh
+        tuiPackage
+      ];
+
+      # dsh rewrites cordis.yml on every boot, so the profile cannot be a store symlink.
+      home.activation.dshTuiProfile = ''
+        profile_dir="$HOME/.dsh/profiles/dsh-tui"
+        package_link="$profile_dir/node_modules/@deepseek-harness-tui/dsh-tui"
+
+        mkdir -p "$(dirname "$package_link")"
+        install -m 0644 ${tuiProfile}/package.json "$profile_dir/package.json"
+        install -m 0644 ${tuiProfile}/pnpm-workspace.yaml "$profile_dir/pnpm-workspace.yaml"
+        [ -e "$profile_dir/cordis.patch.yml" ] || install -m 0644 ${tuiProfile}/cordis.patch.yml "$profile_dir/cordis.patch.yml"
+        [ -e "$profile_dir/cordis.yml" ] || printf '[]\n' > "$profile_dir/cordis.yml"
+
+        rm -rf "$package_link"
+        ln -s ${tuiPackage}/lib/node_modules/@deepseek-harness-tui/dsh-tui "$package_link"
+      '';
 
       # スキルの読み込み先は ~/.dsh/skills へのリンクではなく、dsh の
       # skill-filesystem 設定（--patch で渡す customSkillDirs）で指定する。

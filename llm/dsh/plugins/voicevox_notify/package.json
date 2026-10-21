@@ -1,9 +1,9 @@
 {
-  "name": "@local/dsh-assistant-turn-log",
+  "name": "@local/voicevox_notify",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Appends one JSONL record for every completed assistant turn.",
+  "description": "Speaks the final assistant response of each turn through VOICEVOX.",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
