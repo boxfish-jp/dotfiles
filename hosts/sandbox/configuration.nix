@@ -6,6 +6,7 @@
     { ... }:
     {
       imports = [
+        self.nixosModules.bubblewrap
         self.nixosModules.lxc
         self.nixosModules.locale
         self.nixosModules.networking
