@@ -1,8 +1,10 @@
+import { userInfo } from "node:os";
 import { type LlmRuntime, summarize } from "./llm_summary.js";
 import { notify } from "./notify.js";
 
 const DONE_NOTIFICATION = "応答が完了したのだ";
 const SUMMARY_FAILURE_NOTIFICATION = "一言で言えないのだ";
+const SUMMARY_USERS = new Set(["boxfish", "server"]);
 
 type ContentBlock = {
   readonly type: string;
@@ -79,43 +81,51 @@ const extractTxt = (content: readonly ContentBlock[]): string => {
 
 export const inject = ["llm"];
 
-export const apply = (ctx: PluginContext): void => {
-  const pendingBySession = new Map<string, { turn: number; text: string }>();
+export const createApply =
+  (username: string) =>
+  (ctx: PluginContext): void => {
+    const summarizeEnabled = SUMMARY_USERS.has(username);
+    const pendingBySession = new Map<string, { turn: number; text: string }>();
 
-  ctx.on("session/event", async (session, event) => {
-    if (session.header.origin === "subagent") return;
-    if (isAssistantMessageEvent(event)) {
-      const text = extractTxt(event.data.message.content);
-      if (text !== "") {
-        pendingBySession.set(session.id, { turn: event.data.turn, text });
-      }
-      return;
-    }
-    if (isTurnEndEvent(event)) {
-      const pending = pendingBySession.get(session.id);
-      pendingBySession.delete(session.id);
-      if (pending === undefined || pending.turn !== event.data.turn) {
+    ctx.on("session/event", async (session, event) => {
+      if (session.header.origin === "subagent") return;
+      if (isAssistantMessageEvent(event)) {
+        const text = extractTxt(event.data.message.content);
+        if (text !== "") {
+          pendingBySession.set(session.id, { turn: event.data.turn, text });
+        }
         return;
       }
-      notify(DONE_NOTIFICATION);
-      const summary = await summarize(ctx.llm, pending.text, session.id).catch(
-        () => undefined,
-      );
-      notify(summary ?? SUMMARY_FAILURE_NOTIFICATION);
-    }
-  });
+      if (isTurnEndEvent(event)) {
+        const pending = pendingBySession.get(session.id);
+        pendingBySession.delete(session.id);
+        if (pending === undefined || pending.turn !== event.data.turn) {
+          return;
+        }
+        notify(DONE_NOTIFICATION);
+        if (!summarizeEnabled) return;
+        const summary = await summarize(
+          ctx.llm,
+          pending.text,
+          session.id,
+        ).catch(() => undefined);
+        notify(summary ?? SUMMARY_FAILURE_NOTIFICATION);
+      }
+    });
 
-  ctx.on("session/disposed", (session) => {
-    pendingBySession.delete(session.id);
-  });
+    ctx.on("session/disposed", (session) => {
+      pendingBySession.delete(session.id);
+    });
 
-  ctx.on("user-questions/request", (_request, next) => {
-    notify("質問があるのだ");
-    return next();
-  });
+    ctx.on("user-questions/request", (_request, next) => {
+      notify("質問があるのだ");
+      return next();
+    });
 
-  ctx.on("approval/request", (_request, next) => {
-    notify("許可を求められているのだ");
-    return next();
-  });
-};
+    ctx.on("approval/request", (_request, next) => {
+      notify("許可を求められているのだ");
+      return next();
+    });
+  };
+
+export const apply = createApply(userInfo().username);

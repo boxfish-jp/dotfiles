@@ -2,16 +2,21 @@ const SUMMARY_PROVIDER = "opencode-go";
 const SUMMARY_MODEL = "deepseek-v4.1-flash";
 const SUMMARY_SYSTEM_PROMPT = [
   "あなたは音声読み上げ用の要約器です。",
-  "与えられたアシスタントの応答を、日本語の話し言葉で1〜2文、120文字以内に要約してください。",
+  "20字以内で語尾に「のだ」を付けた要約文を作成して。英字・英単語・アルファベットはすべてカタカナで表記して",
   "コード、箇条書き、Markdown、見出し、絵文字は使わず、そのまま読み上げられる文章だけを返してください。",
 ].join("\n");
 const SUMMARY_INPUT_LIMIT = 4000;
-const SUMMARY_MAX_TOKENS = 300;
+const SUMMARY_MAX_TOKENS = 1000;
 const SUMMARY_TIMEOUT_MS = 20_000;
 
 type StreamChunk =
   | { readonly type: "text-delta"; readonly text: string }
-  | { readonly type: "finish"; readonly reason: { readonly kind: string } };
+  | { readonly type: "finish"; readonly reason: { readonly kind: string } }
+  | { readonly type: "block-start" }
+  | { readonly type: "reasoning-delta" }
+  | { readonly type: "tool-call-delta" }
+  | { readonly type: "block-end" }
+  | { readonly type: "usage" };
 
 type OneShotRequest = {
   readonly provider: string;
@@ -88,7 +93,9 @@ export const summarize = async (
       texts.push(chunk.text);
       continue;
     }
-    finished = chunk.reason.kind === "stop";
+    if (chunk.type === "finish") {
+      finished = chunk.reason.kind === "stop";
+    }
   }
   const summary = texts.join("").trim();
   return finished && summary !== "" ? summary : undefined;

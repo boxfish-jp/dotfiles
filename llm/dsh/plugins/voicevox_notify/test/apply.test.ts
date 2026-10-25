@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { apply } from "../dist/index.js";
+import { createApply } from "../dist/index.js";
 
 const SUMMARY_INPUT_LIMIT = 4000;
 const DONE_NOTIFICATION = "応答が完了したのだ";
 const SUMMARY_FAILURE_NOTIFICATION = "一言で言えないのだ";
 
-type ApplyContext = Parameters<typeof apply>[0];
+type ApplyContext = Parameters<ReturnType<typeof createApply>>[0];
 type Listener = (...args: unknown[]) => unknown;
 
 type Harness = {
@@ -15,7 +15,10 @@ type Harness = {
 };
 
 type StubChunk =
+  | { type: "block-start" }
+  | { type: "reasoning-delta"; text: string }
   | { type: "text-delta"; text: string }
+  | { type: "usage" }
   | { type: "finish"; reason: { kind: string } };
 
 type LlmRequest = {
@@ -46,6 +49,15 @@ type LlmOptions = {
 };
 
 const textDelta = (text: string): StubChunk => ({ type: "text-delta", text });
+
+const blockStart = (): StubChunk => ({ type: "block-start" });
+
+const reasoningDelta = (text: string): StubChunk => ({
+  type: "reasoning-delta",
+  text,
+});
+
+const usageChunk = (): StubChunk => ({ type: "usage" });
 
 const finishChunk = (kind: string): StubChunk => ({
   type: "finish",
@@ -160,7 +172,7 @@ describe("apply", () => {
     try {
       const stub = createLlm([textDelta("要約"), finishChunk("stop")]);
       const harness = createHarness(stub.llm);
-      apply(harness.ctx);
+      createApply("boxfish")(harness.ctx);
       const session = mainSession();
 
       harness.emit(
@@ -192,7 +204,7 @@ describe("apply", () => {
     try {
       const stub = createLlm([textDelta("要約"), finishChunk("stop")]);
       const harness = createHarness(stub.llm);
-      apply(harness.ctx);
+      createApply("boxfish")(harness.ctx);
       const session = mainSession();
 
       harness.emit(
@@ -220,7 +232,7 @@ describe("apply", () => {
     const capture = captureSpokenTexts();
     try {
       const harness = createHarness();
-      apply(harness.ctx);
+      createApply("boxfish")(harness.ctx);
 
       harness.emit(
         "session/event",
@@ -239,7 +251,7 @@ describe("apply", () => {
     const capture = captureSpokenTexts();
     try {
       const harness = createHarness();
-      apply(harness.ctx);
+      createApply("boxfish")(harness.ctx);
       const session = mainSession();
 
       harness.emit(
@@ -260,7 +272,7 @@ describe("apply", () => {
     try {
       const stub = createLlm([textDelta("子の要約"), finishChunk("stop")]);
       const harness = createHarness(stub.llm);
-      apply(harness.ctx);
+      createApply("boxfish")(harness.ctx);
       const child = subagentSession();
 
       harness.emit(
@@ -281,7 +293,7 @@ describe("apply", () => {
     const capture = captureSpokenTexts();
     try {
       const harness = createHarness();
-      apply(harness.ctx);
+      createApply("boxfish")(harness.ctx);
       let continued = 0;
 
       await harness.emit("user-questions/request", {}, async () => {
@@ -299,7 +311,7 @@ describe("apply", () => {
     const capture = captureSpokenTexts();
     try {
       const harness = createHarness();
-      apply(harness.ctx);
+      createApply("boxfish")(harness.ctx);
       let continued = 0;
 
       await harness.emit("approval/request", {}, async () => {
@@ -322,7 +334,7 @@ describe("apply", () => {
         finishChunk("stop"),
       ]);
       const harness = createHarness(stub.llm);
-      apply(harness.ctx);
+      createApply("boxfish")(harness.ctx);
       const session = mainSession();
 
       harness.emit(
@@ -349,6 +361,122 @@ describe("apply", () => {
     }
   });
 
+  test("text-delta以外の途中チャンクをfinishと誤認しない", async () => {
+    const capture = captureSpokenTexts();
+    try {
+      const stub = createLlm([
+        blockStart(),
+        reasoningDelta("思考中"),
+        textDelta("要約"),
+        usageChunk(),
+        finishChunk("stop"),
+      ]);
+      const harness = createHarness(stub.llm);
+      createApply("boxfish")(harness.ctx);
+      const session = mainSession();
+
+      harness.emit(
+        "session/event",
+        session,
+        assistantMessage(1, [textBlock("長い応答本文")]),
+      );
+      await harness.emit("session/event", session, turnEnd(1));
+
+      assert.deepEqual(capture.texts, [DONE_NOTIFICATION, "要約"]);
+    } finally {
+      capture.restore();
+    }
+  });
+
+  test("要約は思考分を含むトークン上限で要求する", async () => {
+    const capture = captureSpokenTexts();
+    try {
+      const stub = createLlm([textDelta("要約"), finishChunk("stop")]);
+      const harness = createHarness(stub.llm);
+      createApply("boxfish")(harness.ctx);
+      const session = mainSession();
+
+      harness.emit(
+        "session/event",
+        session,
+        assistantMessage(1, [textBlock("長い応答本文")]),
+      );
+      await harness.emit("session/event", session, turnEnd(1));
+
+      assert.equal(stub.requests[0].maxTokens, 1000);
+    } finally {
+      capture.restore();
+    }
+  });
+
+  test("serverユーザーでは要約を読み上げる", async () => {
+    const capture = captureSpokenTexts();
+    try {
+      const stub = createLlm([textDelta("要約"), finishChunk("stop")]);
+      const harness = createHarness(stub.llm);
+      createApply("server")(harness.ctx);
+      const session = mainSession();
+
+      harness.emit(
+        "session/event",
+        session,
+        assistantMessage(1, [textBlock("長い応答本文")]),
+      );
+      await harness.emit("session/event", session, turnEnd(1));
+
+      assert.deepEqual(capture.texts, [DONE_NOTIFICATION, "要約"]);
+    } finally {
+      capture.restore();
+    }
+  });
+
+  test("要約対象外のユーザーでは要約せず完了通知だけ読み上げる", async () => {
+    const capture = captureSpokenTexts();
+    try {
+      const stub = createLlm([textDelta("要約"), finishChunk("stop")]);
+      const harness = createHarness(stub.llm);
+      createApply("alice")(harness.ctx);
+      const session = mainSession();
+
+      harness.emit(
+        "session/event",
+        session,
+        assistantMessage(1, [textBlock("長い応答本文")]),
+      );
+      await harness.emit("session/event", session, turnEnd(1));
+
+      assert.deepEqual(capture.texts, [DONE_NOTIFICATION]);
+      assert.deepEqual(stub.requests, []);
+    } finally {
+      capture.restore();
+    }
+  });
+
+  test("ローダーが渡すconfigをユーザー名として解釈しない", async () => {
+    const capture = captureSpokenTexts();
+    try {
+      const stub = createLlm([textDelta("要約"), finishChunk("stop")]);
+      const harness = createHarness(stub.llm);
+      const applyWithConfig = createApply("boxfish") as (
+        ctx: ApplyContext,
+        config: unknown,
+      ) => void;
+      applyWithConfig(harness.ctx, {});
+      const session = mainSession();
+
+      harness.emit(
+        "session/event",
+        session,
+        assistantMessage(1, [textBlock("長い応答本文")]),
+      );
+      await harness.emit("session/event", session, turnEnd(1));
+
+      assert.deepEqual(capture.texts, [DONE_NOTIFICATION, "要約"]);
+    } finally {
+      capture.restore();
+    }
+  });
+
   test("思考オフを提供しないモデルにはreasoningEffortを指定しない", async () => {
     const capture = captureSpokenTexts();
     try {
@@ -356,7 +484,7 @@ describe("apply", () => {
         efforts: ["low", "high"],
       });
       const harness = createHarness(stub.llm);
-      apply(harness.ctx);
+      createApply("boxfish")(harness.ctx);
       const session = mainSession();
 
       harness.emit(
@@ -377,7 +505,7 @@ describe("apply", () => {
     try {
       const stub = createLlm([textDelta("要約"), finishChunk("stop")]);
       const harness = createHarness(stub.llm);
-      apply(harness.ctx);
+      createApply("boxfish")(harness.ctx);
       const session = mainSession();
 
       harness.emit(
@@ -404,7 +532,7 @@ describe("apply", () => {
         finishChunk("max-tokens"),
       ]);
       const harness = createHarness(stub.llm);
-      apply(harness.ctx);
+      createApply("boxfish")(harness.ctx);
       const session = mainSession();
 
       harness.emit(
@@ -427,7 +555,7 @@ describe("apply", () => {
     const capture = captureSpokenTexts();
     try {
       const harness = createHarness();
-      apply(harness.ctx);
+      createApply("boxfish")(harness.ctx);
       const session = mainSession();
 
       harness.emit(
