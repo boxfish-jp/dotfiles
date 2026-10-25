@@ -1,0 +1,4 @@
+- insert:
+    - id: voicevox_notify
+      name: '@local/voicevox_notify'
+      config: {}

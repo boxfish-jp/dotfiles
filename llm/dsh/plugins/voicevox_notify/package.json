@@ -4,6 +4,11 @@
   "private": true,
   "type": "module",
   "description": "Speaks the final assistant response of each turn through VOICEVOX.",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -12,7 +17,8 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist"
+    "dist",
+    "cordis.patch.yml"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

@@ -53,6 +53,26 @@
         "type": "github"
       }
     },
+    "dsh-profile-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792942420,
+        "narHash": "sha256-SghBKvqxsMiqFzxVg0H/dMYVXIWziAaaMigu55GWk8Q=",
+        "owner": "boxfish-jp",
+        "repo": "dsh-profile-nix",
+        "rev": "a2db2198ac6a824a4b10ac7602194565a00e2134",
+        "type": "github"
+      },
+      "original": {
+        "owner": "boxfish-jp",
+        "repo": "dsh-profile-nix",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -199,6 +219,26 @@
         "owner": "gmodena",
         "ref": "latest",
         "repo": "nix-flatpak",
+        "type": "github"
+      }
+    },
+    "nix-node-build": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792936400,
+        "narHash": "sha256-G/xpdzEbrU2NXwJIClhLhd2rfxSQ9FFF3vyQbRXHH5U=",
+        "owner": "boxfish-jp",
+        "repo": "nix-node-build",
+        "rev": "ff092d0edcc45bc978ce63d2426df2e24fa6e420",
+        "type": "github"
+      },
+      "original": {
+        "owner": "boxfish-jp",
+        "repo": "nix-node-build",
         "type": "github"
       }
     },
@@ -374,10 +414,12 @@
     "root": {
       "inputs": {
         "browser-tyan": "browser-tyan",
+        "dsh-profile-nix": "dsh-profile-nix",
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",
         "llm-agents": "llm-agents",
         "nix-flatpak": "nix-flatpak",
+        "nix-node-build": "nix-node-build",
         "nixpkgs": "nixpkgs_3",
         "noctalia": "noctalia",
         "streaming-kit": "streaming-kit",
