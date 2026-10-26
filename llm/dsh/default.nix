@@ -10,13 +10,19 @@ in
   perSystem =
     { pkgs, ... }:
     let
+      mcpBundle = pkgs.runCommand "dsh-config-mcp" { } ''
+        mkdir -p "$out"
+        cp ${./config/mcp/package.json} "$out/package.json"
+        cp ${./config/mcp/cordis.patch.yml} "$out/cordis.patch.yml"
+      '';
+
       dsh = inputs.dsh-profile-nix.lib.mkDsh {
         inherit pkgs;
         dsh = inputs.llm-agents.packages.${pkgs.system}.dsh;
         # mkDsh の既定は 8080 だが、dsh の web 既定は 3080 なので合わせる。
         webPort = 3080;
         skills = [ ../skills ];
-        plugins = plugins.listFor pkgs;
+        plugins = plugins.listFor pkgs ++ [ mcpBundle ];
         profiles = {
           web = { };
         };
