@@ -55,10 +55,11 @@ in
     {
       imports = [
         self.homeModules.dsh
+        self.homeModules.dsh-web
         self.homeModules.kimaki
       ];
 
-      llm.kimaki.enable = config.home.username == "sandbox";
+      llm.dsh.web.enable = config.home.username == "sandbox";
 
       home.packages = with pkgs; [
         llm-agents.opencode
