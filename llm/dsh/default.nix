@@ -43,5 +43,8 @@ in
     { pkgs, self, ... }:
     {
       home.packages = [ self.packages.${pkgs.system}.dsh ];
+
+      # dsh は $DSH_HOME/AGENTS.md を全セッション共通の指示として読む。
+      home.file.".dsh/AGENTS.md".source = ./AGENTS.md;
     };
 }
