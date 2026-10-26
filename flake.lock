@@ -229,11 +229,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792936400,
-        "narHash": "sha256-G/xpdzEbrU2NXwJIClhLhd2rfxSQ9FFF3vyQbRXHH5U=",
+        "lastModified": 1793027274,
+        "narHash": "sha256-j5DIFfbk9jIUsjfAsnaqmnTfKXa+bdT2tDLLF/JKh4E=",
         "owner": "boxfish-jp",
         "repo": "nix-node-build",
-        "rev": "ff092d0edcc45bc978ce63d2426df2e24fa6e420",
+        "rev": "aa177c7d8b49b48b01ca65e79811786b475da7b7",
         "type": "github"
       },
       "original": {

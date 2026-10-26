@@ -56,6 +56,7 @@ let
             dsh plugin "${name}" has no depsHash yet.
             Run `nix run .#dsh-plugins-update` (npm) or set depsHash in llm/dsh/_deps.nix.
           '';
+      pruneDev = true;
       meta.description = manifest.description or "DSH plugin ${name}";
     };
 
@@ -71,9 +72,11 @@ let
       inherit (spec) depsHash;
       # lib/ を同梱済みで、リポジトリに build script が無い。
       buildScript = null;
+      # ビルド工程が無いので、dev 依存はインストールしない。
       # 上流 lock（開発依存を含む）をそのまま使うため、packument も取得する v2 を使う。
       extraAttrs = {
         npmDepsFetcherVersion = 2;
+        npmInstallFlags = [ "--omit=dev" ];
       };
       meta.description = "DSH plugin ${spec.name}";
     };
