@@ -13,7 +13,9 @@ let
       ./opencode/lib
       ./opencode/opencode.jsonc
       ./opencode/plugins
-      ./opencode/skills
+      # スキルは llm/skills に集約しており、opencode 側のリンクは現在無い。
+      # 将来 skills/ を置いた場合もそのまま同梱できるよう maybeMissing にする。
+      (lib.fileset.maybeMissing ./opencode/skills)
       ./opencode/themes
       ./opencode/tui.json
     ];
@@ -51,9 +53,16 @@ in
       ...
     }:
     {
-      imports = [ self.homeModules.kimaki ];
+      imports = [
+        self.homeModules.dsh
+        self.homeModules.dsh-web
+        self.homeModules.kimaki
+      ];
 
-      llm.kimaki.enable = config.home.username == "sandbox";
+      llm.dsh.web.enable = builtins.elem config.home.username [
+        "sandbox"
+        "laptop"
+      ];
 
       home.packages = with pkgs; [
         llm-agents.opencode

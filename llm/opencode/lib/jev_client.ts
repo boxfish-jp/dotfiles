@@ -3,7 +3,7 @@
 // fetch は差し替え可能にしてテストから偽応答を injection できるようにする。
 
 export const JEV_ENDPOINT = "https://openrouter.ai/api/alpha/decisions";
-export const JEV_MODEL = "typesafe/jev-1.13";
+export const JEV_MODEL = "typesafe/jev-1.14";
 
 export type JevJudgment = {
   type: "choice";

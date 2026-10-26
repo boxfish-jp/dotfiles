@@ -6,6 +6,7 @@
     { pkgs, ... }:
     {
       imports = [
+        self.nixosModules.bubblewrap
         self.nixosModules.locale
         self.nixosModules.keyboard
         self.nixosModules.networking

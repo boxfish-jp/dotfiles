@@ -19,6 +19,14 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=latest";
     llm-agents.url = "github:numtide/llm-agents.nix";
+    dsh-profile-nix = {
+      url = "github:boxfish-jp/dsh-profile-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nix-node-build = {
+      url = "github:boxfish-jp/nix-node-build";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     wrapper-modules = {
       url = "github:BirdeeHub/nix-wrapper-modules";
       inputs.nixpkgs.follows = "nixpkgs";

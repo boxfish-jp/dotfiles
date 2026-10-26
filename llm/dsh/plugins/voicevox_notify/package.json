@@ -1,0 +1,32 @@
+{
+  "name": "@local/voicevox_notify",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Speaks the final assistant response of each turn through VOICEVOX.",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "cordis.patch.yml"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "npm run build && tsc -p tsconfig.json",
+    "test": "npm run build && node --test test/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.3"
+  }
+}

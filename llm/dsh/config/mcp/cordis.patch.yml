@@ -1,0 +1,8 @@
+- insert:
+    - id: mcp-exa
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: exa
+        transport: streamable-http
+        url: https://mcp.exa.ai/mcp
+        headers: !!js "process.env.EXA_API_KEY ? { 'x-api-key': process.env.EXA_API_KEY } : {}"
