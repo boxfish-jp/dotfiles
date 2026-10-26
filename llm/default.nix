@@ -59,7 +59,10 @@ in
         self.homeModules.kimaki
       ];
 
-      llm.dsh.web.enable = config.home.username == "sandbox";
+      llm.dsh.web.enable = builtins.elem config.home.username [
+        "sandbox"
+        "laptop"
+      ];
 
       home.packages = with pkgs; [
         llm-agents.opencode

@@ -12,6 +12,9 @@
 
       dsh = self.packages.${pkgs.system}.dsh;
 
+      stateDir = "${config.home.homeDirectory}/.local/state/dsh";
+      urlFile = "${stateDir}/web-url";
+
       extraTrustedHosts = lib.concatMapStringsSep "\n" (
         authority: "trusted+=(--trusted-host ${lib.escapeShellArg authority})"
       ) cfg.trustedHosts;
@@ -47,14 +50,31 @@
             exit 1
           fi
 
+          state_dir=${lib.escapeShellArg stateDir}
+          url_file=${lib.escapeShellArg urlFile}
+          mkdir -p "$state_dir"
+
           notify_discord() {
-            local printed_url=$1
+            local url=$1
             local webhook=''${DISCORD_WEBHOOK_URL:-}
             if [ -z "$webhook" ]; then
               printf 'dsh-web: DISCORD_WEBHOOK_URL is unset; skipping the startup notification\n' >&2
               return 0
             fi
-            local rest authority port token url payload
+            local payload
+            payload=$(jq --compact-output --null-input \
+              --arg content "$(hostname): dsh web 起動"$'\n'"<$url>" \
+              '{content: $content}')
+            curl --fail-with-body --silent --show-error --max-time 15 \
+              --header 'Content-Type: application/json' \
+              --data "$payload" \
+              "$webhook" >/dev/null \
+              || printf 'dsh-web: Discord notification failed\n' >&2
+          }
+
+          publish_url() {
+            local printed_url=$1
+            local rest authority port token url
             rest=''${printed_url#*://}
             authority=''${rest%%/*}
             port=''${authority##*:}
@@ -68,14 +88,9 @@
               return 0
             fi
             url="http://$host:$port/?token=$token"
-            payload=$(jq --compact-output --null-input \
-              --arg content "$(hostname): dsh web 起動"$'\n'"<$url>" \
-              '{content: $content}')
-            curl --fail-with-body --silent --show-error --max-time 15 \
-              --header 'Content-Type: application/json' \
-              --data "$payload" \
-              "$webhook" >/dev/null \
-              || printf 'dsh-web: Discord notification failed\n' >&2
+            ( umask 077; printf '%s\n' "$url" > "$url_file.tmp" )
+            mv "$url_file.tmp" "$url_file"
+            notify_discord "$url" || true
           }
 
           trusted=(--trusted-host "$host")
@@ -90,8 +105,8 @@
                 printf '%s\n' "$line"
                 case "$line" in
                   "dsh web: http"*)
-                    url=''${line#dsh web: }
-                    notify_discord "''${url%% *}" || true
+                    printed=''${line#dsh web: }
+                    publish_url "''${printed%% *}"
                     ;;
                 esac
               done
@@ -142,7 +157,7 @@
               "PATH=${config.home.profileDirectory}/bin:/run/current-system/sw/bin"
             ];
             EnvironmentFile = "-${cfg.environmentFile}";
-            Restart = "on-failure";
+            Restart = "always";
             RestartSec = "5s";
             WorkingDirectory = "%h";
           };
