@@ -17,6 +17,11 @@ let
     ) (builtins.readDir pluginRoot)
   );
 
+  # npm で公開されているプラグインを GitHub の固定リビジョンから取得する。
+  # ピンは `_remote.nix`（`nix run .#dsh-plugins-update` が生成）に置く。
+  # lib/ を同梱済みなのでビルド工程は無く、依存は上流の package-lock.json どおり入れる。
+  remotePlugins = lib.mapAttrsToList (name: spec: spec // { inherit name; }) (import ./_remote.nix);
+
   sourceFor =
     name:
     let
@@ -33,6 +38,7 @@ let
     let
       dir = pluginRoot + "/${name}";
       manifest = builtins.fromJSON (builtins.readFile (dir + "/package.json"));
+      scripts = manifest.scripts or { };
       depsHash = depsHashes.${name} or null;
     in
     inputs.nix-node-build.lib.mkNodeApp {
@@ -40,6 +46,8 @@ let
       pname = "dsh-plugin-${name}";
       version = manifest.version or "0.0.0";
       src = sourceFor name;
+      # ビルド済みの lib/ を同梱するプラグインはビルド工程を持たない。
+      buildScript = if scripts ? build then "build" else null;
       depsHash =
         if depsHash != null then
           depsHash
@@ -51,83 +59,45 @@ let
       meta.description = manifest.description or "DSH plugin ${name}";
     };
 
+  remotePackageFor =
+    pkgs: spec:
+    inputs.nix-node-build.lib.mkNodeApp {
+      inherit pkgs;
+      pname = "dsh-plugin-${spec.name}";
+      version = spec.version;
+      src = pkgs.fetchFromGitHub {
+        inherit (spec) owner repo rev hash;
+      };
+      inherit (spec) depsHash;
+      # lib/ を同梱済みで、リポジトリに build script が無い。
+      buildScript = null;
+      # 上流 lock（開発依存を含む）をそのまま使うため、packument も取得する v2 を使う。
+      extraAttrs = {
+        npmDepsFetcherVersion = 2;
+      };
+      meta.description = "DSH plugin ${spec.name}";
+    };
+
   updateScript =
     pkgs:
     pkgs.writeShellApplication {
       name = "dsh-plugins-update";
       runtimeInputs = [
         pkgs.coreutils
+        pkgs.curl
+        pkgs.gawk
         pkgs.git
         pkgs.gnugrep
+        pkgs.gnused
+        pkgs.jq
+        pkgs.nix
         pkgs.prefetch-npm-deps
       ];
-      text = ''
-        export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
-
-        base=""
-        for candidate in "$PWD" "$(git rev-parse --show-toplevel 2>/dev/null || true)"; do
-          if [ -n "$candidate" ] && [ -d "$candidate/llm/dsh/plugins" ]; then
-            base="$candidate"
-            break
-          fi
-        done
-
-        if [ -z "$base" ]; then
-          echo "dsh-plugins-update: llm/dsh/plugins が見つかりません。dotfiles の flake 内で実行してください。" >&2
-          exit 1
-        fi
-
-        plugins="$base/llm/dsh/plugins"
-        target="$base/llm/dsh/_deps.nix"
-        tmp="$(mktemp)"
-        trap 'rm -f "$tmp"' EXIT
-
-        {
-          echo "# \`nix run .#dsh-plugins-update\` が生成する depsHash の表。手で編集しないこと。"
-          echo "{"
-        } > "$tmp"
-
-        found=0
-        for dir in "$plugins"/*/; do
-          [ -d "$dir" ] || continue
-          name="$(basename "$dir")"
-          case "$name" in _* | .*) continue ;; esac
-          [ -f "$dir/package.json" ] || continue
-
-          lock="$dir/package-lock.json"
-          if [ ! -f "$lock" ]; then
-            echo "dsh-plugins-update: $name に package-lock.json が無いので飛ばします（depsHash は _deps.nix に手で設定してください）" >&2
-            continue
-          fi
-
-          echo "dsh-plugins-update: $name のハッシュを計算中..." >&2
-          hash="$(prefetch-npm-deps "$lock" | tail -n 1)"
-          if [ -z "$hash" ]; then
-            echo "dsh-plugins-update: $name のハッシュを取得できませんでした" >&2
-            exit 1
-          fi
-
-          if printf '%s' "$name" | grep -Eq '^[A-Za-z_][A-Za-z0-9_-]*$'; then
-            printf '  %s = "%s";\n' "$name" "$hash" >> "$tmp"
-          else
-            printf '  "%s" = "%s";\n' "$name" "$hash" >> "$tmp"
-          fi
-          found=$((found + 1))
-        done
-
-        printf '}\n' >> "$tmp"
-
-        if [ "$found" -eq 0 ]; then
-          echo "dsh-plugins-update: プラグインが見つかりませんでした" >&2
-        fi
-
-        if cmp -s "$tmp" "$target"; then
-          echo "dsh-plugins-update: _deps.nix は最新です" >&2
-        else
-          install -m 0644 "$tmp" "$target"
-          echo "dsh-plugins-update: $target を更新しました" >&2
-        fi
-      '';
+      text =
+        ''
+          export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+        ''
+        + builtins.readFile ./update-plugins.sh;
     };
 in
 {
@@ -135,9 +105,13 @@ in
     pkgs:
     lib.listToAttrs (
       map (name: lib.nameValuePair "dsh-plugin-${name}" (packageFor pkgs name)) pluginNames
+      ++ map (
+        spec: lib.nameValuePair "dsh-plugin-${spec.name}" (remotePackageFor pkgs spec)
+      ) remotePlugins
     );
 
-  listFor = pkgs: map (packageFor pkgs) pluginNames;
+  listFor =
+    pkgs: map (packageFor pkgs) pluginNames ++ map (remotePackageFor pkgs) remotePlugins;
 
   inherit updateScript;
 }
