@@ -6,6 +6,6 @@
     repo = "dsh-opencode-go";
     rev = "0bf00ce2b1879005390e2d4030cbe9d50b309eee";
     hash = "sha256-2CzT9KsLFCuAwb9pyrqKAUQe48WPFG7hJppSmV1HgUA=";
-    depsHash = "sha256-20b5SDygdiDjie8POix0WnZuU4o+3wbyQfexuYLEY8g=";
+    depsHash = "sha256-hfEhDx5ApYe55L40P41oztXZJltPE/zFA9/EsMA8iak=";
   };
 }

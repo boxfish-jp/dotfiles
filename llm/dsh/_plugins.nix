@@ -33,6 +33,36 @@ let
     in
     if ignored == [ ] then dir else lib.fileset.difference dir (lib.fileset.unions ignored);
 
+  # npm は「dependencies と devDependencies の両方に書かれたパッケージ」を dev 扱いするため、
+  # `--omit=dev` や `npm prune --omit=dev` で実行時依存が落ちる。dsh プラグインでは
+  # それが import 失敗（entry が active にならない）として現れる。
+  # 例: dsh-opencode-go は @deepseek-ai/dsh-brand を両方に記載しており、
+  #     nix ビルドでこれが消えて `ERR_MODULE_NOT_FOUND` になっていた。
+  # 依存を入れる前に package.json と lock を揃える（実体は共有スクリプト）。
+  normalizeScript = builtins.readFile ./normalize-dual-dependencies.sh;
+
+  # 正規化後の src。`npm ci` は src の lock と deps キャッシュの lock の一致を検査するので、
+  # 依存キャッシュ（mkNodeApp が src から導出する）と同じ内容を渡す必要がある。
+  normalizedSource =
+    pkgs: name: src:
+    pkgs.runCommand "dsh-plugin-${name}-src" { nativeBuildInputs = [ pkgs.jq ]; } ''
+      ${normalizeScript}
+      cp -a ${src}/. $out
+      chmod -R u+w $out
+      normalize_dual_dependencies $out
+    '';
+
+  # src は正規化のため導出値になるので、mkNodeApp は評価時にソースを読めない。
+  # 元のソース（パス）からパッケージマネージャを判定して明示的に渡す。
+  detectPackageManager =
+    dir:
+    if builtins.pathExists (dir + "/pnpm-lock.yaml") then
+      "pnpm"
+    else if builtins.pathExists (dir + "/yarn.lock") then
+      (if builtins.pathExists (dir + "/.yarnrc.yml") then "yarn-berry" else "yarn")
+    else
+      "npm";
+
   packageFor =
     pkgs: name:
     let
@@ -45,7 +75,8 @@ let
       inherit pkgs;
       pname = "dsh-plugin-${name}";
       version = manifest.version or "0.0.0";
-      src = sourceFor name;
+      src = normalizedSource pkgs name (sourceFor name);
+      packageManager = detectPackageManager dir;
       # ビルド済みの lib/ を同梱するプラグインはビルド工程を持たない。
       buildScript = if scripts ? build then "build" else null;
       depsHash =
@@ -66,9 +97,12 @@ let
       inherit pkgs;
       pname = "dsh-plugin-${spec.name}";
       version = spec.version;
-      src = pkgs.fetchFromGitHub {
-        inherit (spec) owner repo rev hash;
-      };
+      src = normalizedSource pkgs spec.name (
+        pkgs.fetchFromGitHub {
+          inherit (spec) owner repo rev hash;
+        }
+      );
+      packageManager = spec.packageManager or "npm";
       inherit (spec) depsHash;
       # lib/ を同梱済みで、リポジトリに build script が無い。
       buildScript = null;
@@ -100,6 +134,7 @@ let
         ''
           export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
         ''
+        + normalizeScript
         + builtins.readFile ./update-plugins.sh;
     };
 in

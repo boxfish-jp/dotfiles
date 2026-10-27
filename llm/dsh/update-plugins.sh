@@ -27,6 +27,33 @@ trap 'rm -rf "$work"' EXIT
 deps_out="$work/_deps.nix"
 remote_out="$work/_remote.nix"
 
+# ソースの lockfile からパッケージマネージャを判定する。
+detect_package_manager() {
+  directory=$1
+  if [ -f "$directory/pnpm-lock.yaml" ]; then
+    printf 'pnpm\n'
+  elif [ -f "$directory/yarn.lock" ]; then
+    if [ -f "$directory/.yarnrc.yml" ]; then
+      printf 'yarn-berry\n'
+    else
+      printf 'yarn\n'
+    fi
+  else
+    printf 'npm\n'
+  fi
+}
+
+# ハッシュ計算は package-lock.json 前提なので、他のマネージャは黙って誤った値を
+# 書き込まずに止める（pnpm / yarn 対応を入れるときはここから広げる）。
+require_npm() {
+  name=$1
+  manager=$2
+  if [ "$manager" != npm ]; then
+    echo "dsh-plugins-update: $name は $manager です。このスクリプトのハッシュ計算はまだ npm 専用です。" >&2
+    exit 1
+  fi
+}
+
 {
   echo "# \`nix run .#dsh-plugins-update\` が生成する depsHash の表。手で編集しないこと。"
   echo "{"
@@ -39,6 +66,9 @@ for dir in "$plugins"/*/; do
   case "$name" in _* | .*) continue ;; esac
   [ -f "$dir/package.json" ] || continue
 
+  manager="$(detect_package_manager "$dir")"
+  require_npm "$name" "$manager"
+
   lock="$dir/package-lock.json"
   if [ ! -f "$lock" ]; then
     echo "dsh-plugins-update: $name に package-lock.json が無いので飛ばします（depsHash は _deps.nix に手で設定してください）" >&2
@@ -46,7 +76,14 @@ for dir in "$plugins"/*/; do
   fi
 
   echo "dsh-plugins-update: $name のハッシュを計算中..." >&2
-  hash="$(prefetch-npm-deps "$lock" | tail -n 1)"
+  # ビルドと同じ正規化をかけた package.json / lock からハッシュを作る。
+  # 素の lock で計算すると depsHash がビルド時の内容とずれる。
+  normalized="$work/local-$name"
+  mkdir -p "$normalized"
+  cp "$dir/package.json" "$normalized/package.json"
+  cp "$lock" "$normalized/package-lock.json"
+  normalize_dual_dependencies "$normalized"
+  hash="$(prefetch-npm-deps "$normalized/package-lock.json" | tail -n 1)"
   if [ -z "$hash" ]; then
     echo "dsh-plugins-update: $name のハッシュを取得できませんでした" >&2
     exit 1
@@ -102,12 +139,16 @@ if [ -f "$remote_file" ]; then
     src_dir="$(printf '%s\n' "$prefetched" | tail -n 1)"
     src_hash="$(nix hash convert --to sri --hash-algo sha256 "$src_hash32")"
 
+    manager="$(detect_package_manager "$src_dir")"
+    require_npm "$name" "$manager"
+
     if [ ! -f "$src_dir/package-lock.json" ]; then
       echo "dsh-plugins-update: $name に package-lock.json がありません" >&2
       exit 1
     fi
 
     echo "dsh-plugins-update: $name の依存を取得中..." >&2
+    normalize_dual_dependencies "$src_dir"
     cache="$work/cache-$name"
     NPM_FETCHER_VERSION=2 prefetch-npm-deps "$src_dir/package-lock.json" "$cache" >/dev/null
     deps_hash="$(nix hash path "$cache")"
@@ -117,6 +158,7 @@ if [ -f "$remote_file" ]; then
     {
       printf '  "%s" = {\n' "$name"
       printf '    version = "%s";\n' "$version"
+      printf '    packageManager = "%s";\n' "$manager"
       printf '    owner = "%s";\n' "$owner"
       printf '    repo = "%s";\n' "$repo"
       printf '    rev = "%s";\n' "$rev"
