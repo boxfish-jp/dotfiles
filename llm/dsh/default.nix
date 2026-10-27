@@ -5,6 +5,7 @@
 }:
 let
   plugins = import ./_plugins.nix { inherit inputs lib; };
+  remoteSkills = import ./_remote-skills.nix;
 in
 {
   perSystem =
@@ -16,12 +17,27 @@ in
         cp ${./config/mcp/cordis.patch.yml} "$out/cordis.patch.yml"
       '';
 
+      remoteSkillSources = lib.mapAttrsToList (
+        name: source:
+        if
+          !(source ? owner)
+          || !(source ? repo)
+          || !(source ? rev)
+          || !(source ? hash)
+        then
+          throw "dsh skills: ${name} に owner/repo/rev/hash が揃っていません。nix run .#dsh-skills-update を実行してください。"
+        else
+          pkgs.fetchFromGitHub {
+            inherit (source) owner repo rev hash;
+          }
+      ) remoteSkills;
+
       dsh = inputs.dsh-profile-nix.lib.mkDsh {
         inherit pkgs;
         dsh = inputs.llm-agents.packages.${pkgs.system}.dsh;
         # mkDsh の既定は 8080 だが、dsh の web 既定は 3080 なので合わせる。
         webPort = 3080;
-        skills = [ ../skills ];
+        skills = [ ../skills ] ++ remoteSkillSources;
         plugins = plugins.listFor pkgs ++ [ mcpBundle ];
         profiles = {
           web = { };
@@ -37,6 +53,25 @@ in
         type = "app";
         program = lib.getExe (plugins.updateScript pkgs);
       };
+
+      apps.dsh-skills-update =
+        let
+          updateScript = pkgs.writeShellApplication {
+            name = "dsh-skills-update";
+            runtimeInputs = with pkgs; [
+              coreutils
+              gawk
+              git
+              jq
+              nix
+            ];
+            text = builtins.readFile ./update-skills.sh;
+          };
+        in
+        {
+          type = "app";
+          program = "${updateScript}/bin/dsh-skills-update";
+        };
     };
 
   flake.homeModules.dsh =
