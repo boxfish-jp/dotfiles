@@ -60,8 +60,9 @@ in
       ];
 
       llm.dsh.web.enable = builtins.elem config.home.username [
-        "sandbox"
+        "boxfish"
         "laptop"
+        "sandbox"
       ];
 
       home.packages = with pkgs; [
