@@ -18,6 +18,7 @@
         self.nixosModules.certificate
         self.nixosModules.tailscale
         self.nixosModules.voicevox_container
+        self.nixosModules.agents_anywhere
       ];
 
       domains = {
@@ -41,6 +42,13 @@
       };
 
       tailscale.enable = true;
+
+      # Agents Anywhere のセルフホスト Server。tailnet 内にだけ HTTPS で公開する。
+      # クライアントから見える URL が tailnet 名と違う場合は publicOrigin を設定する。
+      services.agents_anywhere = {
+        enable = true;
+        tailscaleServe = true;
+      };
 
       # LXC非特権での pam_setcred 失敗回避 (192.168.68.16 Connection reset by peer)
       # nixos/ssh.nix の UsePAM yes をホスト限定で上書き

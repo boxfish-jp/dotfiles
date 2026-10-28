@@ -17,6 +17,7 @@
         self.nixosModules.ssh
         self.nixosModules.certificate
         self.nixosModules.tailscale
+        self.nixosModules.agents_anywhere
       ];
 
       domains = {
@@ -31,5 +32,11 @@
       };
 
       tailscale.enable = true;
+
+      services.agents_anywhere = {
+        enable = true;
+        publicOrigin = "https://sandbox.taildb6ca.ts.net";
+        tailscaleServe = true;
+      };
     };
 }
