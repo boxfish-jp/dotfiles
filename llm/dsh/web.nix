@@ -10,7 +10,11 @@
     let
       cfg = config.llm.dsh.web;
 
-      dsh = self.packages.${pkgs.system}.dsh;
+      dsh =
+        if config.llm.dsh.agentsAnywhere.enable then
+          self.packages.${pkgs.system}.dsh-agents-anywhere
+        else
+          self.packages.${pkgs.system}.dsh;
 
       stateDir = "${config.home.homeDirectory}/.local/state/dsh";
       urlFile = "${stateDir}/web-url";
@@ -96,7 +100,7 @@
           trusted=(--trusted-host "$host")
           ${extraTrustedHosts}
 
-          exec ${lib.getExe' dsh "dsh"} web \
+          exec ${lib.getExe' dsh "dsh"} ${lib.escapeShellArg cfg.profile} \
             --no-open \
             --host "$host" \
             "''${trusted[@]}" \
@@ -117,6 +121,15 @@
     {
       options.llm.dsh.web = {
         enable = lib.mkEnableOption "the dsh web GUI served on the Tailscale network";
+
+        profile = lib.mkOption {
+          type = lib.types.str;
+          default = if config.llm.dsh.agentsAnywhere.enable then "sandbox" else "web";
+          description = ''
+            DSH profile the web server boots. `sandbox` is the profile that
+            carries the Agents Anywhere bridge.
+          '';
+        };
 
         host = lib.mkOption {
           type = lib.types.nullOr lib.types.str;

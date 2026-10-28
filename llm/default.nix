@@ -65,6 +65,9 @@ in
         "sandbox"
       ];
 
+      # スマホからのリモート操作は sandbox だけに用意する。
+      llm.dsh.agentsAnywhere.enable = builtins.elem config.home.username [ "sandbox" ];
+
       home.packages = with pkgs; [
         llm-agents.opencode
       ];

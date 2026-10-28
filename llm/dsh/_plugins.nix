@@ -99,7 +99,12 @@ let
       version = spec.version;
       src = normalizedSource pkgs spec.name (
         pkgs.fetchFromGitHub {
-          inherit (spec) owner repo rev hash;
+          inherit (spec)
+            owner
+            repo
+            rev
+            hash
+            ;
         }
       );
       packageManager = spec.packageManager or "npm";
@@ -130,12 +135,11 @@ let
         pkgs.nix
         pkgs.prefetch-npm-deps
       ];
-      text =
-        ''
-          export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
-        ''
-        + normalizeScript
-        + builtins.readFile ./update-plugins.sh;
+      text = ''
+        export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+      ''
+      + normalizeScript
+      + builtins.readFile ./update-plugins.sh;
     };
 in
 {
@@ -148,8 +152,7 @@ in
       ) remotePlugins
     );
 
-  listFor =
-    pkgs: map (packageFor pkgs) pluginNames ++ map (remotePackageFor pkgs) remotePlugins;
+  listFor = pkgs: map (packageFor pkgs) pluginNames ++ map (remotePackageFor pkgs) remotePlugins;
 
   inherit updateScript;
 }
