@@ -54,6 +54,12 @@
         };
       };
 
+      services.logind.settings.Login = {
+        HandleLidSwitch = "ignore";
+        HandleLidSwitchExternalPower = "ignore";
+        HandleLidSwitchDocked = "ignore";
+      };
+
       services.postgresql = {
         enable = true;
         ensureDatabases = [ "atticd" ];
