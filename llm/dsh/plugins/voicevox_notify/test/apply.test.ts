@@ -9,9 +9,28 @@ const SUMMARY_FAILURE_NOTIFICATION = "一言で言えないのだ";
 type ApplyContext = Parameters<ReturnType<typeof createApply>>[0];
 type Listener = (...args: unknown[]) => unknown;
 
+type TestSession = {
+  id: string;
+  header: { origin?: "subagent" };
+};
+
+type EventContext = {
+  on(event: string, listener: Listener): () => void;
+};
+
+type AgentHarness = {
+  agent: {
+    id: string;
+    session: TestSession;
+    ctx: EventContext;
+  };
+  emit(event: string, ...args: unknown[]): unknown;
+};
+
 type Harness = {
   ctx: ApplyContext;
   emit(event: string, ...args: unknown[]): unknown;
+  createAgent(session: TestSession): AgentHarness;
 };
 
 type StubChunk =
@@ -95,27 +114,46 @@ const createUnavailableLlm = (): LlmStub["llm"] => ({
   },
 });
 
-const createHarness = (
-  llm: LlmStub["llm"] = createUnavailableLlm(),
-): Harness => {
+const createEventEmitter = (): {
+  ctx: EventContext;
+  emit(event: string, ...args: unknown[]): unknown;
+} => {
   const listeners = new Map<string, Listener[]>();
-  const ctx = {
-    llm,
-    on(event: string, listener: Listener): () => void {
-      const registered = listeners.get(event) ?? [];
-      registered.push(listener);
-      listeners.set(event, registered);
-      return () => {};
-    },
-  };
   return {
-    ctx: ctx as unknown as ApplyContext,
+    ctx: {
+      on(event, listener) {
+        const registered = listeners.get(event) ?? [];
+        registered.push(listener);
+        listeners.set(event, registered);
+        return () => {};
+      },
+    },
     emit(event, ...args) {
       let result: unknown;
       for (const listener of listeners.get(event) ?? []) {
         result = listener(...args);
       }
       return result;
+    },
+  };
+};
+
+const createHarness = (
+  llm: LlmStub["llm"] = createUnavailableLlm(),
+): Harness => {
+  const root = createEventEmitter();
+  const ctx = {
+    llm,
+    on: root.ctx.on,
+  };
+  return {
+    ctx: ctx as unknown as ApplyContext,
+    emit: root.emit,
+    createAgent(session) {
+      const agentEvents = createEventEmitter();
+      const agent = { id: session.id, session, ctx: agentEvents.ctx };
+      root.emit("agent/created", { agent });
+      return { agent, emit: agentEvents.emit };
     },
   };
 };
@@ -284,6 +322,218 @@ describe("apply", () => {
 
       assert.deepEqual(capture.texts, []);
       assert.deepEqual(stub.requests, []);
+    } finally {
+      capture.restore();
+    }
+  });
+
+  test("サブエージェント実行中のturn/endでは読み上げず、終了後のturn/endで最終応答を読み上げる", async () => {
+    const capture = captureSpokenTexts();
+    try {
+      const stub = createLlm([textDelta("最終要約"), finishChunk("stop")]);
+      const harness = createHarness(stub.llm);
+      createApply("boxfish")(harness.ctx);
+      const main = harness.createAgent(mainSession());
+
+      harness.emit(
+        "session/event",
+        main.agent.session,
+        assistantMessage(1, [textBlock("調査を任せたのだ")]),
+      );
+      main.emit("subagent/start", { runId: "run-1" });
+      await harness.emit("session/event", main.agent.session, turnEnd(1));
+
+      assert.deepEqual(capture.texts, []);
+      assert.equal(stub.requests.length, 0);
+
+      main.emit("subagent/end", { runId: "run-1" });
+      harness.emit(
+        "session/event",
+        main.agent.session,
+        assistantMessage(2, [textBlock("最終的な応答なのだ")]),
+      );
+      await harness.emit("session/event", main.agent.session, turnEnd(2));
+
+      assert.deepEqual(capture.texts, [DONE_NOTIFICATION, "最終要約"]);
+      assert.deepEqual(stub.requests[0].messages, [
+        {
+          role: "user",
+          content: [{ type: "text", text: "最終的な応答なのだ" }],
+        },
+      ]);
+    } finally {
+      capture.restore();
+    }
+  });
+
+  test("ターン内でsubagent/startとsubagent/endがそろえばturn/endで読み上げる", async () => {
+    const capture = captureSpokenTexts();
+    try {
+      const stub = createLlm([textDelta("要約"), finishChunk("stop")]);
+      const harness = createHarness(stub.llm);
+      createApply("boxfish")(harness.ctx);
+      const main = harness.createAgent(mainSession());
+
+      main.emit("subagent/start", { runId: "run-1" });
+      harness.emit(
+        "session/event",
+        main.agent.session,
+        assistantMessage(1, [textBlock("調査が終わったのだ")]),
+      );
+      main.emit("subagent/end", { runId: "run-1" });
+      await harness.emit("session/event", main.agent.session, turnEnd(1));
+
+      assert.deepEqual(capture.texts, [DONE_NOTIFICATION, "要約"]);
+    } finally {
+      capture.restore();
+    }
+  });
+
+  test("別セッションで実行中のrunはturn/endの読み上げを抑止しない", async () => {
+    const capture = captureSpokenTexts();
+    try {
+      const stub = createLlm([textDelta("要約"), finishChunk("stop")]);
+      const harness = createHarness(stub.llm);
+      createApply("boxfish")(harness.ctx);
+      const main = harness.createAgent(mainSession("session-1"));
+      const other = harness.createAgent(mainSession("session-2"));
+
+      other.emit("subagent/start", { runId: "run-2" });
+      harness.emit(
+        "session/event",
+        main.agent.session,
+        assistantMessage(1, [textBlock("別セッションの応答")]),
+      );
+      await harness.emit("session/event", main.agent.session, turnEnd(1));
+
+      assert.deepEqual(capture.texts, [DONE_NOTIFICATION, "要約"]);
+      assert.deepEqual(stub.requests[0].messages, [
+        {
+          role: "user",
+          content: [{ type: "text", text: "別セッションの応答" }],
+        },
+      ]);
+    } finally {
+      capture.restore();
+    }
+  });
+
+  test("同じセッションで複数のrunが実行中ならturn/endで読み上げない", async () => {
+    const capture = captureSpokenTexts();
+    try {
+      const harness = createHarness();
+      createApply("boxfish")(harness.ctx);
+      const main = harness.createAgent(mainSession());
+
+      main.emit("subagent/start", { runId: "run-1" });
+      main.emit("subagent/start", { runId: "run-2" });
+      main.emit("subagent/end", { runId: "run-1" });
+      harness.emit(
+        "session/event",
+        main.agent.session,
+        assistantMessage(1, [textBlock("調査中なのだ")]),
+      );
+      await harness.emit("session/event", main.agent.session, turnEnd(1));
+
+      assert.deepEqual(capture.texts, []);
+    } finally {
+      capture.restore();
+    }
+  });
+
+  test("agentが再作成されたら前のagentの実行中runを引き継がない", async () => {
+    const capture = captureSpokenTexts();
+    try {
+      const stub = createLlm([textDelta("要約"), finishChunk("stop")]);
+      const harness = createHarness(stub.llm);
+      createApply("boxfish")(harness.ctx);
+      const session = mainSession();
+
+      const first = harness.createAgent(session);
+      first.emit("subagent/start", { runId: "run-1" });
+      harness.emit("agent/disposed", { agent: first.agent });
+
+      const second = harness.createAgent(session);
+      harness.emit(
+        "session/event",
+        second.agent.session,
+        assistantMessage(1, [textBlock("再作成後の応答")]),
+      );
+      await harness.emit("session/event", second.agent.session, turnEnd(1));
+
+      assert.deepEqual(capture.texts, [DONE_NOTIFICATION, "要約"]);
+
+      first.emit("subagent/end", { runId: "run-1" });
+      harness.emit(
+        "session/event",
+        second.agent.session,
+        assistantMessage(2, [textBlock("古いrun終了後の応答")]),
+      );
+      await harness.emit("session/event", second.agent.session, turnEnd(2));
+
+      assert.deepEqual(capture.texts, [
+        DONE_NOTIFICATION,
+        "要約",
+        DONE_NOTIFICATION,
+        "要約",
+      ]);
+    } finally {
+      capture.restore();
+    }
+  });
+
+  test("新しいagentの後に古いagentのdisposeが来ても新しいturnの保留を消さない", async () => {
+    const capture = captureSpokenTexts();
+    try {
+      const stub = createLlm([textDelta("要約"), finishChunk("stop")]);
+      const harness = createHarness(stub.llm);
+      createApply("boxfish")(harness.ctx);
+      const session = mainSession();
+
+      const first = harness.createAgent(session);
+      first.emit("subagent/start", { runId: "run-1" });
+      const second = harness.createAgent(session);
+      harness.emit(
+        "session/event",
+        second.agent.session,
+        assistantMessage(1, [textBlock("新しいagentの応答")]),
+      );
+      harness.emit("agent/disposed", { agent: first.agent });
+      await harness.emit("session/event", second.agent.session, turnEnd(1));
+
+      assert.deepEqual(capture.texts, [DONE_NOTIFICATION, "要約"]);
+      assert.deepEqual(stub.requests[0].messages, [
+        {
+          role: "user",
+          content: [{ type: "text", text: "新しいagentの応答" }],
+        },
+      ]);
+    } finally {
+      capture.restore();
+    }
+  });
+
+  test("session/disposedで実行中runの追跡を破棄する", async () => {
+    const capture = captureSpokenTexts();
+    try {
+      const stub = createLlm([textDelta("要約"), finishChunk("stop")]);
+      const harness = createHarness(stub.llm);
+      createApply("boxfish")(harness.ctx);
+      const session = mainSession();
+
+      const first = harness.createAgent(session);
+      first.emit("subagent/start", { runId: "run-1" });
+      harness.emit("session/disposed", session);
+
+      const second = harness.createAgent(mainSession(session.id));
+      harness.emit(
+        "session/event",
+        second.agent.session,
+        assistantMessage(1, [textBlock("再作成後の応答")]),
+      );
+      await harness.emit("session/event", second.agent.session, turnEnd(1));
+
+      assert.deepEqual(capture.texts, [DONE_NOTIFICATION, "要約"]);
     } finally {
       capture.restore();
     }

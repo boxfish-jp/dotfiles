@@ -1,6 +1,10 @@
 import { userInfo } from "node:os";
 import { type LlmRuntime, summarize } from "./llm_summary.js";
 import { notify } from "./notify.js";
+import {
+  createSubagentRunTracker,
+  type TrackableAgent,
+} from "./subagent_runs.js";
 
 const DONE_NOTIFICATION = "応答が完了したのだ";
 const SUMMARY_FAILURE_NOTIFICATION = "一言で言えないのだ";
@@ -20,6 +24,14 @@ type Session = {
 
 type SessionEvent = {
   readonly type: string;
+};
+
+type Agent = Omit<TrackableAgent, "session"> & {
+  readonly session: Session;
+};
+
+type AgentEvent = {
+  readonly agent: Agent;
 };
 
 type AssistantMessageEvent = {
@@ -46,6 +58,11 @@ type PluginContext = {
     listener: (session: Session, event: SessionEvent) => unknown,
   ): unknown;
   on(event: "session/disposed", listener: (session: Session) => void): unknown;
+  on(event: "agent/created", listener: (event: AgentEvent) => unknown): unknown;
+  on(
+    event: "agent/disposed",
+    listener: (event: AgentEvent) => unknown,
+  ): unknown;
   on(
     event: "user-questions/request",
     listener: (
@@ -69,6 +86,9 @@ const isAssistantMessageEvent = (
 const isTurnEndEvent = (event: SessionEvent): event is TurnEndEvent =>
   event.type === "turn/end";
 
+const isSubagentSession = (session: Session): boolean =>
+  session.header.origin === "subagent";
+
 const extractTxt = (content: readonly ContentBlock[]): string => {
   const texts: string[] = [];
   for (const block of content) {
@@ -86,9 +106,21 @@ export const createApply =
   (ctx: PluginContext): void => {
     const summarizeEnabled = SUMMARY_USERS.has(username);
     const pendingBySession = new Map<string, { turn: number; text: string }>();
+    const tracker = createSubagentRunTracker();
+
+    ctx.on("agent/created", ({ agent }) => {
+      if (isSubagentSession(agent.session)) return;
+      tracker.attach(agent);
+    });
+
+    ctx.on("agent/disposed", ({ agent }) => {
+      if (isSubagentSession(agent.session)) return;
+      if (!tracker.detach(agent)) return;
+      pendingBySession.delete(agent.session.id);
+    });
 
     ctx.on("session/event", async (session, event) => {
-      if (session.header.origin === "subagent") return;
+      if (isSubagentSession(session)) return;
       if (isAssistantMessageEvent(event)) {
         const text = extractTxt(event.data.message.content);
         if (text !== "") {
@@ -99,6 +131,7 @@ export const createApply =
       if (isTurnEndEvent(event)) {
         const pending = pendingBySession.get(session.id);
         pendingBySession.delete(session.id);
+        if (tracker.hasActive(session.id)) return;
         if (pending === undefined || pending.turn !== event.data.turn) {
           return;
         }
@@ -115,6 +148,7 @@ export const createApply =
 
     ctx.on("session/disposed", (session) => {
       pendingBySession.delete(session.id);
+      tracker.clear(session.id);
     });
 
     ctx.on("user-questions/request", (_request, next) => {
