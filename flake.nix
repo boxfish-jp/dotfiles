@@ -48,7 +48,7 @@
       url = "github:boxfish-jp/streamingkit";
       # inputs.nixpkgs.follows = "nixpkgs";
     };
-    browser-tyan.url = "github:boxfish-jp/browser_tyan";
+    browser-chan.url = "github:boxfish-jp/browser-chan";
     twitch-stream-recoder.url = "github:boxfish-jp/twitch-stream-recorder";
 
     noctalia = {

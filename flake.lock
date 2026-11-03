@@ -1,21 +1,21 @@
 {
   "nodes": {
-    "browser-tyan": {
+    "browser-chan": {
       "inputs": {
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1784650057,
-        "narHash": "sha256-9378/F7vL/4kxfvy2OdB1+GTvYjNwgChVhN2Sp6d0fc=",
+        "lastModified": 1793693025,
+        "narHash": "sha256-qEsYcqcIRbpq7gKOMF9IK/3cv53KzFMaMe4qUmnCzhc=",
         "owner": "boxfish-jp",
-        "repo": "browser_tyan",
-        "rev": "effbfcd54cf3da7b4bf2a881e9434f5530b1e6a3",
+        "repo": "browser-chan",
+        "rev": "d4f30256b6dd2959116a965f3f24e5cbb93d7c14",
         "type": "github"
       },
       "original": {
         "owner": "boxfish-jp",
-        "repo": "browser_tyan",
+        "repo": "browser-chan",
         "type": "github"
       }
     },
@@ -434,7 +434,7 @@
     },
     "root": {
       "inputs": {
-        "browser-tyan": "browser-tyan",
+        "browser-chan": "browser-chan",
         "dsh-profile-nix": "dsh-profile-nix",
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",

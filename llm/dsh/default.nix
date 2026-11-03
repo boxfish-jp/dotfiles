@@ -17,6 +17,12 @@ in
         cp ${./config/mcp/cordis.patch.yml} "$out/cordis.patch.yml"
       '';
 
+      browserMcpBundle = pkgs.runCommand "dsh-config-mcp-browser" { } ''
+        mkdir -p "$out"
+        cp ${./config/mcp-browser/package.json} "$out/package.json"
+        cp ${./config/mcp-browser/cordis.patch.yml} "$out/cordis.patch.yml"
+      '';
+
       agentsAnywhereBridge = import ./_agents-anywhere.nix { inherit inputs pkgs; };
 
       remoteSkillSources = lib.mapAttrsToList (
@@ -54,7 +60,10 @@ in
         web = { };
         sandbox = {
           from = "web";
-          plugins = [ agentsAnywhereBridge ];
+          plugins = [
+            agentsAnywhereBridge
+            browserMcpBundle
+          ];
         };
       };
     in

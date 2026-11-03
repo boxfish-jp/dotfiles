@@ -39,6 +39,7 @@
           "podman"
           "samba"
         ];
+        users.linger = true;
       };
 
       tailscale.enable = true;
@@ -140,12 +141,6 @@
           openFirewall = true;
 
           mediaLocation = "/mnt/iohdd/share/immich";
-        };
-
-        browser-tyan = {
-          enable = true;
-          port = 4321;
-          openFirewall = true;
         };
       };
     };

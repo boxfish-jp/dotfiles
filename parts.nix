@@ -25,7 +25,6 @@ let
       modules = [
         self.nixosModules."host-${hostname}"
         inputs.home-manager.nixosModules.home-manager
-        inputs.browser-tyan.nixosModules.default
         {
           nixpkgs.overlays = [
             inputs.llm-agents.overlays.shared-nixpkgs

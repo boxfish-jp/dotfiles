@@ -1,0 +1,7 @@
+- insert:
+    - id: mcp-browser
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: browser
+        transport: streamable-http
+        url: http://127.0.0.1:3000/mcp
