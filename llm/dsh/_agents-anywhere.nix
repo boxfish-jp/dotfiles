@@ -49,7 +49,9 @@ inputs.nix-node-build.lib.mkNodeApp {
 
   # yarn.lock はプラットフォーム固有の optional 依存のハッシュを持たないため、
   # `yarn-berry-fetcher missing-hashes` の出力を渡す。
-  yarnBerryMissingHashes = toString ./agents-anywhere.missing-hashes.json;
+  # 文字列補間で store パスとして inputSrcs に含める。toString だと
+  # ただの文字列になり、ビルド sandbox でファイルが見えなくなる。
+  yarnBerryMissingHashes = "${./agents-anywhere.missing-hashes.json}";
 
   depsHash = "sha256-JGDeQtN0OhITY0KaVW4JeSTNWwpVbmjOm09h/ZbxnGs=";
 
