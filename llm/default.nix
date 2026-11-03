@@ -56,7 +56,6 @@ in
       imports = [
         self.homeModules.dsh
         self.homeModules.dsh-web
-        self.homeModules.kimaki
       ];
 
       llm.dsh.web.enable = builtins.elem config.home.username [
