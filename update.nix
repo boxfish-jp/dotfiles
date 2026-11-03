@@ -10,8 +10,8 @@
             runtimeInputs = [ pkgs.nix ];
             text = ''
               nix flake update
+              nix run .#dsh-plugins-update
               nix run .#dsh-skills-update
-              nix run .#qwencloud-update
               nix run .#kimaki-update
             '';
           };
