@@ -27,6 +27,11 @@
       url = "github:boxfish-jp/nix-node-build";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    anime-log-mcp = {
+      url = "github:boxfish-jp/anime-log-mcp";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nix-node-build.follows = "nix-node-build";
+    };
     wrapper-modules = {
       url = "github:BirdeeHub/nix-wrapper-modules";
       inputs.nixpkgs.follows = "nixpkgs";

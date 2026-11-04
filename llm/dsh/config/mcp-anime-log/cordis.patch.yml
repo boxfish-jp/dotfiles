@@ -1,0 +1,7 @@
+- insert:
+    - id: mcp-anime-log
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: anime-log
+        transport: streamable-http
+        url: http://127.0.0.1:8000/mcp

@@ -23,6 +23,12 @@ in
         cp ${./config/mcp-browser/cordis.patch.yml} "$out/cordis.patch.yml"
       '';
 
+      animeLogMcpBundle = pkgs.runCommand "dsh-config-mcp-anime-log" { } ''
+        mkdir -p "$out"
+        cp ${./config/mcp-anime-log/package.json} "$out/package.json"
+        cp ${./config/mcp-anime-log/cordis.patch.yml} "$out/cordis.patch.yml"
+      '';
+
       agentsAnywhereBridge = import ./_agents-anywhere.nix { inherit inputs pkgs; };
 
       remoteSkillSources = lib.mapAttrsToList (
@@ -63,6 +69,7 @@ in
           plugins = [
             agentsAnywhereBridge
             browserMcpBundle
+            animeLogMcpBundle
           ];
         };
       };
