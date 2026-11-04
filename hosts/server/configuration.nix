@@ -43,7 +43,6 @@
 
       tailscale.enable = true;
 
-
       # LXC非特権での pam_setcred 失敗回避 (192.168.68.16 Connection reset by peer)
       # nixos/ssh.nix の UsePAM yes をホスト限定で上書き
       services.openssh.settings = {
