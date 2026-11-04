@@ -7,6 +7,7 @@
         self.homeModules.containers
         self.homeModules.voicevox_container
         self.homeModules.browser-chan
+        self.homeModules.fuguo_api
         self.homeModules.nvim
         self.homeModules.zellij
         self.homeModules.git
@@ -52,6 +53,11 @@
         username = "mogra";
         rootPath = "/mnt/iohdd/share/stream_record/";
         environmentFile = "${config.home.homeDirectory}/.config/twitch-recorder/.env";
+      };
+
+      services.home_reporter = {
+        enable = true;
+        environmentFile = "${config.home.homeDirectory}/.config/home_reporter/.env";
       };
 
       programs.home-manager.enable = true;
