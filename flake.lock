@@ -232,11 +232,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793720258,
-        "narHash": "sha256-OtonF0Ql+mMH5SOWrK0zXT2QxCFufRj+SMEPi1CCSv0=",
+        "lastModified": 1793892866,
+        "narHash": "sha256-jeizTF3+rUMdg9ss99ap9HBLh+URSLFK6151TMoazxc=",
         "owner": "boxfish-jp",
         "repo": "fuguo_api",
-        "rev": "33088435a95dd9a23806ad7becce44c6637767fa",
+        "rev": "5d411d5efa5365d077e8a7f12b4882896b8943db",
         "type": "github"
       },
       "original": {

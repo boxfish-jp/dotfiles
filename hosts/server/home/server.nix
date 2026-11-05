@@ -55,9 +55,10 @@
         environmentFile = "${config.home.homeDirectory}/.config/twitch-recorder/.env";
       };
 
-      services.home_reporter = {
+      services.home-reporter = {
         enable = true;
-        environmentFile = "${config.home.homeDirectory}/.config/home_reporter/.env";
+        environmentFile = "${config.home.homeDirectory}/.config/home-reporter/.env";
+        streamingKitHubUrl = "http://192.168.68.16:8888";
       };
 
       programs.home-manager.enable = true;
