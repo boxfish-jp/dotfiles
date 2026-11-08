@@ -62,6 +62,7 @@ in
         "boxfish"
         "laptop"
         "sandbox"
+        "server"
       ];
 
       # スマホからのリモート操作は sandbox だけに用意する。
