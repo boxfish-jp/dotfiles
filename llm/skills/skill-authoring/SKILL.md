@@ -3,10 +3,9 @@ name: skill-authoring
 description: スキル(SKILL.md)を新規作成する、既存スキルの構成を直すときに使う。DSH で動くスキルとして成立させるための、置き場所、name と description の書き方、frontmatter、本文の構成、分割、品質ゲート、廃止条件を扱う。コードや設定の実装そのもの、既存スキルを実行する作業、単発の調査や質問だけのときは使わない。
 metadata:
   owner: boxfish
-  scope: personal
   type: Encoded Preference
-  assumptions: DSH のローカルスキル（llm/skills → Nix bundle）
-  retirement: DSH のスキル仕様が変わったとき、DSH がスキル作成を標準機能として持ったとき
+  assumptions: DSH のローカルスキル（llm/skills → Nix bundle）を前提にする
+  retirement: スキル作成・公開のワークフローが変わったとき
 ---
 
 # Skill Authoring
@@ -53,9 +52,9 @@ metadata:
 
 ## 手順
 
-### 1. 置き場所と範囲を決める
+### 1. 置き場所と対象を決める
 
-| スコープ | 場所 |
+| 置き場所 | 場所 |
 |---|---|
 | 個人 | `~/.dsh/skills/`（`$DSH_HOME/skills`） |
 | プロジェクト | `<projectRoot>/.dsh/skills/`、`.agents/skills/` |
@@ -63,7 +62,7 @@ metadata:
 
 - discovery は root 直下の1階層だけ（`<root>/<name>/SKILL.md` か `<root>/<name>.md`）。`**/SKILL.md` は見ない
 - 同名スキルは rank の**値が小さい** root が勝つ（100 が最優先、500 が最後）。敗者はモデルのカタログに出ない（警告は出るがモデルには届かない）。複数 root に同じ name を置かない
-- 所有者・前提・類型は `metadata` に書く（書き込み可能な場所に作る場合だけ）
+- 所有者・類型・前提・廃止条件は `metadata` に書く（書き込み可能な場所に作る場合だけ）。`scope` は書かない。置き場所はパスで決まる
 - ダウンロードしたスキルは、全文・同梱スクリプト・`references/` を読む。DSH では frontmatter がツール権限を絞らないので、危険度は本文とスクリプトで判断する。レビューした版（commit / digest）は完了報告に含める。残す必要があるなら、書き込み可能な場所（リポジトリ側のノートか `metadata`）にだけ書く。nix store 配下には後から書き足せない
 
 ### 2. description を先に書く
@@ -91,7 +90,7 @@ DSH が読むのは次の6キーだけ。詳細は `references/frontmatter.md`�
 - それ以外（`allowed-tools`、`disallowed-tools`、`when_to_use`、`effort`、`model`、`paths`、`context`、`agent`、`hooks`）は無視され、警告も出ない
 - `disableModelInvocation` などの旧 camelCase と不正な真偽値は、スキルごと捨てられる
 - `name` は `^[a-z0-9]+(-[a-z0-9]+)*$`。ディレクトリ名と揃える（強制ではない）
-- `disable-model-invocation: true` は deploy / publish / 送信 / 削除 / commit など、取り返しのつかない操作のとき。ファイル作成・整形だけなら不要
+- `disable-model-invocation: true` は、スキル自身が deploy / publish / 送信 / 削除 / commit など取り返しのつかない操作を実行するとき。ユーザー依頼の commit や Issue 起票を案内するだけのスキルは model-invocable のままでよい（本文で「依頼された時だけ実行する」と書く）
 - `user-invocable: false` は背景知識向け（`/` メニューから外れ、モデルからは使える）
 - `metadata` はモデルに渡らない。人間とツールのための情報
 
@@ -147,7 +146,7 @@ skill-name/
 
 - Capability Uplift: モデルが同じ仕事を安定してできるようになったら廃止（outgrowth）
 - Encoded Preference: ワークフローが変わったら廃止。モデルの向上では廃止しない
-- 無効化してから削除する。例: リポジトリ側で `archive/<name>/` に移すと、1階層 discovery の外なのでカタログから外れる（このリポジトリでは未導入。`/nix/store` 配下は移動も削除もできない）。設定側で外すなら `llm/dsh/default.nix` の `skills` から除く
+- 廃止するときは、まずカタログから外す。このリポジトリでは `llm/skills/archive/<name>/` に移す（1階層 discovery の外なので見えなくなる）か、`llm/dsh/default.nix` の `skills` にフィルタを足して1件だけ除外する。`skills = [ ../skills ]` はルート単位なので、リストから1件だけ消すことはできない。`/nix/store` 配下は移動も削除もできない
 - DSH にスキル別の起動履歴・context cost は無い。確認するなら `$DSH_HOME/sessions`（既定 `~/.dsh/sessions`）の記録を読む。スキル側からは何も書き込まない
 
 ## アンチパターン
@@ -158,18 +157,25 @@ skill-name/
 - 一時的な指示を `AGENTS.md` に足す
 - 文章でゲートを書いて、守られることを期待する
 
-## 完了時に報告すること
+## 出力
 
 ```markdown
 ## 作ったスキル
 - ファイル: <実際に作ったパス>
-- スコープ: 個人 / プロジェクト / このリポジトリ
 - 所有者: <name> / 類型: <Capability Uplift | Encoded Preference>
+- 前提: <metadata.assumptions>
 - description: <トリガー> / アンチトリガー: <どこでは使わないか>
 - 品質ゲート: <通過数>/<適用項目>（N/A: <あれば>、未達: <あれば>）
 - 版: <commit / digest（ダウンロードしたスキルの場合）>
 - 廃止の合図: <何が起きたら消すか>
 ```
+
+## 完了条件
+
+- 適用されるチェックリスト項目を確認し、N/A を除いた分母と通過数を報告した
+- 未達がある場合、理由を添えた
+- 作成・変更したスキルを、再ビルド後の新しいセッションで `skill` ツールと `/name` の両方から引けることを確認した（`disable-model-invocation: true` は `/name` だけ）。確認できない場合は未検証と書いた
+- 廃止の合図を報告に含めた
 
 ## 参照
 

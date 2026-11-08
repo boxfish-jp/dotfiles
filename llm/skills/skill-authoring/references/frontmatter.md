@@ -9,7 +9,7 @@
 | `name` | 必須 | `^[a-z0-9]+(-[a-z0-9]+)*$`。長さ上限は無い。ディレクトリ名との一致は強制されないが、`/name` とプレビューの対応がずれるので揃える |
 | `description` | 必須 | 空でなければ通る。長さ検証は無いが、カタログ描画は `catalogDescriptionMaxLength`（既定 500）で切られ、空白は正規化される。500 文字以内に収める |
 | `whenToUse` | 任意 | provider metadata。カタログにも本文ラッパにも描画されない。routing は name と description だけで決まる |
-| `metadata` | 任意 | 値は保持されるが、カタログにもロード結果にも出ない。人間とツール用 |
+| `metadata` | 任意 | 値は保持されるが、カタログにもロード結果にも出ない。人間とツール用。`owner` / `type` / `assumptions` / `retirement` を書き、`scope` は書かない（置き場所は discovery root で決まる） |
 | `disable-model-invocation` | 任意 | `true` でモデル向けカタログと `skill` ツールから外れ、`/name` だけが入口になる。省略時は許可 |
 | `user-invocable` | 任意 | `false` で `/` メニューから外れ、モデルからは使える。省略時は許可 |
 

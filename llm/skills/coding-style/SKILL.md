@@ -1,9 +1,25 @@
 ---
 name: coding-style
-description: コードを書く・編集するあらゆる作業(軽微な修正や1行の編集含む)で必ずロードする。privateメンバの`_` prefix、ファイル名 snake_case 規則、インポート書式のまとめ、名前衝突の import エイリアス解決、アロー関数とreturn省略の記法、コメント文の禁止と、意図・制約・挙動保証を命名/型/テストで表現し直す規則、Clean Code準拠の1行justification例外を扱う。
+description: コードを書く・編集するあらゆる作業(軽微な修正や1行の編集含む)で必ずロードする。privateメンバの`_` prefix、ファイル名 snake_case 規則、インポート書式のまとめ、名前衝突の import エイリアス解決、アロー関数とreturn省略の記法、コメント文の禁止と1行justification例外、意図・制約・挙動保証を命名/型/テストで表現し直す規則を扱う。README・コミットメッセージ・Issue の文面には使わない。
+metadata:
+  owner: boxfish
+  type: Encoded Preference
+  assumptions: JavaScript/TypeScript のコードを主対象にする
+  retirement: このコーディング規約が変わったとき
 ---
 
 # Coding Style
+
+## When to apply
+
+使う:
+
+- コードを書く・編集する（1行の修正を含む）
+
+使わない:
+
+- README・コミットメッセージ・Issue の文面
+- 設計判断（`code-design` / `state-design`）
 
 ## Private Members
 クラス内のプライベートメソッド・プライベートプロパティには必ず `_` を先頭につけること。
@@ -79,3 +95,22 @@ return文しかない関数はreturnを省略する。
 コードやテストで強制できない外部世界の制約（ライブラリの同期呼び出し義務、spec の穴など）
 に対する 1 行の justification に限る。参照（issue/commit/URL）を添える。
 1 行を超えるならそれは設計の話であり、コメントではなく型かテストに落とす。
+
+## 適用順
+
+1. ファイル名と private メンバを確認する
+2. インポートをまとめ、衝突する型に別名を付ける
+3. 関数をアロー関数で書き、return だけなら省略する
+4. コメントを削除し、1行 justification の例外だけ残す
+
+## 出力
+
+規約に沿ったコード差分。
+
+## 完了条件
+
+- privateメンバに `_` が付いている
+- ファイル名が snake_case になっている
+- 同じモジュールからのインポートが1行にまとまっている
+- 通常関数がアロー関数で、return文だけの関数はreturnを省略している
+- コメントが無い。ある場合は1行 justification で、参照が添えられている

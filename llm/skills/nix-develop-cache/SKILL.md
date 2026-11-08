@@ -1,9 +1,26 @@
 ---
 name: nix-develop-cache
-description: Use when nix develop fails because only the workspace is writable (bwrap, agent sandbox, CI), e.g. "attempt to write a readonly database" in ~/.cache/nix. Triggered by keywords like "nix develop", "bwrap", "sandbox", "読み取り専用", "Read-only file system", "fetcher-cache".
+description: nix develop が読み取り専用の HOME や sandbox で失敗するときに使う。`attempt to write a readonly database` など `~/.cache/nix` への書き込み失敗を、`NIX_CACHE_HOME` をワークスペースへ向けて回避する。通常の nix develop が動く環境や、キャッシュ以外が原因の失敗には使わない。Triggered by "nix develop", "bwrap", "sandbox", "読み取り専用", "Read-only file system", "fetcher-cache".
+metadata:
+  owner: boxfish
+  type: Capability Uplift
+  assumptions: nix flakes と読み取り専用 HOME の sandbox を前提にする
+  retirement: nix が読み取り専用キャッシュを扱えるようになったとき、または sandbox の前提が変わったとき
 ---
 
 # nix develop のキャッシュをワークスペースへ
+
+## When to apply
+
+使う:
+
+- `nix develop` が `~/.cache/nix` への書き込みで失敗するとき
+- bwrap / agent sandbox / CI で `$HOME` が読み取り専用のとき
+
+使わない:
+
+- 通常の `nix develop` が動く環境
+- キャッシュ以外（評価エラー、依存取得）が原因の失敗
 
 ## 症状
 
@@ -34,3 +51,14 @@ nix develop
 - `.nix-cache/` を `.gitignore` に入れる。
 - shellHook の中で `export NIX_CACHE_HOME=...` しても間に合わない。nix は flake を評価する時点で
   既にキャッシュを書くため、効くのは起動コマンド側だけ。
+
+## 出力
+
+- 実行するコマンド（`export NIX_CACHE_HOME=...` と `nix develop`）
+- 追加した `.gitignore` の行
+
+## 完了条件
+
+- `nix develop` が起動した
+- `.nix-cache/` を `.gitignore` に入れた
+- ホームが書き込める環境では `NIX_CACHE_HOME` を設定していない
