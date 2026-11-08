@@ -224,7 +224,7 @@
         "type": "github"
       }
     },
-    "fuguo_api": {
+    "fuguo-api": {
       "inputs": {
         "flake-utils": "flake-utils_3",
         "nixpkgs": [
@@ -232,16 +232,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1793892866,
-        "narHash": "sha256-jeizTF3+rUMdg9ss99ap9HBLh+URSLFK6151TMoazxc=",
+        "lastModified": 1794061695,
+        "narHash": "sha256-roVgeTbJPrUiLVT2Zc+rD8s3GZr+BaWKJYhD4wh4uf8=",
         "owner": "boxfish-jp",
-        "repo": "fuguo_api",
-        "rev": "5d411d5efa5365d077e8a7f12b4882896b8943db",
+        "repo": "fuguo-api",
+        "rev": "e6e2bfaacd516600931c8ab586ce9e39fe6c5a4a",
         "type": "github"
       },
       "original": {
         "owner": "boxfish-jp",
-        "repo": "fuguo_api",
+        "repo": "fuguo-api",
         "type": "github"
       }
     },
@@ -519,7 +519,7 @@
         "browser-chan": "browser-chan",
         "dsh-profile-nix": "dsh-profile-nix",
         "flake-parts": "flake-parts",
-        "fuguo_api": "fuguo_api",
+        "fuguo-api": "fuguo-api",
         "home-manager": "home-manager",
         "llm-agents": "llm-agents",
         "nix-flatpak": "nix-flatpak",

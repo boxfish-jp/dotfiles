@@ -7,7 +7,7 @@
         self.homeModules.containers
         self.homeModules.voicevox_container
         self.homeModules.browser-chan
-        self.homeModules.fuguo_api
+        self.homeModules.fuguo-api
         self.homeModules.nvim
         self.homeModules.zellij
         self.homeModules.git

@@ -55,8 +55,8 @@
     };
     browser-chan.url = "github:boxfish-jp/browser-chan";
     twitch-stream-recoder.url = "github:boxfish-jp/twitch-stream-recorder";
-    fuguo_api = {
-      url = "github:boxfish-jp/fuguo_api";
+    fuguo-api = {
+      url = "github:boxfish-jp/fuguo-api";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

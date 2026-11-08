@@ -1,6 +1,6 @@
 { inputs, ... }:
 {
-  flake.homeModules.fuguo_api = _: {
-    imports = [ inputs.fuguo_api.homeManagerModules.default ];
+  flake.homeModules.fuguo-api = _: {
+    imports = [ inputs.fuguo-api.homeManagerModules.default ];
   };
 }
