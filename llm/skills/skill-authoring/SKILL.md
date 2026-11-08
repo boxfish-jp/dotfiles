@@ -57,9 +57,11 @@ metadata:
 | 置き場所 | 場所 |
 |---|---|
 | 個人 | `~/.dsh/skills/`（`$DSH_HOME/skills`） |
-| プロジェクト | `<projectRoot>/.dsh/skills/`、`.agents/skills/` |
+| プロジェクト | `<projectRoot>/.agents/skills/`（`.dsh/skills/` は使わない） |
 | このリポジトリ | `llm/skills/<name>/` → `llm/dsh/default.nix` の `skills = [ ../skills ]` → 生成される `@dsh-nix/skills` の `customSkillDirs`。置いただけでは discovery されず再ビルドが要る |
 
+- プロジェクトのスキルを作るときは `<projectRoot>/.agents/skills/<name>/SKILL.md` に置く。`.dsh/skills/` は使わない。`projectRoot` は `.git` を持つ最も近い祖先
+- ディレクトリ名は `skills`（複数形）。`.agents/skill/` は discovery されない
 - discovery は root 直下の1階層だけ（`<root>/<name>/SKILL.md` か `<root>/<name>.md`）。`**/SKILL.md` は見ない
 - 同名スキルは rank の**値が小さい** root が勝つ（100 が最優先、500 が最後）。敗者はモデルのカタログに出ない（警告は出るがモデルには届かない）。複数 root に同じ name を置かない
 - 所有者・類型・前提・廃止条件は `metadata` に書く（書き込み可能な場所に作る場合だけ）。`scope` は書かない。置き場所はパスで決まる
