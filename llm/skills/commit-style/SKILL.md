@@ -1,6 +1,6 @@
 ---
 name: commit-style
-description: git commit を実行する、コミットメッセージを書く・修正する、amend する、push する時に必ずロードする。1行の件名、type、amend/push の許可条件を扱う。Issue の文面には使わない。
+description: git commit を実行する、コミットメッセージを書く・修正する、amend する、push する時に必ずロードする。1行の件名、関連 Issue の引用、type、amend/push の許可条件を扱う。Issue の文面には使わない。
 metadata:
   owner: boxfish
   type: Encoded Preference
@@ -41,6 +41,21 @@ metadata:
 - 日本語の常体。句点なし
 - 何をしたかが1つ言えること
 
+## Issue の引用
+
+今回の変更に対応する GitHub Issue を、依頼文・branch 名・既存の Issue から特定できたら、件名の末尾に `(#123)` を付けることをユーザーに提案する。
+
+```
+feat: 方眼グリッドの辺横断をBus経由で自動登録 (#123)
+```
+
+- 件名は1行のまま。番号は件名末尾の `(#123)` に置き、本文と footer は書かない
+- 番号は Issue のものを使い、PR 番号と取り違えない。どちらの番号か曖昧ならユーザーに確認する
+- 提案だけで、勝手に付けない。ユーザーが断ったら付けない
+- Issue を特定できない、または対応関係が曖昧なら、番号を推測せず付けない
+- `(#123)` は参照リンクのみで、Issue は閉じない。閉じる必要がある場合は `Closes #123` を件名末尾に置くかどうかをユーザーに確認する
+- 件名が長くなりすぎる場合は、無理に付けずその旨をユーザーに伝える
+
 ## amend
 
 - `git commit --amend` は、ユーザーが明示的に amend を依頼した時だけ実行する
@@ -58,8 +73,8 @@ metadata:
 
 ```
 feat: 方眼グリッドの辺横断をBus経由で自動登録
-fix: 名前同値時に endpointId tie-break で単独 initiater を決定
 refactor: NearbyConnectionsManager から確保状態機械を PresenceSecurer へ分離
+fix: 名前同値時に endpointId tie-break で単独 initiater を決定 (#123)
 ```
 
 ## NG 例
@@ -74,12 +89,13 @@ feat: グリッド登録を追加
 
 ## 出力
 
-- 1行のコミットメッセージ
+- コミットメッセージ（件名1行。引用を付けた場合は `(#123)` を含む）
 - 実行した操作（commit / amend / push）、対象 branch、remote
 
 ## 完了条件
 
 - 依頼された操作だけを実行した
 - 件名は1行の常体で、句点と本文が無い
+- 対応する Issue がある場合は引用を提案し、ユーザーが同意した場合だけ件名末尾に `(#123)` を付けた
 - push 済みの amend と force-push は、明示的な依頼がある
 - push 後に対象 branch と結果を報告した
