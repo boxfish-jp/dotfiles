@@ -1,143 +1,128 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "agent": {
+  "agents": {
     "plan": {
-      "permission": {
-        "edit": "deny"
-      }
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" }
+      ]
     },
-      "build": {
-        "permission": {
-          "edit": "allow",
-          "bash": {
-            "mkdir *": "allow",
-          "mv *": "allow",
-          "cp *": "allow",
-          "touch *": "allow"
-        }
-      }
+    "build": {
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "allow" },
+        { "action": "shell", "resource": "mkdir *", "effect": "allow" },
+        { "action": "shell", "resource": "mv *", "effect": "allow" },
+        { "action": "shell", "resource": "cp *", "effect": "allow" },
+        { "action": "shell", "resource": "touch *", "effect": "allow" }
+      ]
     },
     "explore": {
-      "permission": {
-        "edit": "deny"
-      }
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" }
+      ]
     }
   },
-  "permission": {
-    "read": {
-      "*": "allow",
-      "*.env": "deny",
-      "*.env.*": "deny",
-      "*.env.example": "allow"
-    },
-    "edit": "allow",
-    "glob": "allow",
-    "grep": "allow",
-    "list": "allow",
-    "bash": {
-      "*": "ask",
-      "ls *": "allow",
-      "which*": "allow",
-      "type*": "allow",
-      "true": "allow",
-      "sleep *": "allow",
-      "grep *": "allow",
-      "find *": "allow",
-      "list *": "allow",
-      "timeout *": "allow",
-      "cd *": "allow",
-      "tree *": "allow",
-      "cat *": "allow",
-      "head *": "allow",
-      "wc *": "allow",
-      "echo *": "allow",
-      "tail *": "allow",
-      "sort *": "allow",
-      "rg *": "allow",
-      "date *": "allow",
-      "opencode *": "allow",
-      "strings *": "allow",
-      "nix eval *": "allow",
-      "readlink *": "allow",
-      "file *": "allow",
-      "stat *": "allow",
-      "du *": "allow",
-      "df *": "allow",
-      "free *": "allow",
-      "uptime *": "allow",
-      "whoami *": "allow",
-      "id *": "allow",
-      "sha256sum *": "allow",
-      "md5sum *": "allow",
-      "jq *": "allow",
-      "uniq *": "allow",
-      "cut *": "allow",
-      "tr *": "allow",
-      "xargs *": "deny",
+  "experimental": {
+    "todo": true
+  },
+  "permissions": [
+    { "action": "read", "resource": "*", "effect": "allow" },
+    { "action": "read", "resource": "*.env", "effect": "deny" },
+    { "action": "read", "resource": "*.env.*", "effect": "deny" },
+    { "action": "read", "resource": "*.env.example", "effect": "allow" },
+    { "action": "edit", "resource": "*", "effect": "allow" },
+    { "action": "glob", "resource": "*", "effect": "allow" },
+    { "action": "grep", "resource": "*", "effect": "allow" },
+    { "action": "subagent", "resource": "*", "effect": "allow" },
+    { "action": "webfetch", "resource": "*", "effect": "allow" },
+    { "action": "websearch", "resource": "*", "effect": "allow" },
+    { "action": "skill", "resource": "*", "effect": "allow" },
+    { "action": "question", "resource": "*", "effect": "allow" },
+    { "action": "external_directory", "resource": "*", "effect": "deny" },
+    { "action": "external_directory", "resource": "/nix/store/*", "effect": "allow" },
+    { "action": "external_directory", "resource": "~/.config/opencode/*", "effect": "allow" },
+    { "action": "external_directory", "resource": "/tmp/*", "effect": "allow" },
 
-      "sed *": "allow",
-      "awk *": "allow",
-      "gawk *": "allow",
-      "mawk *": "allow",
+    { "action": "shell", "resource": "*", "effect": "ask" },
+    { "action": "shell", "resource": "ls *", "effect": "allow" },
+    { "action": "shell", "resource": "which*", "effect": "allow" },
+    { "action": "shell", "resource": "type*", "effect": "allow" },
+    { "action": "shell", "resource": "true", "effect": "allow" },
+    { "action": "shell", "resource": "sleep *", "effect": "allow" },
+    { "action": "shell", "resource": "grep *", "effect": "allow" },
+    { "action": "shell", "resource": "find *", "effect": "allow" },
+    { "action": "shell", "resource": "list *", "effect": "allow" },
+    { "action": "shell", "resource": "timeout *", "effect": "allow" },
+    { "action": "shell", "resource": "cd *", "effect": "allow" },
+    { "action": "shell", "resource": "tree *", "effect": "allow" },
+    { "action": "shell", "resource": "cat *", "effect": "allow" },
+    { "action": "shell", "resource": "head *", "effect": "allow" },
+    { "action": "shell", "resource": "wc *", "effect": "allow" },
+    { "action": "shell", "resource": "echo *", "effect": "allow" },
+    { "action": "shell", "resource": "tail *", "effect": "allow" },
+    { "action": "shell", "resource": "sort *", "effect": "allow" },
+    { "action": "shell", "resource": "rg *", "effect": "allow" },
+    { "action": "shell", "resource": "date *", "effect": "allow" },
+    { "action": "shell", "resource": "opencode *", "effect": "allow" },
+    { "action": "shell", "resource": "strings *", "effect": "allow" },
+    { "action": "shell", "resource": "nix eval *", "effect": "allow" },
+    { "action": "shell", "resource": "readlink *", "effect": "allow" },
+    { "action": "shell", "resource": "file *", "effect": "allow" },
+    { "action": "shell", "resource": "stat *", "effect": "allow" },
+    { "action": "shell", "resource": "du *", "effect": "allow" },
+    { "action": "shell", "resource": "df *", "effect": "allow" },
+    { "action": "shell", "resource": "free *", "effect": "allow" },
+    { "action": "shell", "resource": "uptime *", "effect": "allow" },
+    { "action": "shell", "resource": "whoami *", "effect": "allow" },
+    { "action": "shell", "resource": "id *", "effect": "allow" },
+    { "action": "shell", "resource": "sha256sum *", "effect": "allow" },
+    { "action": "shell", "resource": "md5sum *", "effect": "allow" },
+    { "action": "shell", "resource": "jq *", "effect": "allow" },
+    { "action": "shell", "resource": "uniq *", "effect": "allow" },
+    { "action": "shell", "resource": "cut *", "effect": "allow" },
+    { "action": "shell", "resource": "tr *", "effect": "allow" },
+    { "action": "shell", "resource": "sed *", "effect": "allow" },
+    { "action": "shell", "resource": "awk *", "effect": "allow" },
+    { "action": "shell", "resource": "gawk *", "effect": "allow" },
+    { "action": "shell", "resource": "mawk *", "effect": "allow" },
+    { "action": "shell", "resource": "curl *", "effect": "allow" },
+    { "action": "shell", "resource": "git *", "effect": "allow" },
+    { "action": "shell", "resource": "nix flake check *", "effect": "allow" },
+    { "action": "shell", "resource": "nix log *", "effect": "allow" },
+    { "action": "shell", "resource": "nix build *", "effect": "allow" },
+    { "action": "shell", "resource": "nix fmt*", "effect": "allow" },
 
-      "curl *": "allow",
-      "git *": "allow",
-
-      "nix flake check *": "allow",
-      "nix log *": "allow",
-      "nix build *": "allow",
-      "nix fmt*": "allow",
-      "env *": "deny",
-      "printenv *": "deny",
-      "mkdir *": "deny",
-      "mv *": "deny",
-      "cp *": "deny",
-      "touch *": "deny",
-      "sudo*": "deny",
-      // シェル組み込み経由の任意実行
-      "eval *": "deny",
-      "source *": "deny",
-      ". *": "deny",
-      "npx *": "deny",
-      "at *": "deny",
-      "crontab *": "deny",
-      "opencode run *": "deny",
-      // 破壊・権限変更系
-      "rm *": "deny",
-      "unlink *": "deny",
-      "chmod *": "deny",
-      "chown *": "deny",
-      "chgrp *": "deny",
-      "install *": "deny",
-      "dd *": "deny",
-      // 権限昇格・名前空間経由の実行
-      "su *": "deny",
-      "doas *": "deny",
-      "runuser *": "deny",
-      "pkexec *": "deny",
-      "chroot *": "deny",
-      "unshare *": "deny",
-      "nsenter *": "deny",
-      "bwrap *": "deny",
-      "runc *": "deny",
-      "crun *": "deny",
-      "buildah *": "deny"
-    },
-    "task": {
-      "*": "allow"
-    },
-    "external_directory": {
-      "*": "deny",
-      "/nix/store/**": "allow",
-      "/home/boxfish/.config/opencode/**": "allow",
-      "/tmp/**": "allow"
-    },
-    "todowrite": "allow",
-    "webfetch": "allow",
-    "websearch": "allow",
-    "lsp": "allow",
-    "skill": "allow",
-    "question": "allow",
-    "doom_loop": "ask"
-  }
+    { "action": "shell", "resource": "xargs *", "effect": "deny" },
+    { "action": "shell", "resource": "env *", "effect": "deny" },
+    { "action": "shell", "resource": "printenv *", "effect": "deny" },
+    { "action": "shell", "resource": "mkdir *", "effect": "deny" },
+    { "action": "shell", "resource": "mv *", "effect": "deny" },
+    { "action": "shell", "resource": "cp *", "effect": "deny" },
+    { "action": "shell", "resource": "touch *", "effect": "deny" },
+    { "action": "shell", "resource": "sudo*", "effect": "deny" },
+    { "action": "shell", "resource": "eval *", "effect": "deny" },
+    { "action": "shell", "resource": "source *", "effect": "deny" },
+    { "action": "shell", "resource": ". *", "effect": "deny" },
+    { "action": "shell", "resource": "npx *", "effect": "deny" },
+    { "action": "shell", "resource": "at *", "effect": "deny" },
+    { "action": "shell", "resource": "crontab *", "effect": "deny" },
+    { "action": "shell", "resource": "opencode run *", "effect": "deny" },
+    { "action": "shell", "resource": "rm *", "effect": "deny" },
+    { "action": "shell", "resource": "unlink *", "effect": "deny" },
+    { "action": "shell", "resource": "chmod *", "effect": "deny" },
+    { "action": "shell", "resource": "chown *", "effect": "deny" },
+    { "action": "shell", "resource": "chgrp *", "effect": "deny" },
+    { "action": "shell", "resource": "install *", "effect": "deny" },
+    { "action": "shell", "resource": "dd *", "effect": "deny" },
+    { "action": "shell", "resource": "su *", "effect": "deny" },
+    { "action": "shell", "resource": "doas *", "effect": "deny" },
+    { "action": "shell", "resource": "runuser *", "effect": "deny" },
+    { "action": "shell", "resource": "pkexec *", "effect": "deny" },
+    { "action": "shell", "resource": "chroot *", "effect": "deny" },
+    { "action": "shell", "resource": "unshare *", "effect": "deny" },
+    { "action": "shell", "resource": "nsenter *", "effect": "deny" },
+    { "action": "shell", "resource": "bwrap *", "effect": "deny" },
+    { "action": "shell", "resource": "runc *", "effect": "deny" },
+    { "action": "shell", "resource": "crun *", "effect": "deny" },
+    { "action": "shell", "resource": "buildah *", "effect": "deny" }
+  ]
 }

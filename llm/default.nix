@@ -5,19 +5,17 @@
   ...
 }:
 let
-  # opencode 設定ツリー（node_modules と test/ は含めない）
+  # opencode 設定ツリー
   opencodeConfigTree = lib.fileset.toSource {
     root = ./opencode;
     fileset = lib.fileset.unions [
       ./opencode/AGENTS.md
-      ./opencode/lib
+      ./opencode/cli.json
       ./opencode/opencode.jsonc
-      ./opencode/plugins
       # スキルは llm/skills に集約しており、opencode 側のリンクは現在無い。
       # 将来 skills/ を置いた場合もそのまま同梱できるよう maybeMissing にする。
       (lib.fileset.maybeMissing ./opencode/skills)
-      ./opencode/themes
-      ./opencode/tui.json
+      (lib.fileset.maybeMissing ./opencode/themes)
     ];
   };
 in
@@ -26,18 +24,18 @@ in
     { pkgs, system, ... }:
     {
       # nix run .#opencode で設定込みの実行ができる。
-      # opencode は起動時に設定ディレクトリへ .gitignore / package.json /
-      # node_modules を書き込むため、store 直下を OPENCODE_CONFIG_DIR に
-      # できず、毎回 writable なステージ先へ設定を同期してから起動する。
+      # opencode は起動時に設定ディレクトリへ書き込むため、store 直下を
+      # OPENCODE_CONFIG_DIR にできず、毎回 writable なステージ先へ
+      # 設定を同期してから起動する。
       packages.opencode =
         let
-          base = inputs.llm-agents.packages.${system}.opencode;
+          base = inputs.llm-agents.packages.${system}.opencode2;
         in
         pkgs.writeShellScriptBin "opencode" ''
           set -eu
           stage="''${XDG_STATE_HOME:-$HOME/.local/state}/opencode-packaged"
+          rm -rf "$stage"
           mkdir -p "$stage"
-          chmod -R u+w "$stage" 2>/dev/null || true
           cp -R ${opencodeConfigTree}/. "$stage/"
           chmod -R u+w "$stage"
           export OPENCODE_CONFIG_DIR="$stage"
@@ -48,7 +46,6 @@ in
   flake.homeModules.llm =
     {
       config,
-      pkgs,
       self,
       ...
     }:
@@ -67,14 +64,6 @@ in
 
       # スマホからのリモート操作は sandbox だけに用意する。
       llm.dsh.agentsAnywhere.enable = builtins.elem config.home.username [ "sandbox" ];
-
-      home.packages = with pkgs; [
-        llm-agents.opencode
-      ];
-
-      home.sessionVariables = {
-        OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS = "true";
-      };
 
       xdg.configFile."opencode".source =
         config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/dotfiles/llm/opencode";
