@@ -23,6 +23,7 @@
         self.nixosModules.tailscale
         self.nixosModules.voicevox_container
         self.nixosModules.wake_on_lan
+        self.nixosModules.bootvine
       ];
 
       domains = {

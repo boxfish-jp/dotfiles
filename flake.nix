@@ -64,6 +64,10 @@
       url = "github:noctalia-dev/noctalia";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    bootvine = {
+      url = "git+https://codeberg.org/wvhulle/bootvine";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
