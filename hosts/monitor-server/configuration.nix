@@ -22,7 +22,13 @@
         networking.allowedTCPPorts = [
           8080
         ];
-        storage.versitygw.enable = true;
+        storage.versitygw = {
+          enable = true;
+          webui = {
+            enable = true;
+            corsAllowOrigin = "http://monitor-server.taildb6ca.ts.net:7071";
+          };
+        };
       };
 
       tailscale.enable = true;

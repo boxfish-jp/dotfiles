@@ -11,6 +11,12 @@
     let
       cfg = config.domains.storage;
       stateDir = "versitygw";
+      webuiFlags = lib.optionalString cfg.versitygw.webui.enable (
+        " --webui 0.0.0.0:${toString cfg.versitygw.webui.port}"
+        + lib.optionalString (
+          cfg.versitygw.webui.corsAllowOrigin != ""
+        ) " --cors-allow-origin ${cfg.versitygw.webui.corsAllowOrigin}"
+      );
     in
     {
       options.domains.storage = {
@@ -36,6 +42,22 @@
               "restic"
             ];
             description = "起動時に冪等に作成するバケット。";
+          };
+
+          webui = {
+            enable = lib.mkEnableOption "versitygw WebUI (オブジェクトブラウザ)";
+
+            port = lib.mkOption {
+              type = lib.types.port;
+              default = 7071;
+              description = "WebUI の待ち受けポート。";
+            };
+
+            corsAllowOrigin = lib.mkOption {
+              type = lib.types.str;
+              default = "";
+              description = "ブラウザから S3 API を呼ぶための CORS 許可オリジン。空なら指定しない。";
+            };
           };
         };
 
@@ -89,7 +111,7 @@
             serviceConfig = {
               User = "versitygw";
               Group = "versitygw";
-              ExecStart = "${pkgs.versitygw}/bin/versitygw --port 0.0.0.0:${toString cfg.versitygw.port} posix --fsync /var/lib/${stateDir}";
+              ExecStart = "${pkgs.versitygw}/bin/versitygw --port 0.0.0.0:${toString cfg.versitygw.port}${webuiFlags} posix --fsync /var/lib/${stateDir}";
               EnvironmentFile = cfg.versitygw.envFile;
               StateDirectory = stateDir;
               StateDirectoryMode = "0700";
