@@ -18,6 +18,7 @@
         self.nixosModules.certificate
         self.nixosModules.tailscale
         self.nixosModules.voicevox_container
+        self.nixosModules.storage
       ];
 
       domains = {
@@ -39,6 +40,7 @@
           "samba"
         ];
         users.linger = true;
+        storage.immichBackup.enable = true;
       };
 
       tailscale.enable = true;

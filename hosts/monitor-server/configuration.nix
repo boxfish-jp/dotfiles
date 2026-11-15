@@ -15,12 +15,14 @@
         self.nixosModules.ssh
         self.nixosModules.certificate
         self.nixosModules.tailscale
+        self.nixosModules.storage
       ];
 
       domains = {
         networking.allowedTCPPorts = [
           8080
         ];
+        storage.versitygw.enable = true;
       };
 
       tailscale.enable = true;
