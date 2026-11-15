@@ -181,7 +181,7 @@
             serviceConfig = {
               Type = "oneshot";
               EnvironmentFile = cfg.immichBackup.envFile;
-              ExecStart = "${pkgs.rclone}/bin/rclone sync ${cfg.immichBackup.source} s3:${cfg.immichBackup.bucket}/${cfg.immichBackup.prefix} --max-delete 1000 --cache-dir /var/cache/rclone";
+              ExecStart = "${pkgs.rclone}/bin/rclone sync ${cfg.immichBackup.source} s3:${cfg.immichBackup.bucket}/${cfg.immichBackup.prefix} --max-delete 1000 --cache-dir /var/cache/rclone --config /dev/null";
               CacheDirectory = "rclone";
               NoNewPrivileges = true;
               PrivateTmp = true;
