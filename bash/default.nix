@@ -1,9 +1,16 @@
 { lib, ... }:
 let
+  mkStarshipConfig = pkgs: pkgs.writeText "starship.toml" (builtins.readFile ./starship.toml);
+  mkBashrc =
+    pkgs:
+    pkgs.writeText "bashrc" ''
+      export STARSHIP_CONFIG="${mkStarshipConfig pkgs}"
+      ${builtins.readFile ./bashrc}
+    '';
   mkBash =
     { pkgs }:
     let
-      rcFile = pkgs.writeText "bashrc" (builtins.readFile ./bashrc);
+      rcFile = mkBashrc pkgs;
     in
     pkgs.runCommand "bash"
       {
@@ -34,8 +41,7 @@ in
       ...
     }:
     {
-      home.file.".mybashrc".source = ./bashrc;
-      xdg.configFile."starship.toml".source = ./starship.toml;
+      home.file.".mybashrc".source = mkBashrc pkgs;
 
       home.packages = with pkgs; [
         starship
