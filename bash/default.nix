@@ -35,6 +35,7 @@ in
     }:
     {
       home.file.".mybashrc".source = ./bashrc;
+      xdg.configFile."starship.toml".source = ./starship.toml;
 
       home.packages = with pkgs; [
         starship
