@@ -41,7 +41,7 @@ jobs:
           sysctl net.ipv4.tcp_available_congestion_control || true
           sysctl net.ipv4.tcp_congestion_control || true
 
-      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: cachix/install-nix-action@v32
 
       - name: Tailscale
         if: ${{ env.TS_OAUTH_SECRET != '' }}
@@ -89,7 +89,7 @@ jobs:
           sysctl net.ipv4.tcp_available_congestion_control || true
           sysctl net.ipv4.tcp_congestion_control || true
 
-      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: cachix/install-nix-action@v32
 
       - name: Tailscale
         if: ${{ env.TS_OAUTH_SECRET != '' }}
