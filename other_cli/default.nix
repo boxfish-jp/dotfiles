@@ -16,6 +16,7 @@
         ncdu
         jq
         yq
+        tuicr
       ];
     }
 
